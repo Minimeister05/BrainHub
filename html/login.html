@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BrainHUB | Login</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+  <div class="background-overlay"></div>
+
+  <header class="topbar">
+    <div class="logo-area">
+      <div class="logo-circle">B</div>
+      <h1>BrainHUB</h1>
+    </div>
+
+    <nav class="top-nav">
+      <a href="#">Início</a>
+      <a href="#">Sobre</a>
+      <a href="#">Suporte</a>
+    </nav>
+  </header>
+
+  <main class="login-page">
+    <section class="login-card">
+      <div class="login-icon">B</div>
+      <h2>Entrar</h2>
+      <p class="subtitle">Entre e comece a se conectar com outros universitários.</p>
+
+      <form id="loginForm" class="login-form">
+        <div class="input-group">
+          <label for="email">E-mail</label>
+          <input type="email" id="email" name="email" placeholder="Digite seu e-mail" required />
+        </div>
+
+        <div class="input-group">
+          <label for="senha">Senha</label>
+          <input type="password" id="senha" name="senha" placeholder="Digite sua senha" required />
+        </div>
+
+        <div class="form-options">
+          <label class="remember-me">
+            <input type="checkbox" />
+            <span>Lembrar de mim</span>
+          </label>
+
+          <a href="#" class="forgot-password">Esqueceu a senha?</a>
+        </div>
+
+        <button type="submit" class="login-button">Entrar</button>
+      </form>
+
+      <p class="register-text">
+        Ainda não tem conta?
+        <a href="#">Criar conta</a>
+      </p>
+    </section>
+  </main>
+
+  <script src="../scripts/script.js"></script>
+</body>
+</html>
