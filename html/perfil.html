@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BrainHUB | Meu Perfil</title>
+  <link rel="stylesheet" href="../css/home.css" />
+  <link rel="stylesheet" href="../css/perfil.css" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-icon">🧠</div>
+      <h1>Brain<span>HUB</span></h1>
+    </div>
+    <nav class="main-nav">
+      <a href="home.html"><i data-lucide="house"></i> Feed</a>
+      <a href="#"><i data-lucide="users"></i> Grupos</a>
+      <a href="chat.html"><i data-lucide="message-circle"></i> Mensagens</a>
+      <a href="perfil.html" class="active"><i data-lucide="user"></i> Perfil</a>
+    </nav>
+    <div class="top-actions">
+      <button class="icon-btn notification-btn">
+        <i data-lucide="bell"></i>
+        <span class="badge">3</span>
+      </button>
+      <button class="icon-btn"><i data-lucide="search"></i></button>
+    </div>
+  </header>
+
+  <main class="perfil-layout">
+
+    <!-- COLUNA ESQUERDA: card de perfil visual -->
+    <aside class="perfil-sidebar">
+
+      <div class="perfil-card">
+        <div class="perfil-banner" id="perfilBanner"></div>
+
+        <div class="perfil-avatar-wrapper">
+          <div class="perfil-avatar" id="perfilAvatar"></div>
+        </div>
+
+        <div class="perfil-info">
+          <h2 id="perfilNome">—</h2>
+          <p id="perfilCurso" class="perfil-sub">—</p>
+          <p id="perfilBio" class="perfil-bio"></p>
+        </div>
+
+        <div class="perfil-stats">
+          <div><strong>0</strong><span>POSTS</span></div>
+          <div><strong>0</strong><span>SEGUIDORES</span></div>
+          <div><strong>0</strong><span>SEGUINDO</span></div>
+        </div>
+
+        <div class="perfil-actions">
+          <button class="btn-editar" id="btnEditarPerfil">
+            <i data-lucide="pencil"></i> Editar Perfil
+          </button>
+          <button class="btn-sair" id="btnSair">
+            <i data-lucide="log-out"></i> Sair
+          </button>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- COLUNA DIREITA: formulário de edição -->
+    <section class="perfil-main">
+
+      <!-- Cabeçalho da seção -->
+      <div class="perfil-section-header">
+        <h3><i data-lucide="settings"></i> Personalizar Perfil</h3>
+        <p>Suas informações ficam salvas no navegador</p>
+      </div>
+
+      <!-- Formulário -->
+      <div class="perfil-form-card">
+
+        <!-- Nome -->
+        <div class="form-field">
+          <label for="inputNome">
+            <i data-lucide="user"></i> Nome completo
+          </label>
+          <input type="text" id="inputNome" placeholder="Seu nome completo" maxlength="60" />
+        </div>
+
+        <!-- Curso -->
+        <div class="form-field">
+          <label for="inputCurso">
+            <i data-lucide="graduation-cap"></i> Curso
+          </label>
+          <input type="text" id="inputCurso" placeholder="Ex: Ciência da Computação" maxlength="60" />
+        </div>
+
+        <!-- Período -->
+        <div class="form-field">
+          <label for="inputPeriodo">
+            <i data-lucide="calendar"></i> Período
+          </label>
+          <select id="inputPeriodo">
+            <option value="">Selecione seu período</option>
+            <option value="1º período">1º período</option>
+            <option value="2º período">2º período</option>
+            <option value="3º período">3º período</option>
+            <option value="4º período">4º período</option>
+            <option value="5º período">5º período</option>
+            <option value="6º período">6º período</option>
+            <option value="7º período">7º período</option>
+            <option value="8º período">8º período</option>
+            <option value="9º período">9º período</option>
+            <option value="10º período">10º período</option>
+          </select>
+        </div>
+
+        <!-- Bio -->
+        <div class="form-field">
+          <label for="inputBio">
+            <i data-lucide="align-left"></i> Bio
+            <span class="char-count" id="bioCount">0/160</span>
+          </label>
+          <textarea id="inputBio" placeholder="Conte um pouco sobre você..." maxlength="160" rows="3"></textarea>
+        </div>
+
+        <!-- Cor do avatar -->
+        <div class="form-field">
+          <label><i data-lucide="palette"></i> Cor do avatar</label>
+          <div class="color-picker" id="colorPicker">
+            <button class="color-opt" data-cor="" style="background: linear-gradient(135deg,#8f72ff,#4e2edf);" title="Roxo"></button>
+            <button class="color-opt" data-cor="av-green" style="background: linear-gradient(135deg,#26d0a8,#119f7f);" title="Verde"></button>
+            <button class="color-opt" data-cor="av-pink" style="background: linear-gradient(135deg,#ff6ec7,#b63cff);" title="Rosa"></button>
+            <button class="color-opt" data-cor="av-orange" style="background: linear-gradient(135deg,#ffb144,#ff6a33);" title="Laranja"></button>
+            <button class="color-opt" data-cor="av-blue" style="background: linear-gradient(135deg,#6d8bff,#5367ff);" title="Azul"></button>
+            <button class="color-opt" data-cor="av-red" style="background: linear-gradient(135deg,#ff4b6e,#c2183a);" title="Vermelho"></button>
+          </div>
+        </div>
+
+        <!-- Botão salvar -->
+        <button class="btn-salvar" id="btnSalvar">
+          <i data-lucide="check"></i> Salvar Alterações
+        </button>
+
+      </div>
+
+      <!-- Info da conta (somente leitura) -->
+      <div class="perfil-form-card conta-info">
+        <h4><i data-lucide="shield"></i> Informações da Conta</h4>
+        <div class="info-row">
+          <span class="info-label">Email</span>
+          <span class="info-value" id="infoEmail">—</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Conta criada via</span>
+          <span class="info-value">BrainHUB</span>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Toast container -->
+  <div id="toast-container"></div>
+
+  <script src="../scripts/auth.js"></script>
+  <script src="../scripts/perfil.js"></script>
+</body>
+</html>

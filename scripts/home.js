@@ -1,6 +1,34 @@
 // inicializa os ícones da biblioteca Lucide
 lucide.createIcons();
 
+// ===== CARREGA USUÁRIO LOGADO =====
+function getPerfilAtual() {
+    const sessao = JSON.parse(localStorage.getItem('brainhub_usuario_logado') || 'null');
+    const perfil = JSON.parse(localStorage.getItem('brainhub_perfil') || 'null');
+    const nome = perfil?.nome || sessao?.nome || 'Usuário';
+    const curso = perfil?.curso || 'Sem curso definido';
+    const periodo = perfil?.periodo || '';
+    const corAvatar = perfil?.corAvatar || '';
+    const iniciais = nome.split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase();
+    return { nome, curso, periodo, corAvatar, iniciais };
+}
+
+function aplicarPerfilNaHome() {
+    const u = getPerfilAtual();
+
+    const avatarEl = document.querySelector('.profile-avatar');
+    const nomeEl   = document.querySelector('.profile-card h2');
+    const subEl    = document.querySelector('.profile-card > p');
+    if (avatarEl) { avatarEl.textContent = u.iniciais; avatarEl.className = `profile-avatar ${u.corAvatar}`; }
+    if (nomeEl)   nomeEl.textContent = u.nome;
+    if (subEl)    subEl.textContent  = [u.curso, u.periodo].filter(Boolean).join(' • ');
+
+    const miniAvatar = document.querySelector('.create-top .mini-avatar');
+    if (miniAvatar) { miniAvatar.textContent = u.iniciais; miniAvatar.className = `mini-avatar ${u.corAvatar}`; }
+}
+
+aplicarPerfilNaHome();
+
 // referências principais da área de criação de post
 const publishBtn = document.getElementById("publishBtn");
 const postInput = document.getElementById("postInput");

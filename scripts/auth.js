@@ -63,6 +63,8 @@ if (loginForm) {
         const user = lista.find(u => u.email === email && u.senha === senha);
 
         if(user) {
+            // Salva o usuário logado na sessão
+            localStorage.setItem('brainhub_usuario_logado', JSON.stringify({ nome: user.nome, email: user.email }));
             mostrarAviso(`Bem vindo, ${user.nome}!`, "success");
             setTimeout(() => {
                 window.location.href = "home.html";
@@ -110,4 +112,20 @@ if (suporteForm) {
 
         suporteForm.reset();
     })
+}
+
+// ===== UTILITÁRIO GLOBAL DE PERFIL =====
+// Retorna o perfil completo do usuário logado (dados base + personalização)
+function getUsuarioLogado() {
+    const sessao = JSON.parse(localStorage.getItem('brainhub_usuario_logado') || 'null');
+    const perfil = JSON.parse(localStorage.getItem('brainhub_perfil') || 'null');
+    if (!sessao) return null;
+    return {
+        nome: perfil?.nome || sessao.nome,
+        email: sessao.email,
+        curso: perfil?.curso || '',
+        periodo: perfil?.periodo || '',
+        bio: perfil?.bio || '',
+        corAvatar: perfil?.corAvatar || 'av-default',
+    };
 }
