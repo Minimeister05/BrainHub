@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BrainHUB | Mensagens</title>
+  <link rel="stylesheet" href="../css/home.css" />
+  <link rel="stylesheet" href="../css/chat.css" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-icon">🧠</div>
+      <h1>Brain<span>HUB</span></h1>
+    </div>
+
+    <nav class="main-nav">
+      <a href="home.html"><i data-lucide="house"></i> Feed</a>
+      <a href="#"><i data-lucide="users"></i> Grupos</a>
+      <a href="chat.html" class="active"><i data-lucide="message-circle"></i> Mensagens</a>
+      <a href="#"><i data-lucide="user"></i> Perfil</a>
+    </nav>
+
+    <div class="top-actions">
+      <button class="icon-btn notification-btn">
+        <i data-lucide="bell"></i>
+        <span class="badge">3</span>
+      </button>
+      <button class="icon-btn">
+        <i data-lucide="search"></i>
+      </button>
+    </div>
+  </header>
+
+  <main class="chat-layout">
+
+    <!-- Coluna esquerda: lista de conversas -->
+    <aside class="chat-sidebar">
+      <div class="chat-sidebar-header">
+        <h2>Mensagens</h2>
+        <button class="icon-btn" id="newChatBtn" title="Nova conversa">
+          <i data-lucide="square-pen"></i>
+        </button>
+      </div>
+
+      <div class="chat-search">
+        <i data-lucide="search"></i>
+        <input type="text" id="searchInput" placeholder="Buscar conversa..." />
+      </div>
+
+      <div class="chat-tabs">
+        <button class="chat-tab active" data-tab="all">Todas</button>
+        <button class="chat-tab" data-tab="dm">Diretas</button>
+        <button class="chat-tab" data-tab="group">Grupos</button>
+      </div>
+
+      <ul class="conversation-list" id="conversationList"></ul>
+    </aside>
+
+    <!-- Área principal do chat -->
+    <section class="chat-main" id="chatMain">
+
+      <!-- Estado vazio -->
+      <div class="chat-empty" id="chatEmpty">
+        <div class="chat-empty-icon">💬</div>
+        <h3>Suas mensagens</h3>
+        <p>Selecione uma conversa para começar a trocar mensagens com outros universitários.</p>
+      </div>
+
+      <!-- Conversa aberta -->
+      <div class="chat-open hidden" id="chatOpen">
+
+        <div class="chat-header" id="chatHeader"></div>
+
+        <div class="chat-messages" id="chatMessages"></div>
+
+        <div class="chat-input-area">
+          <button class="icon-btn attach-btn">
+            <i data-lucide="paperclip"></i>
+          </button>
+          <input type="text" id="msgInput" placeholder="Escreva uma mensagem..." />
+          <button class="send-btn" id="sendBtn">
+            <i data-lucide="send"></i>
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <script src="../scripts/chat.js"></script>
+</body>
+</html>

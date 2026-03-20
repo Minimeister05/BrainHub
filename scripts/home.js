@@ -9,6 +9,8 @@ const feedList = document.getElementById("feedList");
 // chave usada para salvar os posts no navegador
 const STORAGE_KEY = "brainhub_posts";
 
+localStorage.removeItem("brainhub_posts");
+
 // dados iniciais exibidos quando ainda não existe nada salvo
 const postsPadrao = [
   {
@@ -40,9 +42,9 @@ const postsPadrao = [
     tags: ["Banco de Dados", "Resumo", "SQL"],
     likes: 67,
     comentarios: [
-  { autor: "Julia martins", texto: "Me manda, por favor!" },
-  { autor: "Pabllo Vittar", texto: "Tava precisando muito disso." }
-],
+      { autor: "Julia martins", texto: "Me manda, por favor!" },
+      { autor: "Pabllo Vittar", texto: "Tava precisando muito disso." }
+    ],
     curtido: false,
     salvo: false,
     corAvatar: "purple"
@@ -58,9 +60,9 @@ const postsPadrao = [
     tags: ["Carreira", "React", "Frontend"],
     likes: 18,
     comentarios: [
-  { autor: "Arrascaeta", texto: "Eu começaria pelo front." },
-  { autor: "Alef Manga", texto: "Depende do teu objetivo." }
-],
+      { autor: "Arrascaeta", texto: "Eu começaria pelo front." },
+      { autor: "Alef Manga", texto: "Depende do teu objetivo." }
+    ],
     curtido: false,
     salvo: false,
     corAvatar: "green"
@@ -96,6 +98,15 @@ function salvarPosts(posts) {
 
 // monta o HTML de um comentário
 function criarComentarioHTML(comentario) {
+  if (typeof comentario === "string") {
+    return `
+      <div class="comment-item">
+        <strong class="comment-author">Usuário</strong>
+        <p class="comment-text">${comentario}</p>
+      </div>
+    `;
+  }
+
   return `
     <div class="comment-item">
       <strong class="comment-author">${comentario.autor}</strong>
@@ -157,8 +168,16 @@ function criarPostHTML(post) {
 
       <div class="comments-section hidden">
         <div class="comment-form">
-          <input type="text" class="comment-input" placeholder="Escreva um comentário..." />
-          <button class="comment-send">Enviar</button>
+          <input
+            type="text"
+            class="comment-input"
+            placeholder="Escreva um comentário..."
+            style="background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.2); color: white; outline: none;"/>
+          <button
+            class="comment-send"
+            style="background: #23232b; border: 1px solid rgba(255,255,255,0.16); color: white; padding: 8px 16px; border-radius: 12px; margin-left: 10px; cursor: pointer; font-weight: 500;">
+            Enviar
+          </button>
         </div>
 
         <div class="comments-list">
@@ -166,7 +185,7 @@ function criarPostHTML(post) {
         </div>
       </div>
     </article>
-  `;
+    `;
 }
 
 // renderiza todos os posts no feed
@@ -178,6 +197,10 @@ function renderizarPosts() {
   lucide.createIcons();
   ativarEventosDosPosts();
 }
+
+document.querySelectorAll(".comments-section").forEach((secao) => {
+  secao.classList.add("hidden");
+});
 
 // cria um novo post e salva
 function publicarNovoPost() {
@@ -265,48 +288,48 @@ function ativarEventosDosPosts() {
   todosPosts.forEach((postElemento) => {
     const postId = Number(postElemento.dataset.id);
 
-const likeBtn = postElemento.querySelector(".like-btn");
-const saveBtn = postElemento.querySelector(".save-btn");
-const commentToggleBtn = postElemento.querySelector(".comment-toggle-btn");
-const commentsSection = postElemento.querySelector(".comments-section");
-const commentInput = postElemento.querySelector(".comment-input");
-const commentSend = postElemento.querySelector(".comment-send");
+    const likeBtn = postElemento.querySelector(".like-btn");
+    const saveBtn = postElemento.querySelector(".save-btn");
+    const commentToggleBtn = postElemento.querySelector(".comment-toggle-btn");
+    const commentsSection = postElemento.querySelector(".comments-section");
+    const commentInput = postElemento.querySelector(".comment-input");
+    const commentSend = postElemento.querySelector(".comment-send");
 
-likeBtn.addEventListener("click", () => {
-  alternarLike(postId);
-});
+    likeBtn.addEventListener("click", () => {
+      alternarLike(postId);
+    });
 
-saveBtn.addEventListener("click", () => {
-  alternarSalvar(postId);
-});
+    saveBtn.addEventListener("click", () => {
+      alternarSalvar(postId);
+    });
 
-commentToggleBtn.addEventListener("click", () => {
-  commentsSection.classList.toggle("hidden");
-});
+    commentToggleBtn.addEventListener("click", () => {
+      commentsSection.classList.toggle("hidden");
+    });
 
-commentSend.addEventListener("click", () => {
-  const textoComentario = commentInput.value.trim();
+    commentSend.addEventListener("click", () => {
+      const textoComentario = commentInput.value.trim();
 
-  if (textoComentario === "") {
-    return;
-  }
+      if (textoComentario === "") {
+        return;
+      }
 
-  adicionarComentario(postId, textoComentario);
-});
+      adicionarComentario(postId, textoComentario);
+    });
 
-commentInput.addEventListener("keydown", (event) => {
-  if (event.key === "Enter") {
-    event.preventDefault();
+    commentInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
 
-    const textoComentario = commentInput.value.trim();
+        const textoComentario = commentInput.value.trim();
 
-    if (textoComentario === "") {
-      return;
-    }
+        if (textoComentario === "") {
+          return;
+        }
 
-    adicionarComentario(postId, textoComentario);
-  }
-});
+        adicionarComentario(postId, textoComentario);
+      }
+    });
     commentInput.addEventListener("keydown", (event) => {
       if (event.key === "Enter") {
         event.preventDefault();

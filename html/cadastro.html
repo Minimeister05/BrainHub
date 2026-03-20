@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BrainHUB | Cadastro</title>
-    <link rel="stylesheet" href="">
+    <link rel="stylesheet" href="../css/cadastro.css">
 </head>
 
 <body>
@@ -16,7 +16,7 @@
             <h1>BrainHub</h1>
         </div>
         <nav class="top-nav">
-            <a href="#">Início</a><a href="#">Sobre</a><a href="#">Suporte</a>
+            <a href="sobre.html">Sobre</a><a href="suporte.html">Suporte</a>
         </nav>
     </header>
 
@@ -32,7 +32,7 @@
                     <input type="text" id="reg-nome" placeholder="Seu Nome" required />
                 </div>
                 <div class="input-group">
-                    <label for="reg-email">E-mail</label>
+                    <label for="reg-email">Email</label>
                     <input type="text" id="reg-email" placeholder="email@pucpr.br" required />
                 </div>
                 <div class="input-group">
@@ -41,11 +41,10 @@
                 </div>
                 <button type="submit" class="login-button">Cadastrar</button>
             </form>
+            <p class="register-text">Já tem uma conta? <a href="login.html">Fazer login</a></p>
         </section>
-
     </main>
-
-
+    <script src="../scripts/auth.js"></script>
 </body>
 
 </html>
