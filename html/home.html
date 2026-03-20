@@ -3,35 +3,295 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BrainHUB | Início</title>
-  <link rel="stylesheet" href="../css/style.css" />
+  <title>BrainHUB | Home</title>
+  <link rel="stylesheet" href="../css/home.css" />
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
   <header class="topbar">
-    <div class="logo-area">
-      <div class="logo-circle">B</div>
-      <h1>BrainHUB</h1>
+    <div class="brand">
+      <div class="brand-icon">🧠</div>
+      <h1>Brain<span>HUB</span></h1>
     </div>
 
-    <nav class="top-nav">
-      <a href="#">Feed</a>
-      <a href="#">Grupos</a>
-      <a href="#">Perfil</a>
+    <nav class="main-nav">
+      <a href="#" class="active"><i data-lucide="house"></i> Feed</a>
+      <a href="#"><i data-lucide="users"></i> Grupos</a>
+      <a href="#"><i data-lucide="user"></i> Perfil</a>
     </nav>
+
+    <div class="top-actions">
+      <button class="icon-btn notification-btn">
+        <i data-lucide="bell"></i>
+        <span class="badge">3</span>
+      </button>
+      <button class="icon-btn">
+        <i data-lucide="search"></i>
+      </button>
+    </div>
   </header>
 
-  <main class="home-page">
-    <section class="welcome-card">
-      <h2>Bem-vindo ao BrainHUB</h2>
-      <p>
-        Você entrou com sucesso. Aqui vai ser a página inicial do sistema,
-        com posts, grupos, resumos e interações entre universitários.
-      </p>
+  <main class="layout">
+    <aside class="left-column">
+  <!-- card de perfil -->
+  <section class="profile-card card">
+    <div class="profile-banner"></div>
+    <div class="profile-avatar">LM</div>
+    <h2>Lucas Mendes</h2>
+    <p>Ciência da Computação • 5º período</p>
 
-      <button class="login-button" onclick="logout()">Sair</button>
+    <div class="profile-stats">
+      <div>
+        <strong>142</strong>
+        <span>POSTS</span>
+      </div>
+      <div>
+        <strong>89</strong>
+        <span>SEGUIDORES</span>
+      </div>
+      <div>
+        <strong>56</strong>
+        <span>SEGUINDO</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- menu lateral -->
+  <section class="menu-card card">
+    <button class="menu-item active">
+      <i data-lucide="user-round"></i>
+      Meu Perfil
+    </button>
+
+    <button class="menu-item">
+      <i data-lucide="file-text"></i>
+      Meus Posts
+    </button>
+
+    <button class="menu-item">
+      <i data-lucide="bookmark"></i>
+      Salvos
+    </button>
+
+    <button class="menu-item">
+      <i data-lucide="settings"></i>
+      Configurações
+    </button>
+  </section>
+
+  <!-- assuntos em alta -->
+  <section class="trending-card card">
+    <h3>
+      <i data-lucide="trending-up"></i>
+      Em Alta
+    </h3>
+
+    <ul>
+      <li>
+        <span>#</span>
+        Inteligência Artificial
+        <small>1.2k posts</small>
+      </li>
+      <li>
+        <span>#</span>
+        Cálculo III
+        <small>856 posts</small>
+      </li>
+      <li>
+        <span>#</span>
+        Estágio 2026
+        <small>634 posts</small>
+      </li>
+    </ul>
+  </section>
+</aside>
+
+    <section class="center-column">
+      <section class="create-post card">
+        <div class="create-top">
+          <div class="mini-avatar">LM</div>
+          <input type="text" id="postInput" placeholder="No que você está pensando?" />
+        </div>
+
+        <div class="create-bottom">
+          <div class="post-types">
+            <button><i data-lucide="image"></i> Imagem</button>
+            <button><i data-lucide="file"></i> Arquivo</button>
+            <button><i data-lucide="smile"></i> Humor</button>
+          </div>
+
+          <button class="publish-btn" id="publishBtn">Publicar</button>
+        </div>
+      </section>
+
+      <div class="feed-scroll" id="feedList">
+        <article class="post-card card">
+          <div class="post-header">
+            <div class="post-user">
+              <div class="mini-avatar">LM</div>
+              <div>
+                <h4>Lucas Mendes</h4>
+                <p>Ciência da Computação • 2h atrás</p>
+              </div>
+            </div>
+            <button class="icon-btn small"><i data-lucide="more-vertical"></i></button>
+          </div>
+
+          <h3>Alguém pode me ajudar com Estrutura de Dados?</h3>
+          <p class="post-text">
+            Estou com dificuldade em entender árvores AVL e balanceamento.
+            Alguém tem algum material bom ou pode explicar de forma simples?
+            Agradeço qualquer ajuda! 🌲
+          </p>
+
+          <div class="tags">
+            <span>Estrutura de Dados</span>
+            <span>Árvore AVL</span>
+            <span>Ajuda</span>
+          </div>
+
+          <div class="post-actions">
+            <button class="action-btn like-btn"><i data-lucide="thumbs-up"></i> <span>24</span></button>
+            <button class="action-btn"><i data-lucide="message-square"></i> <span>8</span></button>
+            <button class="action-btn"><i data-lucide="share-2"></i> <span>3</span></button>
+            <button class="action-btn save-btn right"><i data-lucide="bookmark"></i></button>
+          </div>
+        </article>
+
+        <article class="post-card card">
+          <div class="post-header">
+            <div class="post-user">
+              <div class="mini-avatar purple">AM</div>
+              <div>
+                <h4>Ana Martins</h4>
+                <p>Engenharia de Software • 5h atrás</p>
+              </div>
+            </div>
+            <button class="icon-btn small"><i data-lucide="more-vertical"></i></button>
+          </div>
+
+          <h3>Resumo completo de Banco de Dados Relacional 📚</h3>
+          <p class="post-text">
+            Galera, fiz um resumo bem detalhado sobre normalização, SQL avançado
+            e modelagem ER. Quem quiser, é só comentar que eu mando o link do PDF.
+          </p>
+
+          <div class="tags">
+            <span>Banco de Dados</span>
+            <span>Resumo</span>
+            <span>SQL</span>
+          </div>
+
+          <div class="post-actions">
+            <button class="action-btn like-btn"><i data-lucide="thumbs-up"></i> <span>67</span></button>
+            <button class="action-btn"><i data-lucide="message-square"></i> <span>23</span></button>
+            <button class="action-btn"><i data-lucide="share-2"></i> <span>12</span></button>
+            <button class="action-btn save-btn right"><i data-lucide="bookmark"></i></button>
+          </div>
+        </article>
+
+        <article class="post-card card">
+          <div class="post-header">
+            <div class="post-user">
+              <div class="mini-avatar green">RF</div>
+              <div>
+                <h4>Rafael Ferreira</h4>
+                <p>Sistemas de Informação • 7h atrás</p>
+              </div>
+            </div>
+            <button class="icon-btn small"><i data-lucide="more-vertical"></i></button>
+          </div>
+
+          <h3>Vale a pena aprender React antes de backend?</h3>
+          <p class="post-text">
+            Tô montando meu roadmap e queria saber se faz sentido focar em front
+            primeiro ou se já começo com Node junto. Quem já passou por isso?
+          </p>
+
+          <div class="tags">
+            <span>Carreira</span>
+            <span>React</span>
+            <span>Frontend</span>
+          </div>
+
+          <div class="post-actions">
+            <button class="action-btn like-btn"><i data-lucide="thumbs-up"></i> <span>18</span></button>
+            <button class="action-btn"><i data-lucide="message-square"></i> <span>11</span></button>
+            <button class="action-btn"><i data-lucide="share-2"></i> <span>2</span></button>
+            <button class="action-btn save-btn right"><i data-lucide="bookmark"></i></button>
+          </div>
+        </article>
+      </div>
     </section>
+
+    <aside class="right-column">
+      <section class="groups-card card">
+        <h3><i data-lucide="users-round"></i> Grupos Sugeridos</h3>
+
+        <div class="group-item">
+          <div class="group-icon purple-bg"><i data-lucide="cpu"></i></div>
+          <div class="group-info">
+            <strong>Programação & Dev</strong>
+            <small>2.4k membros</small>
+          </div>
+          <button>Entrar</button>
+        </div>
+
+        <div class="group-item">
+          <div class="group-icon green-bg"><i data-lucide="badge-dollar-sign"></i></div>
+          <div class="group-info">
+            <strong>Economia & Finanças</strong>
+            <small>1.8k membros</small>
+          </div>
+          <button>Entrar</button>
+        </div>
+
+        <div class="group-item">
+          <div class="group-icon orange-bg"><i data-lucide="book-open-text"></i></div>
+          <div class="group-info">
+            <strong>Direito & Legislação</strong>
+            <small>1.3k membros</small>
+          </div>
+          <button>Entrar</button>
+        </div>
+
+        <div class="group-item">
+          <div class="group-icon pink-bg"><i data-lucide="activity"></i></div>
+          <div class="group-info">
+            <strong>Medicina & Saúde</strong>
+            <small>3.1k membros</small>
+          </div>
+          <button>Entrar</button>
+        </div>
+
+        <div class="group-item">
+          <div class="group-icon blue-bg"><i data-lucide="star"></i></div>
+          <div class="group-info">
+            <strong>Engenharias</strong>
+            <small>2.7k membros</small>
+          </div>
+          <button>Entrar</button>
+        </div>
+      </section>
+
+      <section class="subjects-card card">
+        <h3><i data-lucide="book-open"></i> Matérias Populares</h3>
+        <div class="chips">
+          <span>Cálculo</span>
+          <span>Física</span>
+          <span>Algoritmos</span>
+          <span>Estatística</span>
+          <span>Redes</span>
+          <span>IA</span>
+          <span>Química</span>
+          <span>Biologia</span>
+          <span>Filosofia</span>
+          <span>Sociologia</span>
+        </div>
+      </section>
+    </aside>
   </main>
 
-  <script src="../scripts/script.js"></script>
+  <script src="../scripts/home.js"></script>
 </body>
 </html>
