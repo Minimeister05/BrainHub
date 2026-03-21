@@ -64,15 +64,14 @@ document.getElementById('btnFinish').addEventListener('click', () => {
     const periodo = document.getElementById('onbPeriodo').value;
     const bio     = document.getElementById('onbBio').value.trim();
 
-    localStorage.setItem('brainhub_perfil', JSON.stringify({
+    // CORRIGIDO: salva com o email do usuário
+    const sessaoAtual = JSON.parse(localStorage.getItem('brainhub_usuario_logado') || 'null');
+    localStorage.setItem(`brainhub_perfil_${sessaoAtual.email}`, JSON.stringify({
         nome, curso, periodo, bio, corAvatar: corSelecionada
     }));
 
-    const sessao = JSON.parse(localStorage.getItem('brainhub_usuario_logado') || 'null');
-    if (sessao) {
-        sessao.onboardingFeito = true;
-        localStorage.setItem('brainhub_usuario_logado', JSON.stringify(sessao));
-    }
+    sessaoAtual.onboardingFeito = true;
+    localStorage.setItem('brainhub_usuario_logado', JSON.stringify(sessaoAtual));
 
     const card = document.querySelector('.onboarding-card:not(.hidden)');
     card.style.opacity = '0';

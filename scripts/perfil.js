@@ -20,7 +20,7 @@ function mostrarToast(mensagem, tipo = 'success') {
 // ===== CARREGA DADOS =====
 function carregarDados() {
     const sessao = JSON.parse(localStorage.getItem('brainhub_usuario_logado') || 'null');
-    const perfil = JSON.parse(localStorage.getItem(PERFIL_KEY) || 'null');
+    const perfil = JSON.parse(localStorage.getItem(`brainhub_perfil_${sessao.email}`) || 'null');
 
     // Preenche info da conta
     if (sessao) {
@@ -78,7 +78,8 @@ function salvarPerfil() {
         return;
     }
 
-    localStorage.setItem(PERFIL_KEY, JSON.stringify({ nome, curso, periodo, bio, corAvatar }));
+    const sessaoAtual = JSON.parse(localStorage.getItem('brainhub_usuario_logado') || 'null');
+    localStorage.setItem(`brainhub_perfil_${sessaoAtual.email}`, JSON.stringify({ nome, curso, periodo, bio, corAvatar }));
 
     atualizarPreview({ nome, curso, periodo, bio, corAvatar });
     mostrarToast('Perfil salvo com sucesso! ✨', 'success');

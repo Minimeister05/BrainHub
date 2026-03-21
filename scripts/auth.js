@@ -60,7 +60,8 @@ if (loginForm) {
             localStorage.setItem('brainhub_usuario_logado', JSON.stringify({ nome: user.nome, email: user.email }));
             mostrarAviso(`Bem vindo, ${user.nome}!`, "success");
             setTimeout(() => {
-                const perfilExiste = localStorage.getItem('brainhub_perfil');
+                const chave = `brainhub_perfil_${user.email}`;
+                const perfilExiste = localStorage.getItem(chave);
                 if (!perfilExiste) {
                     window.location.href = "onboarding.html";
                 } else {
@@ -88,7 +89,7 @@ if (registerForm) {
         }
 
         const novosCadastros = JSON.parse(localStorage.getItem('usuarios_brainhub')) || [];
-        novosCadastros.push({nome, email, senha });
+        novosCadastros.push({nome, email, senha});
         localStorage.setItem('usuarios_brainhub', JSON.stringify(novosCadastros));
         
         mostrarAviso("Cadastrado! Redirecionando para login...", "success");
@@ -110,8 +111,8 @@ if (suporteForm) {
 
 function getUsuarioLogado() {
     const sessao = JSON.parse(localStorage.getItem('brainhub_usuario_logado') || 'null');
-    const perfil = JSON.parse(localStorage.getItem('brainhub_perfil') || 'null');
     if (!sessao) return null;
+    const perfil = JSON.parse(localStorage.getItem(`brainhub_perfil_${sessao.email}`) || 'null');
     return {
         nome: perfil?.nome || sessao.nome,
         email: sessao.email,
