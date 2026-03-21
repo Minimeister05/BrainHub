@@ -677,3 +677,76 @@ body {
   transform: translateY(-1px);
   transition: 0.2s ease;
 }
+/* ===== BANNER PRO NO FEED ===== */
+.pro-banner-feed {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: linear-gradient(135deg, rgba(28,20,56,0.95), rgba(20,16,40,0.95));
+  border: 1px solid rgba(124,92,255,0.4);
+  border-radius: 18px;
+  padding: 16px 20px;
+  box-shadow: 0 0 0 1px rgba(124,92,255,0.15), inset 0 1px 0 rgba(255,255,255,0.05);
+  animation: aparecerPost 0.4s ease;
+  flex-shrink: 0;
+}
+
+.pro-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.pro-banner-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: linear-gradient(135deg, #ffd700, #ff9900);
+  color: #1a1000;
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 5px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.pro-banner-left div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.pro-banner-left strong {
+  font-size: 0.9rem;
+  color: #e8e0ff;
+}
+
+.pro-banner-left span {
+  font-size: 0.8rem;
+  color: #8888aa;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pro-banner-btn {
+  background: linear-gradient(135deg, #8f72ff, #5d3df0);
+  color: white;
+  text-decoration: none;
+  padding: 9px 18px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: 0.2s;
+}
+
+.pro-banner-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(124,92,255,0.4);
+}

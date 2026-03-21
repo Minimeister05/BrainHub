@@ -9,25 +9,30 @@ function getPerfilAtual() {
     const curso = perfil?.curso || 'Sem curso definido';
     const periodo = perfil?.periodo || '';
     const corAvatar = perfil?.corAvatar || '';
-    const iniciais = nome.split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase();
+    const iniciais = nome.split(' ').map(p => p[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
     return { nome, curso, periodo, corAvatar, iniciais };
 }
 
 function aplicarPerfilNaHome() {
     const u = getPerfilAtual();
-
     const avatarEl = document.querySelector('.profile-avatar');
     const nomeEl   = document.querySelector('.profile-card h2');
     const subEl    = document.querySelector('.profile-card > p');
     if (avatarEl) { avatarEl.textContent = u.iniciais; avatarEl.className = `profile-avatar ${u.corAvatar}`; }
     if (nomeEl)   nomeEl.textContent = u.nome;
     if (subEl)    subEl.textContent  = [u.curso, u.periodo].filter(Boolean).join(' • ');
-
     const miniAvatar = document.querySelector('.create-top .mini-avatar');
     if (miniAvatar) { miniAvatar.textContent = u.iniciais; miniAvatar.className = `mini-avatar ${u.corAvatar}`; }
 }
 
 aplicarPerfilNaHome();
+
+// Esconde banner Pro se já for assinante
+if (localStorage.getItem('brainhub_pro') === 'true') {
+    const banner = document.getElementById('proBannerFeed');
+    if (banner) banner.style.display = 'none';
+}
+
 
 // referências principais da área de criação de post
 const publishBtn = document.getElementById("publishBtn");
@@ -37,7 +42,6 @@ const feedList = document.getElementById("feedList");
 // chave usada para salvar os posts no navegador
 const STORAGE_KEY = "brainhub_posts";
 
-localStorage.removeItem("brainhub_posts");
 
 // dados iniciais exibidos quando ainda não existe nada salvo
 const postsPadrao = [
@@ -219,8 +223,22 @@ function criarPostHTML(post) {
 // renderiza todos os posts no feed
 function renderizarPosts() {
   const posts = carregarPosts();
+  const isPro = localStorage.getItem('brainhub_pro') === 'true';
 
-  feedList.innerHTML = posts.map((post) => criarPostHTML(post)).join("");
+  const bannerHTML = isPro ? '' : `
+    <div class="pro-banner-feed">
+      <div class="pro-banner-left">
+        <span class="pro-banner-badge"><i data-lucide="crown"></i> Pro</span>
+        <div>
+          <strong>Destaque seus posts com o BrainHUB Pro</strong>
+          <span>Badge exclusivo, checkmark verificado e muito mais por R$ 14,90/mês</span>
+        </div>
+      </div>
+      <a href="planos.html" class="pro-banner-btn">Ver planos</a>
+    </div>
+  `;
+
+  feedList.innerHTML = bannerHTML + posts.map((post) => criarPostHTML(post)).join("");
 
   lucide.createIcons();
   ativarEventosDosPosts();
@@ -266,23 +284,34 @@ function publicarNovoPost() {
 function adicionarComentario(postId, textoComentario) {
   const posts = carregarPosts();
   const post = posts.find((item) => item.id === postId);
-
   if (!post) return;
 
-  post.comentarios.push({
-    autor: "Você",
-    texto: textoComentario
-  });
-
+  post.comentarios.push({ autor: "Você", texto: textoComentario });
   salvarPosts(posts);
-  renderizarPosts();
+
+  // Adiciona o comentário na tela sem rerenderizar o feed
+  const postEl = document.querySelector(`.post-card[data-id="${postId}"]`);
+  if (postEl) {
+    const lista = postEl.querySelector(".comments-list");
+    const novoItem = document.createElement("div");
+    novoItem.className = "comment-item";
+    novoItem.innerHTML = `<strong class="comment-author">Você</strong><p class="comment-text">${textoComentario}</p>`;
+    lista.appendChild(novoItem);
+
+    // Limpa o input
+    const input = postEl.querySelector(".comment-input");
+    if (input) input.value = "";
+
+    // Atualiza o contador
+    const countEl = postEl.querySelector(".comment-toggle-btn span");
+    if (countEl) countEl.textContent = post.comentarios.length;
+  }
 }
 
 // alterna like de um post específico
 function alternarLike(postId) {
   const posts = carregarPosts();
   const post = posts.find((item) => item.id === postId);
-
   if (!post) return;
 
   if (post.curtido) {
@@ -294,19 +323,34 @@ function alternarLike(postId) {
   }
 
   salvarPosts(posts);
-  renderizarPosts();
+
+  // Atualiza só o botão, sem rerenderizar o feed inteiro
+  const postEl = document.querySelector(`.post-card[data-id="${postId}"]`);
+  if (postEl) {
+    const btn = postEl.querySelector(".like-btn");
+    const count = postEl.querySelector(".like-btn span");
+    if (post.curtido) btn.classList.add("liked");
+    else btn.classList.remove("liked");
+    count.textContent = post.likes;
+  }
 }
 
 // alterna salvar de um post específico
 function alternarSalvar(postId) {
   const posts = carregarPosts();
   const post = posts.find((item) => item.id === postId);
-
   if (!post) return;
 
   post.salvo = !post.salvo;
   salvarPosts(posts);
-  renderizarPosts();
+
+  // Atualiza só o botão, sem rerenderizar o feed inteiro
+  const postEl = document.querySelector(`.post-card[data-id="${postId}"]`);
+  if (postEl) {
+    const btn = postEl.querySelector(".save-btn");
+    if (post.salvo) btn.classList.add("saved");
+    else btn.classList.remove("saved");
+  }
 }
 
 // conecta eventos dos botões existentes no feed

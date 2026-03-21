@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BrainHUB | Planos</title>
+  <link rel="stylesheet" href="../css/home.css" />
+  <link rel="stylesheet" href="../css/planos.css" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-icon">🧠</div>
+      <h1>Brain<span>HUB</span></h1>
+    </div>
+    <nav class="main-nav">
+      <a href="home.html"><i data-lucide="house"></i> Feed</a>
+      <a href="#"><i data-lucide="users"></i> Grupos</a>
+      <a href="chat.html"><i data-lucide="message-circle"></i> Mensagens</a>
+      <a href="perfil.html"><i data-lucide="user"></i> Perfil</a>
+    </nav>
+    <div class="top-actions">
+      <button class="icon-btn notification-btn">
+        <i data-lucide="bell"></i>
+        <span class="badge">3</span>
+      </button>
+      <button class="icon-btn"><i data-lucide="search"></i></button>
+    </div>
+  </header>
+
+  <main class="planos-page">
+
+    <!-- HERO -->
+    <div class="planos-hero">
+      <div class="hero-glow"></div>
+      <div class="hero-glow hero-glow-2"></div>
+
+      <div class="hero-badge">
+        <i data-lucide="zap"></i>
+        Desbloqueie o BrainHUB completo
+      </div>
+
+      <h1 class="hero-title">
+        Eleve sua<br/>
+        <span class="hero-gradient">experiência acadêmica</span>
+      </h1>
+
+      <p class="hero-sub">
+        Com o BrainHUB Pro você tem acesso a recursos exclusivos que vão
+        transformar como você estuda, colabora e se destaca na universidade.
+      </p>
+
+      <div class="plano-status" id="planoStatus"></div>
+    </div>
+
+    <!-- CARDS DE PLANOS -->
+    <div class="planos-grid">
+
+      <!-- PLANO GRATUITO -->
+      <div class="plano-card">
+        <div class="plano-header">
+          <div class="plano-icon free-icon">
+            <i data-lucide="user"></i>
+          </div>
+          <div>
+            <h2>Gratuito</h2>
+            <p>Para começar</p>
+          </div>
+        </div>
+
+        <div class="plano-preco">
+          <span class="preco-valor">R$ 0</span>
+          <span class="preco-periodo">para sempre</span>
+        </div>
+
+        <ul class="plano-features">
+          <li class="feat-ok"><i data-lucide="check"></i> Feed e posts ilimitados</li>
+          <li class="feat-ok"><i data-lucide="check"></i> Mensagens diretas</li>
+          <li class="feat-ok"><i data-lucide="check"></i> Grupos públicos</li>
+          <li class="feat-ok"><i data-lucide="check"></i> Perfil básico</li>
+          <li class="feat-no"><i data-lucide="x"></i> Badge Pro no perfil</li>
+          <li class="feat-no"><i data-lucide="x"></i> Checkmark verificado</li>
+          <li class="feat-no"><i data-lucide="x"></i> Cores exclusivas de avatar</li>
+          <li class="feat-no"><i data-lucide="x"></i> Posts em destaque</li>
+          <li class="feat-no"><i data-lucide="x"></i> Grupos exclusivos Pro</li>
+        </ul>
+
+        <button class="btn-plano btn-free" disabled>Plano atual</button>
+      </div>
+
+      <!-- PLANO PRO (destaque) -->
+      <div class="plano-card plano-pro">
+        <div class="pro-glow"></div>
+
+        <div class="pro-label">
+          <i data-lucide="crown"></i> Mais popular
+        </div>
+
+        <div class="plano-header">
+          <div class="plano-icon pro-icon">
+            <i data-lucide="crown"></i>
+          </div>
+          <div>
+            <h2>BrainHUB <span class="pro-text">Pro</span></h2>
+            <p>Para quem quer se destacar</p>
+          </div>
+        </div>
+
+        <div class="plano-preco">
+          <span class="preco-valor">R$ 14,90</span>
+          <span class="preco-periodo">/ mês</span>
+        </div>
+
+        <div class="preco-anual">
+          ou <strong>R$ 149,00/ano</strong> — economize 2 meses
+        </div>
+
+        <ul class="plano-features">
+          <li class="feat-ok"><i data-lucide="check"></i> Tudo do plano gratuito</li>
+          <li class="feat-ok pro-feat"><i data-lucide="crown"></i> Badge Pro no perfil e posts</li>
+          <li class="feat-ok pro-feat"><i data-lucide="badge-check"></i> Checkmark de verificado</li>
+          <li class="feat-ok pro-feat"><i data-lucide="palette"></i> 12 cores exclusivas de avatar</li>
+          <li class="feat-ok pro-feat"><i data-lucide="trending-up"></i> Posts destacados no feed</li>
+          <li class="feat-ok pro-feat"><i data-lucide="lock-open"></i> Grupos e canais exclusivos</li>
+          <li class="feat-ok pro-feat"><i data-lucide="star"></i> Suporte prioritário</li>
+          <li class="feat-ok pro-feat"><i data-lucide="gift"></i> Acesso antecipado a novidades</li>
+        </ul>
+
+        <button class="btn-plano btn-pro" id="btnAssinar">
+          <i data-lucide="zap"></i>
+          Assinar Pro — R$ 14,90/mês
+        </button>
+
+        <p class="cancel-text">Cancele a qualquer momento • Sem fidelidade</p>
+      </div>
+
+    </div>
+
+    <!-- COMPARATIVO DE FEATURES -->
+    <section class="features-section">
+      <h2 class="features-title">Por que assinar o Pro?</h2>
+
+      <div class="features-grid">
+
+        <div class="feature-item">
+          <div class="feature-icon" style="background: linear-gradient(135deg,#ffd700,#ff9900);">
+            <i data-lucide="crown"></i>
+          </div>
+          <h3>Badge Pro exclusivo</h3>
+          <p>Um selo dourado que aparece no seu perfil e em todos os seus posts, mostrando que você apoia a comunidade.</p>
+        </div>
+
+        <div class="feature-item">
+          <div class="feature-icon" style="background: linear-gradient(135deg,#6d8bff,#5367ff);">
+            <i data-lucide="badge-check"></i>
+          </div>
+          <h3>Perfil verificado</h3>
+          <p>Checkmark azul de verificação no seu nome, igual às grandes redes sociais. Sua identidade confirmada.</p>
+        </div>
+
+        <div class="feature-item">
+          <div class="feature-icon" style="background: linear-gradient(135deg,#ff6ec7,#b63cff);">
+            <i data-lucide="palette"></i>
+          </div>
+          <h3>Avatar personalizado</h3>
+          <p>12 cores e gradientes exclusivos para o seu avatar que só assinantes Pro podem usar.</p>
+        </div>
+
+        <div class="feature-item">
+          <div class="feature-icon" style="background: linear-gradient(135deg,#20d3ae,#10a47f);">
+            <i data-lucide="trending-up"></i>
+          </div>
+          <h3>Destaque no feed</h3>
+          <p>Seus posts ganham prioridade e são exibidos em destaque para mais pessoas no feed geral.</p>
+        </div>
+
+        <div class="feature-item">
+          <div class="feature-icon" style="background: linear-gradient(135deg,#ffb144,#ff6a33);">
+            <i data-lucide="lock-open"></i>
+          </div>
+          <h3>Grupos exclusivos</h3>
+          <p>Acesso a grupos fechados com conteúdo selecionado, oportunidades de estágio e networking avançado.</p>
+        </div>
+
+        <div class="feature-item">
+          <div class="feature-icon" style="background: linear-gradient(135deg,#8f72ff,#4e2edf);">
+            <i data-lucide="gift"></i>
+          </div>
+          <h3>Acesso antecipado</h3>
+          <p>Seja o primeiro a testar novos recursos do BrainHUB antes de todo mundo. Beta exclusivo Pro.</p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="faq-section">
+      <h2 class="features-title">Perguntas frequentes</h2>
+
+      <div class="faq-list">
+        <div class="faq-item">
+          <button class="faq-q">Como funciona o pagamento? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-a">O pagamento é mensal e pode ser feito via cartão de crédito, débito ou PIX. Você pode cancelar a qualquer momento sem taxas ou multas.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q">Posso cancelar quando quiser? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-a">Sim! Não há fidelidade. Ao cancelar, você mantém o Pro até o fim do período já pago, depois volta ao plano gratuito automaticamente.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q">O badge Pro aparece para todo mundo? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-a">Sim, o badge dourado e o checkmark ficam visíveis em seu perfil e em todos os posts que você publicar no feed.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q">Tem desconto para universitários? <i data-lucide="chevron-down"></i></button>
+          <div class="faq-a">O BrainHUB já é pensado para universitários com o preço mais acessível do mercado. Em breve, parcerias com instituições para descontos adicionais!</div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL DE ASSINATURA -->
+  <div class="modal-overlay hidden" id="modalOverlay">
+    <div class="modal-box" id="modalBox">
+      <button class="modal-close" id="modalClose"><i data-lucide="x"></i></button>
+
+      <div class="modal-icon"><i data-lucide="crown"></i></div>
+      <h2>Assinar BrainHUB Pro</h2>
+      <p class="modal-sub">R$ 14,90/mês — cancele quando quiser</p>
+
+      <div class="modal-beneficios">
+        <span><i data-lucide="check"></i> Badge Pro</span>
+        <span><i data-lucide="check"></i> Verificado</span>
+        <span><i data-lucide="check"></i> Destaque no feed</span>
+        <span><i data-lucide="check"></i> Grupos exclusivos</span>
+      </div>
+
+      <div class="modal-form">
+        <div class="modal-field">
+          <label>Nome no cartão</label>
+          <input type="text" id="modalNome" placeholder="Seu nome completo" />
+        </div>
+        <div class="modal-field">
+          <label>Número do cartão</label>
+          <input type="text" id="modalCartao" placeholder="0000 0000 0000 0000" maxlength="19" />
+        </div>
+        <div class="modal-row">
+          <div class="modal-field">
+            <label>Validade</label>
+            <input type="text" id="modalValidade" placeholder="MM/AA" maxlength="5" />
+          </div>
+          <div class="modal-field">
+            <label>CVV</label>
+            <input type="text" id="modalCvv" placeholder="123" maxlength="3" />
+          </div>
+        </div>
+
+        <button class="btn-confirmar" id="btnConfirmar">
+          <i data-lucide="lock"></i>
+          Confirmar assinatura — R$ 14,90/mês
+        </button>
+
+        <p class="modal-seguro">
+          <i data-lucide="shield-check"></i>
+          Pagamento seguro e criptografado
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast-container"></div>
+
+  <script src="../scripts/auth.js"></script>
+  <script src="../scripts/planos.js"></script>
+</body>
+</html>

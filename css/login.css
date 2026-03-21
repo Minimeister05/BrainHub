@@ -19,7 +19,8 @@ body {
   background: radial-gradient(circle at top, #1b1b24 0%, #111116 60%);
   color: var(--text);
   position: relative;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto  ;
 }
 
 /* Camada visual do fundo */

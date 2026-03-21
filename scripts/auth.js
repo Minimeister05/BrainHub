@@ -1,6 +1,3 @@
-// scripts/auth.js
-
-// Função para criar o aviso profissional
 function mostrarAviso(mensagem, tipo = 'info') {
     let container = document.getElementById('toast-container');
     
@@ -21,7 +18,6 @@ function mostrarAviso(mensagem, tipo = 'info') {
     }, 4000);
 }
 
-// Efeito de transição entre telas
 document.querySelectorAll('.register-text a').forEach(link => {
     link.addEventListener('click', function(e) {
         e.preventDefault();
@@ -40,7 +36,6 @@ document.querySelectorAll('.register-text a').forEach(link => {
     });
 });
 
-// Usuários padrões
 const usuariosFixos = [
     {nome: "RafaDEV", email: "rafa@gmail.com", senha: "1234"},
     {nome: "ErickDEV", email: "erick@gmail.com", senha: "5678"}
@@ -51,7 +46,6 @@ function getTodosUsuarios(){
     return [...usuariosFixos, ...cadastrados];
 }
 
-// Lógica de Login
 const loginForm = document.getElementById('loginForm');
 if (loginForm) {
     loginForm.addEventListener('submit', (e) => {
@@ -63,11 +57,15 @@ if (loginForm) {
         const user = lista.find(u => u.email === email && u.senha === senha);
 
         if(user) {
-            // Salva o usuário logado na sessão
             localStorage.setItem('brainhub_usuario_logado', JSON.stringify({ nome: user.nome, email: user.email }));
             mostrarAviso(`Bem vindo, ${user.nome}!`, "success");
             setTimeout(() => {
-                window.location.href = "home.html";
+                const perfilExiste = localStorage.getItem('brainhub_perfil');
+                if (!perfilExiste) {
+                    window.location.href = "onboarding.html";
+                } else {
+                    window.location.href = "home.html";
+                }
             }, 1200);
         } else {
             mostrarAviso("Email ou senha incorretos. Tente novamente!", "error");
@@ -75,7 +73,6 @@ if (loginForm) {
     });
 }
 
-// Lógica de Cadastro
 const registerForm = document.getElementById('registerForm');
 if (registerForm) {
     registerForm.addEventListener('submit', (e) => {
@@ -102,20 +99,15 @@ if (registerForm) {
     });
 }
 
-// logica suporte
 const suporteForm = document.getElementById('suporteForm');
 if (suporteForm) {
     suporteForm.addEventListener('submit', (e) => {
         e.preventDefault();
-
         mostrarAviso("Mensagem enviada com sucesso! Logo entraremos em contato.", "success");
-
         suporteForm.reset();
-    })
+    });
 }
 
-// ===== UTILITÁRIO GLOBAL DE PERFIL =====
-// Retorna o perfil completo do usuário logado (dados base + personalização)
 function getUsuarioLogado() {
     const sessao = JSON.parse(localStorage.getItem('brainhub_usuario_logado') || 'null');
     const perfil = JSON.parse(localStorage.getItem('brainhub_perfil') || 'null');
@@ -126,6 +118,6 @@ function getUsuarioLogado() {
         curso: perfil?.curso || '',
         periodo: perfil?.periodo || '',
         bio: perfil?.bio || '',
-        corAvatar: perfil?.corAvatar || 'av-default',
+        corAvatar: perfil?.corAvatar || '',
     };
 }
