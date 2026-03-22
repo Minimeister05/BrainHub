@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BrainHUB | Grupos</title>
+  <link rel="stylesheet" href="../css/home.css" />
+  <link rel="stylesheet" href="../css/grupos.css" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-icon">🧠</div>
+      <h1>Brain<span>HUB</span></h1>
+    </div>
+
+    <nav class="main-nav">
+      <a href="home.html"><i data-lucide="house"></i> Feed</a>
+      <a href="groups.html" class="active"><i data-lucide="users"></i> Grupos</a>
+      <a href="chat.html"><i data-lucide="message-circle"></i> Mensagens</a>
+      <a href="perfil.html"><i data-lucide="user"></i> Perfil</a>
+    </nav>
+
+    <div class="top-actions">
+      <button class="icon-btn notification-btn" onclick="window.location.href='notificacoes.html'">
+        <i data-lucide="bell"></i>
+        <span class="badge">3</span>
+      </button>
+      <button class="icon-btn"><i data-lucide="search"></i></button>
+    </div>
+  </header>
+
+  <main class="grupos-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="grupos-sidebar">
+      <div class="grupos-sidebar-header">
+        <h2>Grupos</h2>
+        <p>Suas comunidades acadêmicas</p>
+      </div>
+
+      <button class="btn-criar-grupo" id="btnCriarGrupo">
+        <i data-lucide="plus"></i> Criar novo grupo
+      </button>
+
+      <section class="meus-grupos-sidebar card">
+        <span class="feed-section-label" style="display:block;padding:10px 14px 6px">Meus grupos</span>
+
+        <div class="grupo-sidebar-item active">
+          <div class="grupo-mini-icon" style="background:rgba(124,92,255,0.15)">🧠</div>
+          <div class="grupo-mini-info">
+            <div class="grupo-mini-nome">Redes Complexas & IA</div>
+            <div class="grupo-mini-count">248 membros</div>
+          </div>
+          <span class="grupo-mini-badge">3</span>
+        </div>
+
+        <div class="grupo-sidebar-item">
+          <div class="grupo-mini-icon" style="background:rgba(32,211,174,0.1)">🧬</div>
+          <div class="grupo-mini-info">
+            <div class="grupo-mini-nome">NeuroComp Brasil</div>
+            <div class="grupo-mini-count">1.2k membros</div>
+          </div>
+        </div>
+
+        <div class="grupo-sidebar-item">
+          <div class="grupo-mini-icon" style="background:rgba(255,177,68,0.1)">📊</div>
+          <div class="grupo-mini-info">
+            <div class="grupo-mini-nome">Ciência de Dados USP</div>
+            <div class="grupo-mini-count">567 membros</div>
+          </div>
+          <span class="grupo-mini-badge">1</span>
+        </div>
+
+        <div class="grupo-sidebar-item">
+          <div class="grupo-mini-icon" style="background:rgba(109,139,255,0.12)">🔬</div>
+          <div class="grupo-mini-info">
+            <div class="grupo-mini-nome">Open Science BR</div>
+            <div class="grupo-mini-count">3.4k membros</div>
+          </div>
+        </div>
+
+        <div class="grupo-sidebar-item">
+          <div class="grupo-mini-icon" style="background:rgba(255,75,110,0.1)">🧪</div>
+          <div class="grupo-mini-info">
+            <div class="grupo-mini-nome">Bioquímica Avançada</div>
+            <div class="grupo-mini-count">412 membros</div>
+          </div>
+        </div>
+      </section>
+    </aside>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main class="grupos-main">
+
+      <!-- Grupo destaque -->
+      <div class="grupo-destaque">
+        <div class="grupo-destaque-banner">
+          <span class="grupo-destaque-badge"><i data-lucide="star" style="width:10px;height:10px"></i> Em destaque</span>
+          <span style="position:relative;z-index:1;filter:drop-shadow(0 0 20px rgba(124,92,255,0.5))">🔬</span>
+        </div>
+        <div class="grupo-destaque-body">
+          <div>
+            <h3>Open Science Brasil</h3>
+            <p>A maior comunidade de ciência aberta do Brasil. Discutimos reprodutibilidade, acesso aberto, dados abertos e o futuro da pesquisa científica no país.</p>
+            <div class="grupo-destaque-meta">
+              <div class="grupo-destaque-stat"><strong>3.4k</strong> membros</div>
+              <div class="grupo-destaque-stat"><strong>127</strong> posts esta semana</div>
+              <div class="grupo-destaque-stat">
+                <span class="ativo-dot"></span> Ativo agora
+              </div>
+            </div>
+          </div>
+          <button class="btn-entrar" id="btnDestaque" onclick="toggleEntrar(this)">Participar</button>
+        </div>
+      </div>
+
+      <!-- Meus grupos scroll -->
+      <div>
+        <div class="section-row">
+          <h3>Meus grupos</h3>
+          <button class="btn-ver-todos">Ver todos</button>
+        </div>
+        <div class="meus-grupos-scroll" style="margin-top:12px">
+          <div class="meu-grupo-card">
+            <div class="meu-grupo-icon" style="background:rgba(124,92,255,0.15)">🧠</div>
+            <div class="meu-grupo-nome">Redes Complexas & IA</div>
+            <div class="meu-grupo-meta"><i data-lucide="users" style="width:11px;height:11px"></i> 248 membros</div>
+            <span class="meu-grupo-new">3 novas mensagens</span>
+          </div>
+          <div class="meu-grupo-card">
+            <div class="meu-grupo-icon" style="background:rgba(32,211,174,0.1)">🧬</div>
+            <div class="meu-grupo-nome">NeuroComp Brasil</div>
+            <div class="meu-grupo-meta"><i data-lucide="users" style="width:11px;height:11px"></i> 1.2k membros</div>
+          </div>
+          <div class="meu-grupo-card">
+            <div class="meu-grupo-icon" style="background:rgba(255,177,68,0.1)">📊</div>
+            <div class="meu-grupo-nome">Ciência de Dados USP</div>
+            <div class="meu-grupo-meta"><i data-lucide="users" style="width:11px;height:11px"></i> 567 membros</div>
+            <span class="meu-grupo-new">1 nova mensagem</span>
+          </div>
+          <div class="meu-grupo-card">
+            <div class="meu-grupo-icon" style="background:rgba(109,139,255,0.12)">🔬</div>
+            <div class="meu-grupo-nome">Open Science BR</div>
+            <div class="meu-grupo-meta"><i data-lucide="users" style="width:11px;height:11px"></i> 3.4k membros</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Explorar -->
+      <div>
+        <div class="section-row">
+          <h3>Explorar grupos</h3>
+          <div style="display:flex;gap:6px">
+            <button class="btn-ver-todos active" onclick="setViewFiltro(this)">Populares</button>
+            <button class="btn-ver-todos" onclick="setViewFiltro(this)">Novos</button>
+            <button class="btn-ver-todos" onclick="setViewFiltro(this)">Recomendados</button>
+          </div>
+        </div>
+
+        <div class="categoria-pills" style="margin-top:12px">
+          <button class="categoria-pill active" onclick="setCategoria(this)">🔍 Todos</button>
+          <button class="categoria-pill" onclick="setCategoria(this)">🧠 Neurociência</button>
+          <button class="categoria-pill" onclick="setCategoria(this)">💻 Computação</button>
+          <button class="categoria-pill" onclick="setCategoria(this)">🧬 Biologia</button>
+          <button class="categoria-pill" onclick="setCategoria(this)">📐 Exatas</button>
+          <button class="categoria-pill" onclick="setCategoria(this)">🌍 Humanas</button>
+          <button class="categoria-pill" onclick="setCategoria(this)">⚗️ Química</button>
+        </div>
+      </div>
+
+      <!-- Grid de grupos -->
+      <div class="grupos-grid" id="gruposGrid">
+
+        <div class="grupo-card">
+          <div class="grupo-card-banner" style="background:linear-gradient(135deg,#1a1040,#2d1b69)">
+            <div style="position:absolute;inset:0;background:radial-gradient(circle at 30% 50%,rgba(124,92,255,0.3),transparent)"></div>
+            <span style="position:relative;z-index:1">🧠</span>
+          </div>
+          <div class="grupo-card-body">
+            <div class="grupo-card-nome">Neurociência Computacional</div>
+            <div class="grupo-card-tags">
+              <span class="grupo-card-tag">Neuroimagem</span>
+              <span class="grupo-card-tag">fMRI</span>
+              <span class="grupo-card-tag">Modelagem</span>
+            </div>
+            <div class="grupo-card-desc">Debates sobre modelos computacionais do cérebro, análise de dados de neuroimagem e interfaces cérebro-computador.</div>
+            <div class="grupo-card-ultimo">💬 "Alguém testou o novo pipeline do FSL 6.0 com dados HCP?"</div>
+            <div class="grupo-card-footer">
+              <div class="grupo-membros">
+                <div class="avatar-stack">
+                  <div class="avatar-stack-item" style="background:linear-gradient(135deg,#8f72ff,#4e2edf)">MA</div>
+                  <div class="avatar-stack-item" style="background:linear-gradient(135deg,#20d3ae,#10a47f)">RC</div>
+                  <div class="avatar-stack-item" style="background:linear-gradient(135deg,#ffb144,#ff6a33)">JL</div>
+                </div>
+                <span class="grupo-membros-count">+892</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div class="grupo-ativo"><span class="ativo-dot"></span>Ativo</div>
+                <button class="btn-entrar-card" onclick="toggleEntrarCard(this)">Participar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grupo-card">
+          <div class="grupo-card-banner" style="background:linear-gradient(135deg,#0a2540,#0d3b2e)">
+            <div style="position:absolute;inset:0;background:radial-gradient(circle at 70% 40%,rgba(32,211,174,0.25),transparent)"></div>
+            <span style="position:relative;z-index:1">🌿</span>
+          </div>
+          <div class="grupo-card-body">
+            <div class="grupo-card-nome">Ecologia & Modelagem Climática</div>
+            <div class="grupo-card-tags">
+              <span class="grupo-card-tag">Biodiversidade</span>
+              <span class="grupo-card-tag">R</span>
+              <span class="grupo-card-tag">GIS</span>
+            </div>
+            <div class="grupo-card-desc">Modelagem de distribuição de espécies, mudanças climáticas e análise de dados ambientais.</div>
+            <div class="grupo-card-ultimo">💬 "Comparando MaxEnt vs BioClim para modelagem de nicho"</div>
+            <div class="grupo-card-footer">
+              <div class="grupo-membros">
+                <div class="avatar-stack">
+                  <div class="avatar-stack-item" style="background:linear-gradient(135deg,#20d3ae,#10a47f)">TM</div>
+                  <div class="avatar-stack-item" style="background:linear-gradient(135deg,#6d8bff,#5367ff)">PS</div>
+                </div>
+                <span class="grupo-membros-count">+634</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div class="grupo-ativo"><span class="ativo-dot"></span>Ativo</div>
+                <button class="btn-entrar-card participando" onclick="toggleEntrarCard(this)">Participando</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grupo-card">
+          <div class="grupo-card-banner" style="background:linear-gradient(135deg,#1a0a2e,#2e1065)">
+            <div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,rgba(139,92,246,0.3),transparent)"></div>
+            <span style="position:relative;z-index:1">⚛️</span>
+          </div>
+          <div class="grupo-card-body">
+            <div class="grupo-card-nome">Física Quântica Aplicada</div>
+            <div class="grupo-card-tags">
+              <span class="grupo-card-tag">Qiskit</span>
+              <span class="grupo-card-tag">Emaranhamento</span>
+              <span class="grupo-card-tag">Criptografia</span>
+            </div>
+            <div class="grupo-card-desc">Computação quântica, criptografia quântica e aplicações emergentes de tecnologias quânticas.</div>
+            <div class="grupo-card-ultimo">💬 "IBM liberou acesso ao Eagle r3 de 127 qubits para pesquisa"</div>
+            <div class="grupo-card-footer">
+              <div class="grupo-membros">
+                <div class="avatar-stack">
+                  <div class="avatar-stack-item" style="background:linear-gradient(135deg,#a78bfa,#ec4899)">LF</div>
+                </div>
+                <span class="grupo-membros-count">+1.1k</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div class="grupo-ativo"><span class="ativo-dot"></span>Ativo</div>
+                <button class="btn-entrar-card" onclick="toggleEntrarCard(this)">Participar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grupo-card">
+          <div class="grupo-card-banner" style="background:linear-gradient(135deg,#1a1200,#2d2200)">
+            <div style="position:absolute;inset:0;background:radial-gradient(circle at 40% 60%,rgba(255,177,68,0.2),transparent)"></div>
+            <span style="position:relative;z-index:1">📖</span>
+          </div>
+          <div class="grupo-card-body">
+            <div class="grupo-card-nome">Metodologia Científica & Peer Review</div>
+            <div class="grupo-card-tags">
+              <span class="grupo-card-tag">Reprodutibilidade</span>
+              <span class="grupo-card-tag">Meta-análise</span>
+            </div>
+            <div class="grupo-card-desc">Como melhorar a qualidade da pesquisa brasileira. Debates sobre p-hacking, viés de publicação e boas práticas.</div>
+            <div class="grupo-card-ultimo">💬 "Por que 70% dos estudos de psicologia não replicam?"</div>
+            <div class="grupo-card-footer">
+              <div class="grupo-membros">
+                <div class="avatar-stack">
+                  <div class="avatar-stack-item" style="background:linear-gradient(135deg,#ffb144,#ff6a33)">+</div>
+                </div>
+                <span class="grupo-membros-count">+2.3k</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div class="grupo-ativo"><span class="ativo-dot"></span>Ativo</div>
+                <button class="btn-entrar-card" onclick="toggleEntrarCard(this)">Participar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grupo-card">
+          <div class="grupo-card-banner" style="background:linear-gradient(135deg,#0a1520,#0d2235)">
+            <div style="position:absolute;inset:0;background:radial-gradient(circle at 60% 40%,rgba(109,139,255,0.25),transparent)"></div>
+            <span style="position:relative;z-index:1">🤖</span>
+          </div>
+          <div class="grupo-card-body">
+            <div class="grupo-card-nome">Machine Learning para Pesquisa</div>
+            <div class="grupo-card-tags">
+              <span class="grupo-card-tag">PyTorch</span>
+              <span class="grupo-card-tag">LLMs</span>
+              <span class="grupo-card-tag">Computer Vision</span>
+            </div>
+            <div class="grupo-card-desc">Aplicações de ML em problemas científicos: bioinformática, física, química computacional e mais.</div>
+            <div class="grupo-card-ultimo">💬 "AlphaFold 3 rodando localmente — guia passo a passo"</div>
+            <div class="grupo-card-footer">
+              <div class="grupo-membros">
+                <div class="avatar-stack">
+                  <div class="avatar-stack-item" style="background:linear-gradient(135deg,#8f72ff,#4e2edf)">VS</div>
+                  <div class="avatar-stack-item" style="background:linear-gradient(135deg,#20d3ae,#10a47f)">RC</div>
+                </div>
+                <span class="grupo-membros-count">+4.2k</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div class="grupo-ativo"><span class="ativo-dot"></span>Ativo</div>
+                <button class="btn-entrar-card participando" onclick="toggleEntrarCard(this)">Participando</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grupo-card">
+          <div class="grupo-card-banner" style="background:linear-gradient(135deg,#0a1a0a,#0d2d1a)">
+            <div style="position:absolute;inset:0;background:radial-gradient(circle at 35% 55%,rgba(32,211,174,0.2),transparent)"></div>
+            <span style="position:relative;z-index:1">🧬</span>
+          </div>
+          <div class="grupo-card-body">
+            <div class="grupo-card-nome">Bioinformática & Genômica</div>
+            <div class="grupo-card-tags">
+              <span class="grupo-card-tag">CRISPR</span>
+              <span class="grupo-card-tag">RNA-seq</span>
+              <span class="grupo-card-tag">Python</span>
+            </div>
+            <div class="grupo-card-desc">Análise de sequências genômicas, transcriptômica, proteômica e ferramentas bioinformáticas.</div>
+            <div class="grupo-card-ultimo">💬 "Tutorial: pipeline Snakemake para análise de WGS"</div>
+            <div class="grupo-card-footer">
+              <div class="grupo-membros">
+                <div class="avatar-stack">
+                  <div class="avatar-stack-item" style="background:linear-gradient(135deg,#20d3ae,#3b82f6)">LF</div>
+                  <div class="avatar-stack-item" style="background:linear-gradient(135deg,#ffb144,#ff6a33)">JL</div>
+                </div>
+                <span class="grupo-membros-count">+1.8k</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div class="grupo-ativo"><span class="ativo-dot"></span>Ativo</div>
+                <button class="btn-entrar-card" onclick="toggleEntrarCard(this)">Participar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- fim gruposGrid -->
+    </main>
+  </main>
+
+  <div id="toast-container"></div>
+
+  <script src="../scripts/auth.js"></script>
+  <script src="../scripts/grupos.js"></script>
+</body>
+</html>

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BrainHUB | Feed Acadêmico</title>
+  <link rel="stylesheet" href="../css/home.css" />
+  <link rel="stylesheet" href="../css/feed.css" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-icon">🧠</div>
+      <h1>Brain<span>HUB</span></h1>
+    </div>
+
+    <nav class="main-nav">
+      <a href="home.html"><i data-lucide="house"></i> Feed</a>
+      <a href="groups.html" class="active"><i data-lucide="users"></i> Grupos</a>
+      <a href="chat.html"><i data-lucide="message-circle"></i> Mensagens</a>
+      <a href="perfil.html"><i data-lucide="user"></i> Perfil</a>
+    </nav>
+
+    <div class="top-actions">
+      <button class="icon-btn notification-btn" onclick="window.location.href='notificacoes.html'">
+        <i data-lucide="bell"></i>
+        <span class="badge" id="notifBadge">7</span>
+      </button>
+      <button class="icon-btn">
+        <i data-lucide="search"></i>
+      </button>
+    </div>
+  </header>
+
+  <main class="feed-layout">
+
+    <!-- SIDEBAR ESQUERDA -->
+    <aside class="feed-left">
+
+      <!-- Mini perfil -->
+      <section class="mini-profile-card card">
+        <div class="mini-profile-banner"></div>
+        <div class="mini-profile-avatar" id="feedAvatar">LM</div>
+        <h3 id="feedNome">Lucas Mendes</h3>
+        <p id="feedCurso">Ciência da Computação • 5º período</p>
+        <div class="mini-stats">
+          <div><strong>142</strong><span>POSTS</span></div>
+          <div><strong>89</strong><span>SEGUIDORES</span></div>
+          <div><strong>56</strong><span>SEGUINDO</span></div>
+        </div>
+      </section>
+
+      <!-- Menu -->
+      <section class="feed-menu-card card">
+        <span class="feed-section-label">Navegar</span>
+        <button class="feed-menu-item active">
+          <i data-lucide="rss"></i> Feed Acadêmico
+        </button>
+        <button class="feed-menu-item" onclick="window.location.href='home.html'">
+          <i data-lucide="house"></i> Home
+        </button>
+        <button class="feed-menu-item" onclick="window.location.href='groups.html'">
+          <i data-lucide="users"></i> Grupos
+        </button>
+        <button class="feed-menu-item" onclick="window.location.href='notificacoes.html'">
+          <i data-lucide="bell"></i> Notificações
+          <span class="feed-menu-badge" id="menuBadge">7</span>
+        </button>
+        <button class="feed-menu-item">
+          <i data-lucide="bookmark"></i> Salvos
+        </button>
+
+        <span class="feed-section-label" style="margin-top:8px">Área</span>
+        <button class="feed-menu-item">🧬 Biologia</button>
+        <button class="feed-menu-item">💻 Computação</button>
+        <button class="feed-menu-item">📐 Matemática</button>
+        <button class="feed-menu-item">🧪 Química</button>
+      </section>
+
+    </aside>
+
+    <!-- FEED CENTRAL -->
+    <section class="feed-center">
+
+      <!-- Compose box (reaproveitando estilos do home) -->
+      <section class="create-post card" style="flex-shrink:0">
+        <div class="create-top">
+          <div class="mini-avatar" id="composeAvatar">LM</div>
+          <input type="text" id="feedPostInput" placeholder="Compartilhe uma descoberta, artigo ou reflexão acadêmica..." />
+        </div>
+        <div class="create-bottom">
+          <div class="post-types">
+            <button><i data-lucide="file-text"></i> Artigo</button>
+            <button><i data-lucide="image"></i> Imagem</button>
+            <button><i data-lucide="link"></i> Link</button>
+          </div>
+          <button class="publish-btn" id="feedPublishBtn">Publicar</button>
+        </div>
+      </section>
+
+      <!-- Filtros -->
+      <div class="feed-filters-row" style="flex-shrink:0">
+        <button class="feed-filter-chip active" data-filtro="para-voce">Para você</button>
+        <button class="feed-filter-chip" data-filtro="seguindo">Seguindo</button>
+        <button class="feed-filter-chip" data-filtro="artigos">Artigos</button>
+        <button class="feed-filter-chip" data-filtro="discussoes">Discussões</button>
+        <button class="feed-filter-chip" data-filtro="projetos">Projetos</button>
+        <button class="feed-filter-chip" data-filtro="eventos">Eventos</button>
+      </div>
+
+      <!-- Posts -->
+      <div class="feed-scroll-area" id="feedAcadList">
+
+        <!-- Post em destaque (estático) -->
+        <article class="feed-post-card destaque">
+          <div class="destaque-label"><i data-lucide="star" style="width:10px;height:10px"></i> Em destaque</div>
+          <div class="feed-post-header">
+            <div class="mini-avatar purple">MA</div>
+            <div class="feed-post-meta">
+              <div class="feed-post-name">Mariana Alves <i data-lucide="badge-check" style="width:14px;height:14px;color:#bcaeff"></i></div>
+              <div class="feed-post-role">Dra. em Neurociência · USP</div>
+            </div>
+            <span class="feed-post-time">2h</span>
+            <button class="icon-btn"><i data-lucide="more-vertical"></i></button>
+          </div>
+
+          <div class="feed-tags">
+            <span class="feed-tag">Neurociência</span>
+            <span class="feed-tag tipo">📄 Artigo</span>
+          </div>
+
+          <div class="feed-post-body">
+            Acabamos de publicar nosso estudo sobre <strong>plasticidade sináptica em modelos de Alzheimer precoce</strong>.
+            Foram 3 anos de pesquisa e os resultados contradizem o modelo dominante dos últimos 10 anos. 🧠
+          </div>
+
+          <div class="article-preview">
+            <div class="article-icon"><i data-lucide="file-text"></i></div>
+            <div>
+              <div class="article-title">Synaptic Plasticity Disruption in Early-Stage Alzheimer's: A New Model</div>
+              <div class="article-journal">Nature Neuroscience · 2025 · DOI: 10.1038/nn.2025.041</div>
+            </div>
+          </div>
+
+          <div class="feed-post-actions">
+            <button class="feed-action-btn liked feed-like-btn" data-likes="248">
+              <i data-lucide="thumbs-up"></i> <span>248</span>
+            </button>
+            <button class="feed-action-btn feed-comment-btn">
+              <i data-lucide="message-square"></i> <span>63</span>
+            </button>
+            <button class="feed-action-btn">
+              <i data-lucide="share-2"></i> <span>31</span>
+            </button>
+            <button class="feed-action-btn saved right feed-save-btn">
+              <i data-lucide="bookmark"></i>
+            </button>
+          </div>
+        </article>
+
+        <!-- Posts dinâmicos -->
+        <div id="feedDinamicoAcad"></div>
+
+      </div>
+    </section>
+
+    <!-- SIDEBAR DIREITA -->
+    <aside class="feed-right">
+
+      <!-- Trending -->
+      <section class="trending-feed-card card">
+        <h3><i data-lucide="trending-up"></i> Trending hoje</h3>
+        <div class="trend-feed-item">
+          <span class="trend-feed-rank">1</span>
+          <div class="trend-feed-info">
+            <div class="trend-feed-name">#PlasticidadeSináptica</div>
+            <div class="trend-feed-count">342 publicações</div>
+          </div>
+        </div>
+        <div class="trend-feed-item">
+          <span class="trend-feed-rank">2</span>
+          <div class="trend-feed-info">
+            <div class="trend-feed-name">#LLMsCientíficos</div>
+            <div class="trend-feed-count">218 publicações</div>
+          </div>
+        </div>
+        <div class="trend-feed-item">
+          <span class="trend-feed-rank">3</span>
+          <div class="trend-feed-info">
+            <div class="trend-feed-name">#MudançaClimática</div>
+            <div class="trend-feed-count">197 publicações</div>
+          </div>
+        </div>
+        <div class="trend-feed-item">
+          <span class="trend-feed-rank">4</span>
+          <div class="trend-feed-info">
+            <div class="trend-feed-name">#PeerReview2025</div>
+            <div class="trend-feed-count">154 publicações</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Sugestões -->
+      <section class="sugestoes-card card">
+        <h3><i data-lucide="user-plus"></i> Sugestões</h3>
+        <div class="sugestao-item">
+          <div class="mini-avatar">PS</div>
+          <div class="sugestao-info">
+            <div class="sugestao-nome">Pedro Souza</div>
+            <div class="sugestao-role">Físico · INPE</div>
+          </div>
+          <button class="sugestao-btn" onclick="toggleSeguir(this)">Seguir</button>
+        </div>
+        <div class="sugestao-item">
+          <div class="mini-avatar green">LF</div>
+          <div class="sugestao-info">
+            <div class="sugestao-nome">Lara Ferreira</div>
+            <div class="sugestao-role">Bioquímica · UFMG</div>
+          </div>
+          <button class="sugestao-btn" onclick="toggleSeguir(this)">Seguir</button>
+        </div>
+        <div class="sugestao-item">
+          <div class="mini-avatar purple">TM</div>
+          <div class="sugestao-info">
+            <div class="sugestao-nome">Thiago Melo</div>
+            <div class="sugestao-role">Economista · FGV</div>
+          </div>
+          <button class="sugestao-btn seguindo" onclick="toggleSeguir(this)">Seguindo</button>
+        </div>
+      </section>
+
+      <!-- Eventos -->
+      <section class="eventos-card card">
+        <h3><i data-lucide="calendar"></i> Próximos eventos</h3>
+        <div class="evento-item">
+          <div class="evento-data"><strong>28</strong><span>Mar</span></div>
+          <div class="evento-info">
+            <div class="evento-nome">SBNeC 2025</div>
+            <div class="evento-local">Neurociências · Online</div>
+          </div>
+        </div>
+        <div class="evento-item">
+          <div class="evento-data"><strong>04</strong><span>Abr</span></div>
+          <div class="evento-info">
+            <div class="evento-nome">Workshop IA na Saúde</div>
+            <div class="evento-local">UNIFESP · São Paulo</div>
+          </div>
+        </div>
+      </section>
+
+    </aside>
+  </main>
+
+  <div id="toast-container"></div>
+
+  <script src="../scripts/auth.js"></script>
+  <script src="../scripts/feed.js"></script>
+</body>
+</html>

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BrainHUB | Notificações</title>
+  <link rel="stylesheet" href="../css/home.css" />
+  <link rel="stylesheet" href="../css/notificacoes.css" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-icon">🧠</div>
+      <h1>Brain<span>HUB</span></h1>
+    </div>
+    <nav class="main-nav">
+      <a href="home.html"><i data-lucide="house"></i> Feed</a>
+      <a href="grupos.html"><i data-lucide="users"></i> Grupos</a>
+      <a href="chat.html"><i data-lucide="message-circle"></i> Mensagens</a>
+      <a href="perfil.html"><i data-lucide="user"></i> Perfil</a>
+    </nav>
+    <div class="top-actions">
+      <button class="icon-btn notification-btn">
+        <i data-lucide="bell"></i>
+        <span class="badge" id="notifBadge">7</span>
+      </button>
+      <button class="icon-btn"><i data-lucide="search"></i></button>
+    </div>
+  </header>
+
+  <main class="notif-page">
+    <div class="notif-container">
+
+      <div class="notif-header">
+        <div>
+          <h2>Notificações</h2>
+          <p id="notifSubtitle">7 novas desde sua última visita</p>
+        </div>
+        <div class="notif-header-btns">
+          <button class="btn-notif-ghost" id="btnMarcarTodas">Marcar todas como lidas</button>
+          <button class="btn-notif-ghost" id="btnLimparLidas">Limpar lidas</button>
+        </div>
+      </div>
+
+      <div class="notif-summary">
+        <div class="notif-summary-box"><div class="sum-icon">👍</div><strong>24</strong><span>Curtidas</span></div>
+        <div class="notif-summary-box"><div class="sum-icon">💬</div><strong>8</strong><span>Comentários</span></div>
+        <div class="notif-summary-box"><div class="sum-icon">👥</div><strong>3</strong><span>Seguidores</span></div>
+        <div class="notif-summary-box"><div class="sum-icon">📑</div><strong>5</strong><span>Citações</span></div>
+      </div>
+
+      <div class="notif-tabs">
+        <button class="notif-tab active" data-tab="todas">Todas <span class="notif-tab-count" id="countTodas">7</span></button>
+        <button class="notif-tab" data-tab="interacoes">Interações <span class="notif-tab-count" id="countInter">4</span></button>
+        <button class="notif-tab" data-tab="academicas">Acadêmicas <span class="notif-tab-count" id="countAcad">3</span></button>
+        <button class="notif-tab" data-tab="sistema">Sistema <span class="notif-tab-count zero" id="countSist">2</span></button>
+      </div>
+
+      <div class="notif-bulk-bar">
+        <span>Mostrando <strong id="filtroAtivo" style="color:var(--text)">todas</strong> as notificações</span>
+      </div>
+
+      <div id="notifList">
+
+        <!-- HOJE -->
+        <div class="notif-group">
+          <div class="notif-group-label">Hoje</div>
+
+          <div class="notif-card nao-lida" data-tipo="academicas">
+            <div class="notif-avatar-wrap">
+              <div class="mini-avatar" style="width:44px;height:44px;font-size:0.9rem">JL</div>
+              <div class="notif-tipo-icon tipo-cite">📑</div>
+            </div>
+            <div class="notif-content">
+              <div class="notif-text"><strong>Julia Lopes</strong> citou seu artigo <span class="notif-link">"Métodos de análise topológica em redes neurais"</span> em uma nova publicação.</div>
+              <div class="notif-meta">
+                <span class="notif-tempo">agora há pouco</span>
+                <span class="notif-preview-text">"Conforme demonstrado por Souza et al. (2024)..."</span>
+              </div>
+              <div class="notif-actions">
+                <button class="notif-btn primary">Ver citação</button>
+                <button class="notif-btn">Ver artigo original</button>
+              </div>
+            </div>
+            <div class="notif-dot"></div>
+          </div>
+
+          <div class="notif-card nao-lida" data-tipo="interacoes">
+            <div class="notif-avatar-wrap">
+              <div class="mini-avatar purple" style="width:44px;height:44px;font-size:0.9rem">PS</div>
+              <div class="notif-tipo-icon tipo-follow">👥</div>
+            </div>
+            <div class="notif-content">
+              <div class="notif-text"><strong>Pedro Souza</strong> começou a te seguir. Ele é pesquisador do <span class="notif-link">INPE</span>.</div>
+              <div class="notif-meta"><span class="notif-tempo">há 23 min</span></div>
+              <div class="notif-actions">
+                <button class="notif-btn primary" onclick="this.textContent='Seguindo ✓'; this.classList.remove('primary')">Seguir de volta</button>
+                <button class="notif-btn">Ver perfil</button>
+              </div>
+            </div>
+            <div class="notif-dot"></div>
+          </div>
+
+          <div class="notif-card nao-lida" data-tipo="interacoes">
+            <div class="notif-avatar-wrap">
+              <div class="mini-avatar" style="width:44px;height:44px;font-size:0.9rem;background:linear-gradient(135deg,#8f72ff,#4e2edf)">MA</div>
+              <div class="notif-tipo-icon tipo-comment">💬</div>
+            </div>
+            <div class="notif-content">
+              <div class="notif-text"><strong>Mariana Alves</strong> comentou na sua publicação sobre <span class="notif-link">plasticidade sináptica</span>.</div>
+              <div class="notif-meta">
+                <span class="notif-tempo">há 1h</span>
+                <span class="notif-preview-text">"Resultados fascinantes! Você considerou..."</span>
+              </div>
+              <div class="notif-actions">
+                <button class="notif-btn primary">Responder</button>
+                <button class="notif-btn">Ver discussão</button>
+              </div>
+            </div>
+            <div class="notif-dot"></div>
+          </div>
+
+          <div class="notif-card nao-lida" data-tipo="interacoes">
+            <div class="notif-avatar-wrap">
+              <div class="mini-avatar green" style="width:44px;height:44px;font-size:0.9rem">RC</div>
+              <div class="notif-tipo-icon tipo-mention">@</div>
+            </div>
+            <div class="notif-content">
+              <div class="notif-text"><strong>Rafael Cunha</strong> mencionou você em uma discussão sobre <span class="notif-link">LLMs científicos</span>.</div>
+              <div class="notif-meta">
+                <span class="notif-tempo">há 2h</span>
+                <span class="notif-preview-text">"@vsouza o que você acha dessa abordagem..."</span>
+              </div>
+              <div class="notif-actions">
+                <button class="notif-btn primary">Ver menção</button>
+              </div>
+            </div>
+            <div class="notif-dot"></div>
+          </div>
+        </div>
+
+        <!-- ONTEM -->
+        <div class="notif-group">
+          <div class="notif-group-label">Ontem</div>
+
+          <div class="notif-card" data-tipo="interacoes">
+            <div class="notif-avatar-wrap">
+              <div class="mini-avatar" style="width:44px;height:44px;font-size:0.9rem;background:linear-gradient(135deg,#ffb144,#ff6a33)">+</div>
+              <div class="notif-tipo-icon tipo-like">👍</div>
+            </div>
+            <div class="notif-content">
+              <div class="notif-text"><strong>Lara Ferreira</strong> e <strong>outros 15</strong> curtiram sua publicação sobre análise topológica.</div>
+              <div class="notif-meta"><span class="notif-tempo">ontem às 18:42</span></div>
+            </div>
+          </div>
+
+          <div class="notif-card" data-tipo="sistema">
+            <div class="notif-avatar-wrap">
+              <div class="mini-avatar" style="width:44px;height:44px;font-size:1.2rem;background:var(--panel-2);border:1px solid var(--border)">🧠</div>
+              <div class="notif-tipo-icon tipo-system">⚙️</div>
+            </div>
+            <div class="notif-content">
+              <div class="notif-text">O <strong>BrainBot</strong> encontrou 3 artigos novos alinhados com seus interesses em Neurociência Computacional.</div>
+              <div class="notif-meta"><span class="notif-tempo">ontem às 09:00</span></div>
+              <div class="notif-actions">
+                <button class="notif-btn primary">Ver recomendações</button>
+                <button class="notif-btn">Ajustar preferências</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="notif-card" data-tipo="academicas">
+            <div class="notif-avatar-wrap">
+              <div class="mini-avatar green" style="width:44px;height:44px;font-size:0.9rem">TM</div>
+              <div class="notif-tipo-icon tipo-follow">👥</div>
+            </div>
+            <div class="notif-content">
+              <div class="notif-text"><strong>Thiago Melo</strong> entrou no grupo <span class="notif-link">Redes Complexas & IA</span> que você administra.</div>
+              <div class="notif-meta"><span class="notif-tempo">ontem às 07:15</span></div>
+              <div class="notif-actions"><button class="notif-btn">Ver grupo</button></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ESTA SEMANA -->
+        <div class="notif-group">
+          <div class="notif-group-label">Esta semana</div>
+
+          <div class="notif-card" data-tipo="academicas">
+            <div class="notif-avatar-wrap">
+              <div class="mini-avatar" style="width:44px;height:44px;font-size:1.2rem;background:rgba(124,92,255,0.15);border:1px solid rgba(124,92,255,0.3)">🏛️</div>
+              <div class="notif-tipo-icon tipo-cite">📑</div>
+            </div>
+            <div class="notif-content">
+              <div class="notif-text">Seu artigo foi citado em <strong>5 novas publicações</strong> esta semana. Seu índice h subiu para <span class="notif-link">12</span>.</div>
+              <div class="notif-meta"><span class="notif-tempo">há 3 dias</span></div>
+              <div class="notif-actions"><button class="notif-btn primary">Ver citações</button></div>
+            </div>
+          </div>
+
+          <div class="notif-card" data-tipo="sistema">
+            <div class="notif-avatar-wrap">
+              <div class="mini-avatar" style="width:44px;height:44px;font-size:1.2rem;background:var(--panel-2);border:1px solid var(--border)">⚙️</div>
+              <div class="notif-tipo-icon tipo-system">⚙️</div>
+            </div>
+            <div class="notif-content">
+              <div class="notif-text">O BrainHUB foi atualizado com novas funcionalidades. Confira as novidades!</div>
+              <div class="notif-meta"><span class="notif-tempo">há 4 dias</span></div>
+              <div class="notif-actions"><button class="notif-btn">Ver novidades</button></div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- fim notifList -->
+    </div>
+  </main>
+
+  <div id="toast-container"></div>
+
+  <script src="../scripts/auth.js"></script>
+  <script src="../scripts/notificacoes.js"></script>
+</body>
+</html>
