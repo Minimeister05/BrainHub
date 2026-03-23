@@ -47,10 +47,10 @@
       </section>
 
       <section class="menu-card card">
-        <button class="menu-item active"><i data-lucide="user-round"></i> Meu Perfil</button>
-        <button class="menu-item"><i data-lucide="file-text"></i> Meus Posts</button>
-        <button class="menu-item"><i data-lucide="bookmark"></i> Salvos</button>
-        <button class="menu-item"><i data-lucide="settings"></i> Configurações</button>
+        <a href="home.html"          class="menu-item active"><i data-lucide="user-round"></i> Feed</a>
+        <a href="meus-posts.html"    class="menu-item"><i data-lucide="file-text"></i> Meus Posts</a>
+        <a href="salvos.html"        class="menu-item"><i data-lucide="bookmark"></i> Salvos</a>
+        <a href="configuracoes.html" class="menu-item"><i data-lucide="settings"></i> Configurações</a>
       </section>
 
       <section class="trending-card card">
@@ -64,7 +64,7 @@
     </aside>
 
     <section class="center-column">
-      <section class="create-post card">
+      <section class="create-post card" id="createPostBox">
         <div class="create-top">
           <div class="mini-avatar">LM</div>
           <input type="text" id="postInput" placeholder="No que você está pensando?" />
@@ -201,6 +201,7 @@
     </aside>
   </main>
 
+  <script src="../scripts/brainhub-shared.js"></script>
   <script src="../scripts/home.js"></script>
   <script>
     function toggleSeguir(btn) {
@@ -209,5 +210,23 @@
       btn.textContent = isSeguindo ? 'Seguir' : 'Seguindo';
     }
   </script>
+
+  <div class="search-overlay hidden" id="searchOverlay">
+    <div class="search-modal">
+      <div class="search-input-wrap">
+        <i data-lucide="search"></i>
+        <input type="text" id="searchGlobal" placeholder="Pesquisa posts, grupos, usuários..." autofocus />
+        <button class="search-close" id="searchClose">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div class="search-results" id="searchResults">
+        <p class="search-hint">Digite algo para pesquisar...</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="../scripts/search.js"></script>
 </body>
 </html>

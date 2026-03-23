@@ -38,8 +38,24 @@ document.querySelectorAll('.register-text a').forEach(link => {
 
 const usuariosFixos = [
     {nome: "RafaDEV", email: "rafa@gmail.com", senha: "1234"},
-    {nome: "ErickDEV", email: "erick@gmail.com", senha: "5678"}
+    {nome: "ErickDEV", email: "erick@gmail.com", senha: "5678"},
+    {nome: "Erick Suckow", email: "suckowerick@gmail.com", senha: "pro123", pro: true}
 ];
+
+// Seed de dados para contas fixas (roda uma vez)
+(function seedDadosFixos() {
+    const perfilKey = 'brainhub_perfil_suckowerick@gmail.com';
+    if (!localStorage.getItem(perfilKey)) {
+        localStorage.setItem(perfilKey, JSON.stringify({
+            nome: "Erick Suckow",
+            curso: "Ciência da Computação",
+            faculdade: "PUCPR",
+            periodo: "5º período",
+            bio: "Desenvolvedor apaixonado por IA e sistemas distribuídos. Co-fundador do BrainHUB. 🚀",
+            corAvatar: "av-pro-gold"
+        }));
+    }
+})();
 
 function getTodosUsuarios(){
     const cadastrados = JSON.parse(localStorage.getItem('usuarios_brainhub')) || [];
@@ -58,6 +74,13 @@ if (loginForm) {
 
         if(user) {
             localStorage.setItem('brainhub_usuario_logado', JSON.stringify({ nome: user.nome, email: user.email }));
+            // Define status Pro com base no usuário
+            if (user.pro) {
+                localStorage.setItem('brainhub_pro', 'true');
+                localStorage.setItem(`brainhub_pro_${user.email}`, 'true');
+            } else {
+                localStorage.removeItem('brainhub_pro');
+            }
             mostrarAviso(`Bem vindo, ${user.nome}!`, "success");
             setTimeout(() => {
                 const chave = `brainhub_perfil_${user.email}`;

@@ -58,20 +58,38 @@ document.getElementById('onbBio').addEventListener('input', function () {
     document.getElementById('onbBioCount').textContent = `${this.value.length}/160`;
 });
 
-document.getElementById('btnFinish').addEventListener('click', () => {
-    const nome    = document.getElementById('onbNome').value.trim();
-    const curso   = document.getElementById('onbCurso').value.trim();
-    const periodo = document.getElementById('onbPeriodo').value;
-    const bio     = document.getElementById('onbBio').value.trim();
+document.getElementById('btnFinish').addEventListener('click', async () => {
+    const nome      = document.getElementById('onbNome').value.trim();
+    const curso     = document.getElementById('onbCurso').value.trim();
+    const faculdade = document.getElementById('onbFaculdade').value.trim();
+    const periodo   = document.getElementById('onbPeriodo').value;
+    const bio       = document.getElementById('onbBio').value.trim();
 
-    // CORRIGIDO: salva com o email do usuário
+    // Salva no localStorage como antes
     const sessaoAtual = JSON.parse(localStorage.getItem('brainhub_usuario_logado') || 'null');
-    localStorage.setItem(`brainhub_perfil_${sessaoAtual.email}`, JSON.stringify({
-        nome, curso, periodo, bio, corAvatar: corSelecionada
-    }));
+    if (sessaoAtual) {
+        localStorage.setItem(`brainhub_perfil_${sessaoAtual.email}`, JSON.stringify({
+            nome, curso, faculdade, periodo, bio, corAvatar: corSelecionada
+        }));
+        sessaoAtual.onboardingFeito = true;
+        localStorage.setItem('brainhub_usuario_logado', JSON.stringify(sessaoAtual));
+    }
 
-    sessaoAtual.onboardingFeito = true;
-    localStorage.setItem('brainhub_usuario_logado', JSON.stringify(sessaoAtual));
+    // Salva no Supabase também
+    if (window.supabase) {
+        const { data: { user } } = await window.supabase.auth.getUser();
+        if (user) {
+            await window.supabase.from('profiles').upsert({
+                id: user.id,
+                nome,
+                curso,
+                faculdade,
+                periodo,
+                bio,
+                cor_avatar: corSelecionada
+            });
+        }
+    }
 
     const card = document.querySelector('.onboarding-card:not(.hidden)');
     card.style.opacity = '0';

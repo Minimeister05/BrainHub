@@ -1,4 +1,8 @@
 /* ===== PÁGINA DE PLANOS ===== */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #343443; border-radius: 999px; }
+::-webkit-scrollbar-corner { background: transparent; }
 .planos-page {
   overflow-y: auto;
   height: calc(100vh - 72px);

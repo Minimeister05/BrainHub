@@ -1,432 +1,60 @@
-// inicializa os ícones da biblioteca Lucide
+// home.js — feed principal (usa brainhub-shared.js)
 lucide.createIcons();
+sincronizarStatusPro();
+aplicarPerfilNoSidebar();
 
-// ===== CARREGA USUÁRIO LOGADO =====
-function getPerfilAtual() {
-    const sessao = JSON.parse(localStorage.getItem('brainhub_usuario_logado') || 'null');
-    const perfil = JSON.parse(localStorage.getItem('brainhub_perfil') || 'null');
-    const nome = perfil?.nome || sessao?.nome || 'Usuário';
-    const curso = perfil?.curso || 'Sem curso definido';
-    const periodo = perfil?.periodo || '';
-    const corAvatar = perfil?.corAvatar || '';
-    const iniciais = nome.split(' ').map(p => p[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
-    return { nome, curso, periodo, corAvatar, iniciais };
-}
+const publishBtn = document.getElementById('publishBtn');
+const postInput  = document.getElementById('postInput');
+const feedList   = document.getElementById('feedList');
 
-function aplicarPerfilNaHome() {
-    const u = getPerfilAtual();
-    const avatarEl = document.querySelector('.profile-avatar');
-    const nomeEl   = document.querySelector('.profile-card h2');
-    const subEl    = document.querySelector('.profile-card > p');
-    if (avatarEl) { avatarEl.textContent = u.iniciais; avatarEl.className = `profile-avatar ${u.corAvatar}`; }
-    if (nomeEl)   nomeEl.textContent = u.nome;
-    if (subEl)    subEl.textContent  = [u.curso, u.periodo].filter(Boolean).join(' • ');
-    const miniAvatar = document.querySelector('.create-top .mini-avatar');
-    if (miniAvatar) { miniAvatar.textContent = u.iniciais; miniAvatar.className = `mini-avatar ${u.corAvatar}`; }
-}
-
-aplicarPerfilNaHome();
+// Aplica mini-avatar na caixa de criar post
+(function() {
+  const u = getPerfilAtual();
+  const mini = document.querySelector('.create-top .mini-avatar');
+  if (mini) { mini.textContent = u.iniciais; mini.className = `mini-avatar ${u.corAvatar}`; }
+})();
 
 // Esconde banner Pro se já for assinante
 if (localStorage.getItem('brainhub_pro') === 'true') {
-    const banner = document.getElementById('proBannerFeed');
-    if (banner) banner.style.display = 'none';
+  const banner = document.getElementById('proBannerFeed');
+  if (banner) banner.style.display = 'none';
 }
 
-
-// referências principais da área de criação de post
-const publishBtn = document.getElementById("publishBtn");
-const postInput = document.getElementById("postInput");
-const feedList = document.getElementById("feedList");
-
-// chave usada para salvar os posts no navegador
-const STORAGE_KEY = "brainhub_posts";
-
-
-// dados iniciais exibidos quando ainda não existe nada salvo
-const postsPadrao = [
-  {
-    id: 1,
-    autor: "Lucas Mendes",
-    curso: "Ciência da Computação",
-    tempo: "2h atrás",
-    titulo: "Alguém pode me ajudar com Estrutura de Dados?",
-    texto:
-      "Estou com dificuldade em entender árvores AVL e balanceamento. Alguém tem algum material bom ou pode explicar de forma simples? Agradeço qualquer ajuda! 🌲",
-    tags: ["Estrutura de Dados", "Árvore AVL", "Ajuda"],
-    likes: 24,
-    comentarios: [
-      "Tenho um resumo bom disso, posso te mandar.",
-      "Procura por animações visuais de AVL, ajuda bastante."
-    ],
-    curtido: false,
-    salvo: false,
-    corAvatar: "default"
-  },
-  {
-    id: 2,
-    autor: "Ana Martins",
-    curso: "Engenharia de Software",
-    tempo: "5h atrás",
-    titulo: "Resumo completo de Banco de Dados Relacional 📚",
-    texto:
-      "Galera, fiz um resumo bem detalhado sobre normalização, SQL avançado e modelagem ER. Quem quiser, é só comentar que eu mando o link do PDF.",
-    tags: ["Banco de Dados", "Resumo", "SQL"],
-    likes: 67,
-    comentarios: [
-      { autor: "Julia martins", texto: "Me manda, por favor!" },
-      { autor: "Pabllo Vittar", texto: "Tava precisando muito disso." }
-    ],
-    curtido: false,
-    salvo: false,
-    corAvatar: "purple"
-  },
-  {
-    id: 3,
-    autor: "Rafael Ferreira",
-    curso: "Sistemas de Informação",
-    tempo: "7h atrás",
-    titulo: "Vale a pena aprender React antes de backend?",
-    texto:
-      "Tô montando meu roadmap e queria saber se faz sentido focar em front primeiro ou se já começo com Node junto. Quem já passou por isso?",
-    tags: ["Carreira", "React", "Frontend"],
-    likes: 18,
-    comentarios: [
-      { autor: "Arrascaeta", texto: "Eu começaria pelo front." },
-      { autor: "Alef Manga", texto: "Depende do teu objetivo." }
-    ],
-    curtido: false,
-    salvo: false,
-    corAvatar: "green"
-  }
-];
-
-// gera iniciais do nome para avatar
-function gerarIniciais(nome) {
-  return nome
-    .split(" ")
-    .map((parte) => parte[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-}
-
-// lê posts salvos no navegador
-function carregarPosts() {
-  const postsSalvos = localStorage.getItem(STORAGE_KEY);
-
-  if (postsSalvos) {
-    return JSON.parse(postsSalvos);
-  }
-
-  salvarPosts(postsPadrao);
-  return postsPadrao;
-}
-
-// salva posts no navegador
-function salvarPosts(posts) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
-}
-
-// monta o HTML de um comentário
-function criarComentarioHTML(comentario) {
-  if (typeof comentario === "string") {
-    return `
-      <div class="comment-item">
-        <strong class="comment-author">Usuário</strong>
-        <p class="comment-text">${comentario}</p>
-      </div>
-    `;
-  }
-
-  return `
-    <div class="comment-item">
-      <strong class="comment-author">${comentario.autor}</strong>
-      <p class="comment-text">${comentario.texto}</p>
-    </div>
-  `;
-}
-
-// monta o HTML de um post
-function criarPostHTML(post) {
-  const iniciais = gerarIniciais(post.autor);
-  const tagsHTML = post.tags.map((tag) => `<span>${tag}</span>`).join("");
-  const comentariosHTML = post.comentarios
-    .map((comentario) => criarComentarioHTML(comentario))
-    .join("");
-
-  return `
-    <article class="post-card card" data-id="${post.id}">
-      <div class="post-header">
-        <div class="post-user">
-          <div class="mini-avatar ${post.corAvatar === "default" ? "" : post.corAvatar}">${iniciais}</div>
-          <div>
-            <h4>${post.autor}</h4>
-            <p>${post.curso} • ${post.tempo}</p>
-          </div>
-        </div>
-        <button class="icon-btn small">
-          <i data-lucide="more-vertical"></i>
-        </button>
-      </div>
-
-      <h3>${post.titulo}</h3>
-      <p class="post-text">${post.texto}</p>
-
-      <div class="tags">
-        ${tagsHTML}
-      </div>
-
-      <div class="post-actions">
-        <button class="action-btn like-btn ${post.curtido ? "liked" : ""}">
-          <i data-lucide="thumbs-up"></i>
-          <span>${post.likes}</span>
-        </button>
-
-        <button class="action-btn comment-toggle-btn">
-          <i data-lucide="message-square"></i>
-          <span>${post.comentarios.length}</span>
-        </button>
-
-        <button class="action-btn">
-          <i data-lucide="share-2"></i>
-          <span>0</span>
-        </button>
-
-        <button class="action-btn save-btn right ${post.salvo ? "saved" : ""}">
-          <i data-lucide="bookmark"></i>
-        </button>
-      </div>
-
-      <div class="comments-section hidden">
-        <div class="comment-form">
-          <input
-            type="text"
-            class="comment-input"
-            placeholder="Escreva um comentário..."
-            style="background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.2); color: white; outline: none;"/>
-          <button
-            class="comment-send"
-            style="background: #23232b; border: 1px solid rgba(255,255,255,0.16); color: white; padding: 8px 16px; border-radius: 12px; margin-left: 10px; cursor: pointer; font-weight: 500;">
-            Enviar
-          </button>
-        </div>
-
-        <div class="comments-list">
-          ${comentariosHTML}
-        </div>
-      </div>
-    </article>
-    `;
-}
-
-// renderiza todos os posts no feed
 function renderizarPosts() {
-  const posts = carregarPosts();
-  const isPro = localStorage.getItem('brainhub_pro') === 'true';
-
-  const bannerHTML = isPro ? '' : `
-    <div class="pro-banner-feed">
-      <div class="pro-banner-left">
-        <span class="pro-banner-badge"><i data-lucide="crown"></i> Pro</span>
-        <div>
-          <strong>Destaque seus posts com o BrainHUB Pro</strong>
-          <span>Badge exclusivo, checkmark verificado e muito mais por R$ 14,90/mês</span>
-        </div>
-      </div>
-      <a href="planos.html" class="pro-banner-btn">Ver planos</a>
-    </div>
-  `;
-
-  feedList.innerHTML = bannerHTML + posts.map((post) => criarPostHTML(post)).join("");
-
-  lucide.createIcons();
-  ativarEventosDosPosts();
+  renderizarFeed(feedList, carregarPosts(), true);
 }
 
-document.querySelectorAll(".comments-section").forEach((secao) => {
-  secao.classList.add("hidden");
-});
-
-// cria um novo post e salva
 function publicarNovoPost() {
   const texto = postInput.value.trim();
-
-  if (texto === "") {
-    alert("Escreva algo antes de publicar.");
-    return;
-  }
-
+  if (!texto) return;
+  const u = getPerfilAtual();
+  const sessao = JSON.parse(localStorage.getItem('brainhub_usuario_logado') || 'null');
   const posts = carregarPosts();
-
-  const novoPost = {
+  posts.unshift({
     id: Date.now(),
-    autor: "Você",
-    curso: "Ciência da Computação",
-    tempo: "agora",
-    titulo: "Novo post",
-    texto: texto,
-    tags: ["Post", "BrainHUB"],
+    autor: u.nome,
+    curso: u.curso,
+    tempo: 'agora',
+    titulo: 'Novo post',
+    texto,
+    tags: ['Post', 'BrainHUB'],
     likes: 0,
     comentarios: [],
     curtido: false,
     salvo: false,
-    corAvatar: "default"
-  };
-
-  posts.unshift(novoPost);
+    corAvatar: u.corAvatar || 'default',
+    isOwnPost: true,
+    isProPost: u.isPro,
+    proAuthorEmail: sessao?.email || ''
+  });
   salvarPosts(posts);
-  postInput.value = "";
+  postInput.value = '';
   renderizarPosts();
 }
 
-// adiciona comentário em um post específico
-function adicionarComentario(postId, textoComentario) {
-  const posts = carregarPosts();
-  const post = posts.find((item) => item.id === postId);
-  if (!post) return;
-
-  post.comentarios.push({ autor: "Você", texto: textoComentario });
-  salvarPosts(posts);
-
-  // Adiciona o comentário na tela sem rerenderizar o feed
-  const postEl = document.querySelector(`.post-card[data-id="${postId}"]`);
-  if (postEl) {
-    const lista = postEl.querySelector(".comments-list");
-    const novoItem = document.createElement("div");
-    novoItem.className = "comment-item";
-    novoItem.innerHTML = `<strong class="comment-author">Você</strong><p class="comment-text">${textoComentario}</p>`;
-    lista.appendChild(novoItem);
-
-    // Limpa o input
-    const input = postEl.querySelector(".comment-input");
-    if (input) input.value = "";
-
-    // Atualiza o contador
-    const countEl = postEl.querySelector(".comment-toggle-btn span");
-    if (countEl) countEl.textContent = post.comentarios.length;
-  }
-}
-
-// alterna like de um post específico
-function alternarLike(postId) {
-  const posts = carregarPosts();
-  const post = posts.find((item) => item.id === postId);
-  if (!post) return;
-
-  if (post.curtido) {
-    post.likes -= 1;
-    post.curtido = false;
-  } else {
-    post.likes += 1;
-    post.curtido = true;
-  }
-
-  salvarPosts(posts);
-
-  // Atualiza só o botão, sem rerenderizar o feed inteiro
-  const postEl = document.querySelector(`.post-card[data-id="${postId}"]`);
-  if (postEl) {
-    const btn = postEl.querySelector(".like-btn");
-    const count = postEl.querySelector(".like-btn span");
-    if (post.curtido) btn.classList.add("liked");
-    else btn.classList.remove("liked");
-    count.textContent = post.likes;
-  }
-}
-
-// alterna salvar de um post específico
-function alternarSalvar(postId) {
-  const posts = carregarPosts();
-  const post = posts.find((item) => item.id === postId);
-  if (!post) return;
-
-  post.salvo = !post.salvo;
-  salvarPosts(posts);
-
-  // Atualiza só o botão, sem rerenderizar o feed inteiro
-  const postEl = document.querySelector(`.post-card[data-id="${postId}"]`);
-  if (postEl) {
-    const btn = postEl.querySelector(".save-btn");
-    if (post.salvo) btn.classList.add("saved");
-    else btn.classList.remove("saved");
-  }
-}
-
-// conecta eventos dos botões existentes no feed
-function ativarEventosDosPosts() {
-  const todosPosts = document.querySelectorAll(".post-card");
-
-  todosPosts.forEach((postElemento) => {
-    const postId = Number(postElemento.dataset.id);
-
-    const likeBtn = postElemento.querySelector(".like-btn");
-    const saveBtn = postElemento.querySelector(".save-btn");
-    const commentToggleBtn = postElemento.querySelector(".comment-toggle-btn");
-    const commentsSection = postElemento.querySelector(".comments-section");
-    const commentInput = postElemento.querySelector(".comment-input");
-    const commentSend = postElemento.querySelector(".comment-send");
-
-    likeBtn.addEventListener("click", () => {
-      alternarLike(postId);
-    });
-
-    saveBtn.addEventListener("click", () => {
-      alternarSalvar(postId);
-    });
-
-    commentToggleBtn.addEventListener("click", () => {
-      commentsSection.classList.toggle("hidden");
-    });
-
-    commentSend.addEventListener("click", () => {
-      const textoComentario = commentInput.value.trim();
-
-      if (textoComentario === "") {
-        return;
-      }
-
-      adicionarComentario(postId, textoComentario);
-    });
-
-    commentInput.addEventListener("keydown", (event) => {
-      if (event.key === "Enter") {
-        event.preventDefault();
-
-        const textoComentario = commentInput.value.trim();
-
-        if (textoComentario === "") {
-          return;
-        }
-
-        adicionarComentario(postId, textoComentario);
-      }
-    });
-    commentInput.addEventListener("keydown", (event) => {
-      if (event.key === "Enter") {
-        event.preventDefault();
-
-        const textoComentario = commentInput.value.trim();
-
-        if (textoComentario === "") {
-          return;
-        }
-
-        adicionarComentario(postId, textoComentario);
-      }
-    });
-  });
-}
-
-// eventos da caixa principal de criação de posts
-publishBtn.addEventListener("click", publicarNovoPost);
-
-postInput.addEventListener("keydown", (event) => {
-  if (event.key === "Enter") {
-    event.preventDefault();
-    publicarNovoPost();
-  }
+publishBtn.addEventListener('click', publicarNovoPost);
+postInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); publicarNovoPost(); }
 });
 
-// renderização inicial da página
 renderizarPosts();

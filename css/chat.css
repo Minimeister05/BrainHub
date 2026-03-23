@@ -1,4 +1,8 @@
 /* ===== LAYOUT GERAL DO CHAT ===== */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #343443; border-radius: 999px; }
+::-webkit-scrollbar-corner { background: transparent; }
 .chat-layout {
   display: grid;
   grid-template-columns: 340px 1fr;
@@ -523,4 +527,195 @@
   .chat-sidebar {
     display: none;
   }
+}
+
+/* ===== MODAL DE PESQUISA ===== */
+.search-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(6px);
+  z-index: 9999;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 80px;
+  animation: fadeInOverlay 0.2s ease;
+}
+
+.search-overlay.hidden {
+  display: none;
+}
+
+@keyframes fadeInOverlay {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.search-modal {
+  width: 100%;
+  max-width: 620px;
+  background: #1e1e24;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+  animation: slideDownModal 0.2s ease;
+}
+
+@keyframes slideDownModal {
+  from { opacity: 0; transform: translateY(-20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.search-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  color: #a4a4b3;
+}
+
+.search-input-wrap input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #f3f3f6;
+  font-size: 1.05rem;
+}
+
+.search-input-wrap input::placeholder {
+  color: #5a5a70;
+}
+
+.search-close {
+  background: transparent;
+  border: none;
+  color: #a4a4b3;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.search-close:hover { color: white; }
+
+.search-results {
+  max-height: 420px;
+  overflow-y: auto;
+  padding: 12px 0;
+}
+
+.search-results::-webkit-scrollbar { width: 5px; }
+.search-results::-webkit-scrollbar-thumb { background: #343443; border-radius: 999px; }
+
+.search-hint {
+  text-align: center;
+  color: #5a5a70;
+  font-size: 0.9rem;
+  padding: 24px;
+}
+
+.search-section-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #7c5cff;
+  letter-spacing: 0.08em;
+  padding: 10px 20px 6px;
+  text-transform: uppercase;
+}
+
+.search-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.search-item:hover {
+  background: rgba(255,255,255,0.05);
+}
+
+.search-item-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: white;
+  flex-shrink: 0;
+}
+
+.search-item-icon.post-icon  { background: linear-gradient(135deg, #7c5cff, #4e2edf); }
+.search-item-icon.group-icon { background: linear-gradient(135deg, #26d0a8, #119f7f); }
+.search-item-icon.user-icon  { background: linear-gradient(135deg, #ff6ec7, #b63cff); }
+.search-item-icon.chat-icon  { background: linear-gradient(135deg, #6d8bff, #5367ff); }
+
+.search-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.search-item-title {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #f3f3f6;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.search-item-sub {
+  font-size: 0.8rem;
+  color: #a4a4b3;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.search-empty {
+  text-align: center;
+  color: #5a5a70;
+  font-size: 0.9rem;
+  padding: 32px;
+}
+/* ===== NOVA CONVERSA ===== */
+.nova-conv-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.nova-conv-item:hover {
+  background: rgba(255,255,255,0.05);
+}
+
+/* ===== BUSCA: SEÇÃO + BADGE NOVA CONVERSA ===== */
+.conv-section-label {
+  padding: 10px 16px 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--purple, #7c5cff);
+  list-style: none;
+}
+.novo-chat-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: rgba(124,92,255,0.15);
+  color: #a98fff;
+  border: 1px solid rgba(124,92,255,0.3);
+  border-radius: 999px;
+  padding: 2px 9px;
+  flex-shrink: 0;
 }

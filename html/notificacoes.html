@@ -221,5 +221,19 @@
 
   <script src="../scripts/auth.js"></script>
   <script src="../scripts/notificacoes.js"></script>
+
+  <div class="search-overlay hidden" id="searchOverlay">
+    <div class="search-modal">
+      <div class="search-input-wrap">
+        <i data-lucide="search"></i>
+        <input type="text" id="searchGlobal" placeholder="Pesquise posts, grupos, usuários..." autofocus />
+        <button class="search-close" id="searchClose"><i data-lucide="x"></i></button>
+      </div>
+      <div class="search-results" id="searchResults">
+        <p class="search-hint">Digite algo para pesquisar...</p>
+      </div>
+    </div>
+  </div>
+  <script src="../scripts/search.js"></script>
 </body>
 </html>

@@ -26,7 +26,7 @@
       <div class="step" data-step="3"></div>
     </div>
 
-   
+
     <section class="onboarding-card" id="step1">
       <div class="welcome-avatar" id="welcomeAvatar">?</div>
       <h2>Bem-vindo ao BrainHUB! </h2>
@@ -48,6 +48,11 @@
         <div class="field-group">
           <label for="onbCurso">Curso</label>
           <input type="text" id="onbCurso" placeholder="Ex: Ciência da Computação" maxlength="60" />
+        </div>
+
+        <div class="field-group">
+          <label for="onbFaculdade">Faculdade</label>
+          <input type="text" id="onbFaculdade" placeholder="Ex: PUCPR, USP, UFPR..." maxlength="80" />
         </div>
 
         <div class="field-group">
@@ -79,7 +84,7 @@
       </div>
     </section>
 
-  
+
     <section class="onboarding-card hidden" id="step3">
       <h2>Personalize seu avatar</h2>
       <p class="subtitle">Escolha uma cor para representar você.</p>
@@ -107,6 +112,10 @@
       </div>
     </section>
   </main>
+
+  <!-- ANTES do onboarding.js -->
+  <script type="module" src="../scripts/supabase-client.js"></script>
+  <script src="../scripts/onboarding.js"></script>
 
   <script src="../scripts/onboarding.js"></script>
 </body>

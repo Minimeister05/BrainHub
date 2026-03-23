@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,6 +9,7 @@
   <link rel="stylesheet" href="../css/perfil.css" />
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
+
 <body>
 
   <header class="topbar">
@@ -43,7 +45,13 @@
         </div>
 
         <div class="perfil-info">
-          <h2 id="perfilNome">—</h2>
+          <div class="perfil-nome-row">
+            <h2 id="perfilNome">—</h2>
+            <span class="verified-perfil" id="verifiedBadge" style="display:none" title="Conta verificada"><i data-lucide="badge-check"></i></span>
+          </div>
+          <div class="pro-badge-perfil" id="proBadgePerfil" style="display:none">
+            <i data-lucide="crown"></i> BrainHUB PRO
+          </div>
           <p id="perfilCurso" class="perfil-sub">—</p>
           <p id="perfilBio" class="perfil-bio"></p>
         </div>
@@ -94,6 +102,13 @@
           <input type="text" id="inputCurso" placeholder="Ex: Ciência da Computação" maxlength="60" />
         </div>
 
+        <div class="form-field">
+          <label for="inputFaculdade">
+            <i data-lucide="building-2"></i> Faculdade
+          </label>
+          <input type="text" id="inputFaculdade" placeholder="Ex: PUCPR, USP, UFPR..." maxlength="80" />
+        </div>
+
         <!-- Período -->
         <div class="form-field">
           <label for="inputPeriodo">
@@ -127,12 +142,41 @@
         <div class="form-field">
           <label><i data-lucide="palette"></i> Cor do avatar</label>
           <div class="color-picker" id="colorPicker">
-            <button class="color-opt" data-cor="" style="background: linear-gradient(135deg,#8f72ff,#4e2edf);" title="Roxo"></button>
-            <button class="color-opt" data-cor="av-green" style="background: linear-gradient(135deg,#26d0a8,#119f7f);" title="Verde"></button>
-            <button class="color-opt" data-cor="av-pink" style="background: linear-gradient(135deg,#ff6ec7,#b63cff);" title="Rosa"></button>
-            <button class="color-opt" data-cor="av-orange" style="background: linear-gradient(135deg,#ffb144,#ff6a33);" title="Laranja"></button>
-            <button class="color-opt" data-cor="av-blue" style="background: linear-gradient(135deg,#6d8bff,#5367ff);" title="Azul"></button>
-            <button class="color-opt" data-cor="av-red" style="background: linear-gradient(135deg,#ff4b6e,#c2183a);" title="Vermelho"></button>
+            <button class="color-opt" data-cor="" style="background: linear-gradient(135deg,#8f72ff,#4e2edf);"
+              title="Roxo"></button>
+            <button class="color-opt" data-cor="av-green" style="background: linear-gradient(135deg,#26d0a8,#119f7f);"
+              title="Verde"></button>
+            <button class="color-opt" data-cor="av-pink" style="background: linear-gradient(135deg,#ff6ec7,#b63cff);"
+              title="Rosa"></button>
+            <button class="color-opt" data-cor="av-orange" style="background: linear-gradient(135deg,#ffb144,#ff6a33);"
+              title="Laranja"></button>
+            <button class="color-opt" data-cor="av-blue" style="background: linear-gradient(135deg,#6d8bff,#5367ff);"
+              title="Azul"></button>
+            <button class="color-opt" data-cor="av-red" style="background: linear-gradient(135deg,#ff4b6e,#c2183a);"
+              title="Vermelho"></button>
+          </div>
+          <!-- Cores exclusivas Pro -->
+          <div class="pro-colors-section" id="proColorsSection">
+            <div class="pro-colors-label"><i data-lucide="crown"></i> Cores exclusivas Pro</div>
+            <div class="color-picker" id="colorPickerPro">
+              <button class="color-opt pro-color" data-cor="av-pro-gold" style="background: linear-gradient(135deg,#ffd700,#ff9500);"
+                title="Ouro Pro"></button>
+              <button class="color-opt pro-color" data-cor="av-pro-teal" style="background: linear-gradient(135deg,#00d2d3,#00b4b4);"
+                title="Teal Pro"></button>
+              <button class="color-opt pro-color" data-cor="av-pro-neon" style="background: linear-gradient(135deg,#39ff14,#15a800);"
+                title="Neon Pro"></button>
+              <button class="color-opt pro-color" data-cor="av-pro-ocean" style="background: linear-gradient(135deg,#0052d4,#0093d0);"
+                title="Oceano Pro"></button>
+              <button class="color-opt pro-color" data-cor="av-pro-magenta" style="background: linear-gradient(135deg,#e600ff,#8800cc);"
+                title="Magenta Pro"></button>
+              <button class="color-opt pro-color" data-cor="av-pro-sunset" style="background: linear-gradient(135deg,#ff6b35,#f7c59f);"
+                title="Pôr do Sol Pro"></button>
+            </div>
+          </div>
+          <!-- Aviso de bloqueio para não-Pro -->
+          <div class="pro-colors-locked" id="proColorsLocked">
+            <i data-lucide="lock"></i>
+            <span>Cores exclusivas disponíveis no <a href="planos.html">BrainHUB Pro</a></span>
           </div>
         </div>
 
@@ -154,6 +198,57 @@
           <span class="info-label">Conta criada via</span>
           <span class="info-value">BrainHUB</span>
         </div>
+        <div class="info-row">
+          <span class="info-label">Plano</span>
+          <span class="info-value" id="infoPlanoBadge">Gratuito</span>
+        </div>
+      </div>
+
+      <!-- Card do Plano Pro (visível apenas para assinantes) -->
+      <div class="perfil-form-card pro-plan-card" id="proPlanCard" style="display:none">
+        <div class="pro-plan-header">
+          <div class="pro-plan-icon"><i data-lucide="crown"></i></div>
+          <div>
+            <h4>BrainHUB Pro</h4>
+            <p>Plano ativo e funcionando</p>
+          </div>
+          <span class="pro-plan-status-dot"></span>
+        </div>
+        <div class="pro-plan-features">
+          <div class="pro-feature-item"><i data-lucide="badge-check"></i> Checkmark verificado ativo</div>
+          <div class="pro-feature-item"><i data-lucide="crown"></i> Badge PRO em todos os posts</div>
+          <div class="pro-feature-item"><i data-lucide="palette"></i> 6 cores exclusivas de avatar</div>
+          <div class="pro-feature-item"><i data-lucide="zap"></i> Posts em destaque no feed</div>
+          <div class="pro-feature-item"><i data-lucide="users"></i> Acesso a grupos exclusivos Pro</div>
+          <div class="pro-feature-item"><i data-lucide="headphones"></i> Suporte prioritário</div>
+        </div>
+        <div class="info-row" style="margin-top: 8px;">
+          <span class="info-label">Valor</span>
+          <span class="info-value">R$ 14,90/mês</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Próxima renovação</span>
+          <span class="info-value">23/04/2026</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Método de pagamento</span>
+          <span class="info-value">•••• •••• •••• 4242</span>
+        </div>
+        <button class="btn-gerenciar-pro" onclick="window.location.href='planos.html'">
+          <i data-lucide="settings"></i> Gerenciar assinatura
+        </button>
+      </div>
+
+      <!-- CTA Pro para não-assinantes -->
+      <div class="perfil-form-card pro-cta-card" id="proCTACard">
+        <div class="pro-cta-content">
+          <div class="pro-cta-icon"><i data-lucide="crown"></i></div>
+          <div>
+            <strong>Torne-se Pro</strong>
+            <p>Badge exclusivo, checkmark verificado, cores únicas e muito mais por R$ 14,90/mês</p>
+          </div>
+        </div>
+        <a href="planos.html" class="btn-upgrade-pro">Ver plano Pro</a>
       </div>
 
     </section>
@@ -163,7 +258,27 @@
   <!-- Toast container -->
   <div id="toast-container"></div>
 
-  <script src="../scripts/auth.js"></script>
+  
+
+  <div class="search-overlay hidden" id="searchOverlay">
+    <div class="search-modal">
+      <div class="search-input-wrap">
+        <i data-lucide="search"></i>
+        <input type="text" id="searchGlobal" placeholder="Pesquisa posts, grupos, usuários..." autofocus />
+        <button class="search-close" id="searchClose">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div class="search-results" id="searchResults">
+        <p class="search-hint">Digite algo para pesquisar...</p>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="../scripts/supabase-client.js"></script>
   <script src="../scripts/perfil.js"></script>
+
 </body>
+
 </html>
