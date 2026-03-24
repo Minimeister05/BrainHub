@@ -214,6 +214,11 @@ async function abrirConversa(id) {
   document.getElementById('chatEmpty').classList.add('hidden');
   document.getElementById('chatOpen').classList.remove('hidden');
 
+  // Mobile: esconde sidebar, mostra chat
+  if (window.innerWidth <= 860) {
+    document.querySelector('.chat-layout').classList.add('mob-open');
+  }
+
   const perfilLink = c.tipo === 'dm' && c.parceiro_id ? `usuario.html?id=${c.parceiro_id}` : null;
   document.getElementById('chatHeader').innerHTML = `
     ${perfilLink
@@ -434,6 +439,14 @@ document.querySelectorAll('.chat-tab').forEach(tab => {
   });
 });
 document.getElementById('searchInput').addEventListener('input', renderizarLista);
+
+// ===== BACK BUTTON (mobile) =====
+document.getElementById('chatBackBtn')?.addEventListener('click', () => {
+  document.querySelector('.chat-layout').classList.remove('mob-open');
+  conversaAtualId = null;
+  document.getElementById('chatOpen').classList.add('hidden');
+  document.getElementById('chatEmpty').classList.remove('hidden');
+});
 
 // ===== INIT =====
 async function init() {

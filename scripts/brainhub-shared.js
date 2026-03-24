@@ -301,6 +301,10 @@ function aplicarBadgeNotif() {
     b.textContent = count;
     b.style.display = count > 0 ? '' : 'none';
   });
+  // Ponto no bottom nav mobile
+  document.querySelectorAll('.mob-notif-dot').forEach(dot => {
+    dot.classList.toggle('visible', count > 0);
+  });
 }
 
 // ===== STATS SIDEBAR (Supabase) =====

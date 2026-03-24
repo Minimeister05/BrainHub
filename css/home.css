@@ -556,33 +556,98 @@ body {
   background: rgba(255, 255, 255, 0.02);
 }
 
+/* ===== BOTTOM NAV (mobile) ===== */
+.mobile-bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 999;
+  background: rgba(18,18,24,0.97);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid var(--border);
+  padding: 8px 4px;
+  padding-bottom: max(env(safe-area-inset-bottom), 8px);
+  justify-content: space-around;
+}
+
+.mob-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 5px 14px;
+  border-radius: 10px;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  transition: color 0.2s;
+  min-width: 52px;
+}
+
+.mob-nav-item i { display: block; width: 22px; height: 22px; }
+.mob-nav-item.active { color: var(--purple); }
+.mob-nav-item:active { opacity: 0.7; }
+
+.mob-notif-wrap { position: relative; }
+.mob-notif-dot {
+  position: absolute;
+  top: -3px; right: -3px;
+  width: 8px; height: 8px;
+  background: var(--purple);
+  border-radius: 50%;
+  border: 2px solid rgba(18,18,24,0.97);
+  display: none;
+}
+.mob-notif-dot.visible { display: block; }
+
 @media (max-width: 1200px) {
   .layout {
     grid-template-columns: 250px 1fr;
   }
-
-  .right-column {
-    display: none;
-  }
+  .right-column { display: none; }
 }
 
 @media (max-width: 860px) {
-  .layout {
-    grid-template-columns: 1fr;
-  }
-
-  .left-column {
-    display: none;
-  }
-
-  .main-nav {
-    display: none;
+  body {
+    overflow: auto;
+    padding-bottom: 72px;
   }
 
   .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 200;
     padding: 0 16px;
+    height: 58px;
   }
 
+  .brand h1 { font-size: 0.95rem; }
+  .main-nav { display: none; }
+
+  .layout {
+    grid-template-columns: 1fr;
+    height: auto;
+    overflow: visible;
+    padding: 12px;
+    gap: 14px;
+  }
+
+  .left-column { display: none; }
+  .right-column { display: none; }
+
+  .center-column {
+    overflow: visible;
+    height: auto;
+    min-height: 0;
+  }
+
+  .post-composer textarea { font-size: 0.95rem; }
+
+  .mobile-bottom-nav { display: flex; }
 }
 
 /* ===== ÁREA DE COMENTÁRIOS ===== */

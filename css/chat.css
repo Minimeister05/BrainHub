@@ -519,14 +519,39 @@
 }
 
 /* Responsivo */
+/* ===== BACK BUTTON (mobile) ===== */
+.chat-back-btn {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 10px 16px 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: color 0.2s;
+  flex-shrink: 0;
+}
+.chat-back-btn:hover { color: var(--text); }
+.chat-back-btn i { width: 16px; height: 16px; }
+
 @media (max-width: 860px) {
   .chat-layout {
     grid-template-columns: 1fr;
+    height: calc(100dvh - 58px);
   }
 
-  .chat-sidebar {
-    display: none;
-  }
+  /* Padrão: mostra sidebar, esconde painel de chat */
+  .chat-sidebar { display: flex; }
+  .chat-main { display: none; flex-direction: column; }
+
+  /* Quando conversa aberta */
+  .chat-layout.mob-open .chat-sidebar { display: none; }
+  .chat-layout.mob-open .chat-main { display: flex; height: 100%; }
+
+  .chat-back-btn { display: flex; }
 }
 
 /* ===== MODAL DE PESQUISA ===== */

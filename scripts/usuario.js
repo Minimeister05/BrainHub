@@ -1,6 +1,13 @@
 // usuario.js — página de perfil público de outro usuário
 lucide.createIcons();
 
+const bannerMap = {
+  '': '', 'av-green': 'bn-green', 'av-pink': 'bn-pink',
+  'av-orange': 'bn-orange', 'av-blue': 'bn-blue', 'av-red': 'bn-red',
+  'av-pro-gold': 'bn-pro', 'av-pro-teal': 'bn-teal', 'av-pro-neon': 'bn-neon',
+  'av-pro-ocean': 'bn-ocean', 'av-pro-magenta': 'bn-magenta', 'av-pro-sunset': 'bn-sunset',
+};
+
 const params = new URLSearchParams(window.location.search);
 const targetUserId = params.get('id');
 
@@ -188,11 +195,36 @@ async function init() {
   document.getElementById('usuarioAvatar').textContent = iniciais;
   document.getElementById('usuarioAvatar').className = `perfil-avatar ${cor}`;
 
-  if (isPro) {
-    const banner = document.querySelector('.usuario-profile-card .profile-banner');
-    if (banner) banner.style.background = 'linear-gradient(135deg, #7c3f00 0%, #b8860b 40%, #ffd700 100%)';
-    document.querySelector('.usuario-profile-card').classList.add('pro-card');
+  // Banner dinâmico por cor de avatar
+  const banner = document.querySelector('.usuario-profile-card .profile-banner');
+  if (banner) {
+    const bnClass = isPro ? 'bn-pro' : (bannerMap[cor] || '');
+    banner.className = 'profile-banner' + (bnClass ? ` ${bnClass}` : '');
   }
+  if (isPro) document.querySelector('.usuario-profile-card').classList.add('pro-card');
+
+  // Card "Sobre"
+  const sobreCard = document.getElementById('usuarioSobre');
+  const sobreInfo = document.getElementById('usuarioSobreInfo');
+  const sobreMeta = document.getElementById('usuarioSobreMeta');
+
+  const chips = [];
+  if (perfil.curso)     chips.push(`<span class="usuario-sobre-chip"><i data-lucide="graduation-cap"></i>${perfil.curso}</span>`);
+  if (perfil.faculdade) chips.push(`<span class="usuario-sobre-chip"><i data-lucide="building-2"></i>${perfil.faculdade}</span>`);
+  if (perfil.periodo)   chips.push(`<span class="usuario-sobre-chip"><i data-lucide="calendar"></i>${perfil.periodo}</span>`);
+
+  const bioHTML = perfil.bio ? `<p class="usuario-sobre-bio">${perfil.bio}</p>` : '';
+
+  sobreInfo.innerHTML = (chips.length ? `<div class="usuario-sobre-chips">${chips.join('')}</div>` : '') + bioHTML;
+
+  const membroDesde = perfil.created_at
+    ? new Date(perfil.created_at).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
+    : null;
+  sobreMeta.innerHTML = membroDesde
+    ? `<span class="usuario-sobre-meta-item"><i data-lucide="calendar-check"></i> Membro desde ${membroDesde}</span>`
+    : '';
+
+  sobreCard.style.display = (chips.length || perfil.bio || membroDesde) ? '' : 'none';
 
   const nomeEl = document.getElementById('usuarioNome');
   nomeEl.innerHTML = nome
@@ -208,6 +240,7 @@ async function init() {
 
   document.getElementById('usuarioCurso').textContent = sub;
   document.getElementById('usuarioBio').textContent = perfil.bio || '';
+  lucide.createIcons();
 
   document.title = `BrainHUB | ${nome}`;
   document.getElementById('btnMsg').href = `chat.html?userId=${targetUserId}`;

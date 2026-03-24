@@ -74,14 +74,21 @@
 
     </aside>
 
-    <!-- COLUNA DIREITA: formulário de edição -->
+    <!-- COLUNA DIREITA -->
     <section class="perfil-main">
 
-      <!-- Cabeçalho da seção -->
-      <div class="perfil-section-header">
-        <h3><i data-lucide="settings"></i> Personalizar Perfil</h3>
-        <p>Suas informações ficam salvas no banco de dados</p>
+      <!-- Abas -->
+      <div class="perfil-right-tabs">
+        <button class="perfil-right-tab active" data-tab="editar">
+          <i data-lucide="pencil"></i> Editar Perfil
+        </button>
+        <button class="perfil-right-tab" data-tab="posts">
+          <i data-lucide="file-text"></i> Meus Posts
+        </button>
       </div>
+
+      <!-- TAB: Editar -->
+      <div id="tabEditar">
 
       <!-- Formulário -->
       <div class="perfil-form-card">
@@ -251,6 +258,15 @@
         <a href="planos.html" class="btn-upgrade-pro">Ver plano Pro</a>
       </div>
 
+      </div><!-- fim tabEditar -->
+
+      <!-- TAB: Meus Posts -->
+      <div id="tabPosts" style="display:none">
+        <div id="perfilPostsList">
+          <p style="text-align:center;padding:32px;color:var(--muted)">Carregando posts...</p>
+        </div>
+      </div>
+
     </section>
 
   </main>
@@ -279,6 +295,13 @@
   <script type="module" src="../scripts/supabaseClient.js"></script>
   <script defer src="../scripts/perfil.js"></script>
 
+  <nav class="mobile-bottom-nav">
+    <a href="home.html" class="mob-nav-item"><i data-lucide="house"></i><span>Feed</span></a>
+    <a href="grupos.html" class="mob-nav-item"><i data-lucide="users"></i><span>Grupos</span></a>
+    <a href="chat.html" class="mob-nav-item"><i data-lucide="message-circle"></i><span>Chat</span></a>
+    <a href="notificacoes.html" class="mob-nav-item"><span class="mob-notif-wrap"><i data-lucide="bell"></i><span class="mob-notif-dot" id="mobNotifDot"></span></span><span>Notifs</span></a>
+    <a href="perfil.html" class="mob-nav-item active"><i data-lucide="user"></i><span>Perfil</span></a>
+  </nav>
 </body>
 
 </html>

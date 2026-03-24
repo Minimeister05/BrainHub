@@ -153,6 +153,87 @@
   box-shadow: 0 0 20px rgba(255, 215, 0, 0.08);
 }
 
+/* ===== CARD SOBRE ===== */
+.usuario-sobre-card {
+  margin-bottom: 16px;
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.usuario-sobre-titulo {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.usuario-sobre-titulo svg { width: 14px; height: 14px; }
+
+.usuario-sobre-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.usuario-sobre-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 0.82rem;
+  color: var(--text);
+}
+
+.usuario-sobre-chip svg { width: 13px; height: 13px; color: var(--muted); }
+
+.usuario-sobre-bio {
+  font-size: 0.88rem;
+  color: #c0c0ce;
+  line-height: 1.6;
+  font-style: italic;
+  border-left: 2px solid rgba(124,92,255,0.4);
+  padding-left: 12px;
+}
+
+.usuario-sobre-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.usuario-sobre-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.usuario-sobre-meta-item svg { width: 13px; height: 13px; }
+
+/* ===== BANNER: CORES POR AVATAR ===== */
+.usuario-profile-card .profile-banner.bn-green   { background: linear-gradient(135deg, #0a2e24, #0d201c, #0d0d14); }
+.usuario-profile-card .profile-banner.bn-pink    { background: linear-gradient(135deg, #2e0a2e, #1e0a24, #0d0d14); }
+.usuario-profile-card .profile-banner.bn-orange  { background: linear-gradient(135deg, #2e1a0a, #1e1208, #0d0d14); }
+.usuario-profile-card .profile-banner.bn-blue    { background: linear-gradient(135deg, #0a122e, #080e22, #0d0d14); }
+.usuario-profile-card .profile-banner.bn-red     { background: linear-gradient(135deg, #2e0a0a, #1e0808, #0d0d14); }
+.usuario-profile-card .profile-banner.bn-pro     { background: linear-gradient(135deg, #7c3f00, #b8860b, #ffd700) !important; }
+.usuario-profile-card .profile-banner.bn-teal    { background: linear-gradient(135deg, #002e2e, #001e1e, #0d0d14); }
+.usuario-profile-card .profile-banner.bn-neon    { background: linear-gradient(135deg, #0a2200, #081800, #0d0d14); }
+.usuario-profile-card .profile-banner.bn-ocean   { background: linear-gradient(135deg, #001a3e, #000e28, #0d0d14); }
+.usuario-profile-card .profile-banner.bn-magenta { background: linear-gradient(135deg, #2e002e, #1e001e, #0d0d14); }
+.usuario-profile-card .profile-banner.bn-sunset  { background: linear-gradient(135deg, #2e1500, #1e0e00, #0d0d14); }
+
 /* Link de autor nos posts */
 .author-link {
   color: var(--text);
@@ -165,3 +246,13 @@
 
 .comment-author-link { text-decoration: none; }
 .comment-author-link:hover .comment-author { color: var(--purple); }
+
+@media (max-width: 860px) {
+  .usuario-layout {
+    grid-template-columns: 1fr;
+    margin: 12px auto;
+    padding: 0 12px;
+    gap: 14px;
+  }
+  .usuario-sidebar { position: static; }
+}

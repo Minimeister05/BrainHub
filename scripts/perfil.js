@@ -1,9 +1,21 @@
 lucide.createIcons()
 
-const PRO_ACCOUNTS = ['suckowerick@gmail.com']
+let _isPro = false
 
 function gerarIniciais(nome) {
   return nome.split(' ').map(p => p[0]).filter(Boolean).slice(0, 2).join('').toUpperCase() || '?'
+}
+
+function tempoRelativo(dataStr) {
+  const diff = Date.now() - new Date(dataStr).getTime()
+  const min = Math.floor(diff / 60000)
+  if (min < 1) return 'agora'
+  if (min < 60) return `${min}m atrás`
+  const h = Math.floor(min / 60)
+  if (h < 24) return `${h}h atrás`
+  const d = Math.floor(h / 24)
+  if (d < 7) return `${d}d atrás`
+  return new Date(dataStr).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })
 }
 
 function mostrarToast(mensagem, tipo = 'success') {
@@ -15,6 +27,21 @@ function mostrarToast(mensagem, tipo = 'success') {
   setTimeout(() => toast.remove(), 4000)
 }
 
+const bannerMap = {
+  '':                '',
+  'av-green':        'bn-green',
+  'av-pink':         'bn-pink',
+  'av-orange':       'bn-orange',
+  'av-blue':         'bn-blue',
+  'av-red':          'bn-red',
+  'av-pro-gold':     'bn-pro',
+  'av-pro-teal':     'bn-teal',
+  'av-pro-neon':     'bn-neon',
+  'av-pro-ocean':    'bn-ocean',
+  'av-pro-magenta':  'bn-magenta',
+  'av-pro-sunset':   'bn-sunset',
+}
+
 function atualizarPreview({ nome, curso, faculdade, periodo, bio, corAvatar }) {
   const iniciais = gerarIniciais(nome || '?')
   const avatarEl = document.getElementById('perfilAvatar')
@@ -23,21 +50,27 @@ function atualizarPreview({ nome, curso, faculdade, periodo, bio, corAvatar }) {
   document.getElementById('perfilNome').textContent  = nome || '—'
   document.getElementById('perfilCurso').textContent = [curso, faculdade, periodo].filter(Boolean).join(' • ') || '—'
   document.getElementById('perfilBio').textContent   = bio  || ''
+
+  // Banner: Pro sempre gold, outros seguem avatar
+  const banner = document.getElementById('perfilBanner')
+  const bnClass = _isPro ? 'bn-pro' : (bannerMap[corAvatar] || '')
+  banner.className = 'perfil-banner' + (bnClass ? ` ${bnClass}` : '')
 }
 
 async function carregarDados() {
   const { data: { user } } = await window.supabase.auth.getUser()
   if (!user) { window.location.href = 'login.html'; return }
 
-  const isPro = PRO_ACCOUNTS.includes(user.email)
-  if (isPro) localStorage.setItem('brainhub_pro', 'true')
-  else localStorage.removeItem('brainhub_pro')
-
   const { data: perfil } = await window.supabase
     .from('profiles')
     .select('*')
     .eq('id', user.id)
     .single()
+
+  const isPro = perfil?.is_pro === true
+  _isPro = isPro
+  if (isPro) localStorage.setItem('brainhub_pro', 'true')
+  else localStorage.removeItem('brainhub_pro')
 
   const nome      = perfil?.nome      || user.user_metadata?.nome || ''
   const curso     = perfil?.curso     || ''
@@ -202,6 +235,72 @@ document.getElementById('btnSair').addEventListener('click', async () => {
   await window.supabase.auth.signOut()
   localStorage.removeItem('brainhub_usuario_logado')
   window.location.href = 'login.html'
+})
+
+// ===== MEUS POSTS =====
+async function carregarMeusPosts() {
+  const container = document.getElementById('perfilPostsList')
+  const { data: { user } } = await window.supabase.auth.getUser()
+  if (!user) return
+
+  const { data: posts } = await window.supabase
+    .from('posts')
+    .select('*, likes(id), comments(id)')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+
+  if (!posts?.length) {
+    container.innerHTML = `
+      <div class="perfil-posts-empty">
+        <div class="empty-icon">📝</div>
+        <p>Você ainda não publicou nada.</p>
+        <a href="home.html" style="color:#7c5cff;font-size:0.85rem;text-decoration:none;margin-top:8px;display:inline-block;">Ir para o feed →</a>
+      </div>`
+    return
+  }
+
+  container.innerHTML = posts.map(p => `
+    <div class="perfil-post-card">
+      <div class="perfil-post-texto">${p.texto}</div>
+      <div class="perfil-post-meta">
+        <span><i data-lucide="heart"></i> ${p.likes?.length || 0} curtidas</span>
+        <span><i data-lucide="message-circle"></i> ${p.comments?.length || 0} comentários</span>
+        <span class="perfil-post-data">${tempoRelativo(p.created_at)}</span>
+      </div>
+      <div class="perfil-post-footer">
+        <button class="perfil-post-delete" data-id="${p.id}">
+          <i data-lucide="trash-2"></i> Excluir
+        </button>
+      </div>
+    </div>`).join('')
+
+  container.querySelectorAll('.perfil-post-delete').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('Excluir este post permanentemente?')) return
+      await window.supabase.from('posts').delete().eq('id', btn.dataset.id)
+      btn.closest('.perfil-post-card').remove()
+      const stat = document.getElementById('perfilStatPosts')
+      if (stat) stat.textContent = Math.max(0, parseInt(stat.textContent) - 1)
+    })
+  })
+
+  lucide.createIcons()
+}
+
+// ===== ABAS =====
+let postsCarregados = false
+document.querySelectorAll('.perfil-right-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.perfil-right-tab').forEach(t => t.classList.remove('active'))
+    tab.classList.add('active')
+    const nome = tab.dataset.tab
+    document.getElementById('tabEditar').style.display = nome === 'editar' ? '' : 'none'
+    document.getElementById('tabPosts').style.display  = nome === 'posts'  ? '' : 'none'
+    if (nome === 'posts' && !postsCarregados) {
+      postsCarregados = true
+      carregarMeusPosts()
+    }
+  })
 })
 
 carregarDados()
