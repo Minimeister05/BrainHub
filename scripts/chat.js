@@ -214,19 +214,23 @@ async function abrirConversa(id) {
   document.getElementById('chatEmpty').classList.add('hidden');
   document.getElementById('chatOpen').classList.remove('hidden');
 
+  const perfilLink = c.tipo === 'dm' && c.parceiro_id ? `usuario.html?id=${c.parceiro_id}` : null;
   document.getElementById('chatHeader').innerHTML = `
-    <div class="conv-avatar ${c.cor} ${c.tipo === 'group' ? 'group' : ''}"
-         style="width:40px;height:40px;font-size:${c.tipo === 'group' ? '1.2rem' : '0.9rem'};">
-      ${c.iniciais}
-    </div>
+    ${perfilLink
+      ? `<a href="${perfilLink}" class="conv-avatar ${c.cor}" style="width:40px;height:40px;font-size:0.9rem;text-decoration:none;">${c.iniciais}</a>`
+      : `<div class="conv-avatar ${c.cor} group" style="width:40px;height:40px;font-size:1.2rem;">${c.iniciais}</div>`
+    }
     <div class="chat-header-info">
-      <div class="chat-header-name">${c.nome}</div>
+      ${perfilLink
+        ? `<a href="${perfilLink}" class="chat-header-name" style="color:var(--text);text-decoration:none;">${c.nome}</a>`
+        : `<div class="chat-header-name">${c.nome}</div>`
+      }
       <div class="chat-header-sub">${c.tipo === 'dm' ? '⚫ Offline' : `👥 ${c.subtitulo}`}</div>
     </div>
     <div class="chat-header-actions">
       <button class="icon-btn"><i data-lucide="phone"></i></button>
       <button class="icon-btn"><i data-lucide="video"></i></button>
-      <button class="icon-btn"><i data-lucide="info"></i></button>
+      ${perfilLink ? `<a href="${perfilLink}" class="icon-btn" title="Ver perfil"><i data-lucide="user"></i></a>` : `<button class="icon-btn"><i data-lucide="info"></i></button>`}
     </div>`;
 
   if (c.tipo === 'dm' && c.parceiro_id) {
@@ -306,13 +310,25 @@ const novaConversaResult = document.getElementById('novaConversaResultados');
 
 let todosUsuarios = [];
 
-async function carregarTodosUsuarios() {
+async function carregarAmigosMutuos() {
   if (!window.supabase || !usuarioAtual) return;
+
+  const [{ data: euSigo }, { data: meSeguem }] = await Promise.all([
+    window.supabase.from('follows').select('following_id').eq('follower_id', usuarioAtual.id),
+    window.supabase.from('follows').select('follower_id').eq('following_id', usuarioAtual.id)
+  ]);
+
+  const euSigoIds  = new Set((euSigo  || []).map(f => f.following_id));
+  const mutuosIds  = (meSeguem || []).map(f => f.follower_id).filter(id => euSigoIds.has(id));
+
+  if (!mutuosIds.length) { todosUsuarios = []; return; }
+
   const { data } = await window.supabase
     .from('profiles')
     .select('id, nome, cor_avatar, curso')
-    .neq('id', usuarioAtual.id)
+    .in('id', mutuosIds)
     .order('nome');
+
   todosUsuarios = (data || []).map(p => ({
     id:       p.id,
     nome:     p.nome || 'Usuário',
@@ -325,7 +341,7 @@ async function carregarTodosUsuarios() {
 document.getElementById('newChatBtn').addEventListener('click', async () => {
   novaConversaModal.classList.remove('hidden');
   novaConversaResult.innerHTML = `<p style="padding:16px;color:var(--muted);font-size:0.9rem;text-align:center;">Carregando...</p>`;
-  await carregarTodosUsuarios();
+  await carregarAmigosMutuos();
   renderizarSugestoesModal('');
   setTimeout(() => novaConversaInput?.focus(), 80);
   lucide.createIcons();
@@ -342,7 +358,7 @@ function renderizarSugestoesModal(busca) {
     : todosUsuarios;
 
   if (!filtrados.length) {
-    novaConversaResult.innerHTML = `<p style="padding:16px;color:var(--muted);font-size:0.9rem;text-align:center;">${busca ? 'Nenhum usuário encontrado.' : 'Nenhum usuário cadastrado ainda.'}</p>`;
+    novaConversaResult.innerHTML = `<p style="padding:16px;color:var(--muted);font-size:0.9rem;text-align:center;">${busca ? 'Nenhum amigo encontrado.' : 'Nenhum amigo em comum ainda. Siga alguém e espere que te sigam de volta.'}</p>`;
     return;
   }
 
