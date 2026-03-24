@@ -188,13 +188,20 @@ async function init() {
   document.getElementById('usuarioAvatar').textContent = iniciais;
   document.getElementById('usuarioAvatar').className = `perfil-avatar ${cor}`;
 
+  if (isPro) {
+    const banner = document.querySelector('.usuario-profile-card .profile-banner');
+    if (banner) banner.style.background = 'linear-gradient(135deg, #7c3f00 0%, #b8860b 40%, #ffd700 100%)';
+    document.querySelector('.usuario-profile-card').classList.add('pro-card');
+  }
+
   const nomeEl = document.getElementById('usuarioNome');
   nomeEl.innerHTML = nome
-    + (isPro ? ` <span class="verified-perfil" title="Verificado"><i data-lucide="badge-check"></i></span>` : '');
+    + (isPro ? ` <span class="verified-perfil" style="display:inline-flex" title="Verificado"><i data-lucide="badge-check"></i></span>` : '');
 
   if (isPro) {
     const proBadgeEl = document.createElement('div');
     proBadgeEl.className = 'pro-badge-perfil';
+    proBadgeEl.style.display = 'flex';
     proBadgeEl.innerHTML = '<i data-lucide="crown"></i> BrainHUB PRO';
     nomeEl.insertAdjacentElement('afterend', proBadgeEl);
   }
@@ -253,7 +260,7 @@ async function init() {
   // Busca posts do usuário
   const { data: posts } = await window.supabase
     .from('posts')
-    .select('id, user_id, texto, created_at, profiles(nome, cor_avatar, curso, periodo), likes(user_id), comments(id)')
+    .select('id, user_id, texto, created_at, profiles!posts_user_id_fkey(nome, cor_avatar, curso, periodo, is_pro), likes(user_id), comments(id)')
     .eq('user_id', targetUserId)
     .order('created_at', { ascending: false });
 
@@ -261,9 +268,10 @@ async function init() {
 
   if (!posts || posts.length === 0) {
     container.innerHTML = `
-      <div style="text-align:center;padding:48px;color:var(--muted)">
-        <i data-lucide="file-x" style="width:40px;height:40px"></i>
-        <p style="margin-top:12px">${nome} ainda não publicou nada.</p>
+      <div class="card" style="text-align:center;padding:48px 32px;color:var(--muted)">
+        <i data-lucide="feather" style="width:44px;height:44px;opacity:0.4"></i>
+        <p style="margin-top:16px;font-size:1rem;font-weight:600;color:var(--text);opacity:0.7">${nome} ainda não publicou nada</p>
+        <p style="margin-top:6px;font-size:0.85rem">Quando publicar, os posts vão aparecer aqui.</p>
       </div>`;
     lucide.createIcons();
     return;
