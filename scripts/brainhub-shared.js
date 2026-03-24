@@ -294,6 +294,15 @@ function ativarEventosDosPosts(container = document) {
   });
 }
 
+// ===== BADGE DE NOTIFICAÇÕES =====
+function aplicarBadgeNotif() {
+  const count = parseInt(localStorage.getItem('brainhub_notif_count') || '0');
+  document.querySelectorAll('.notification-btn .badge').forEach(b => {
+    b.textContent = count;
+    b.style.display = count > 0 ? '' : 'none';
+  });
+}
+
 // ===== STATS SIDEBAR (Supabase) =====
 async function carregarEstatisticasSidebar() {
   if (!window.supabase) return;
@@ -311,3 +320,6 @@ async function carregarEstatisticasSidebar() {
   if (el('statMeusSeguidores')) el('statMeusSeguidores').textContent = seguidores || 0;
   if (el('statMeusSeguindo'))   el('statMeusSeguindo').textContent   = seguindo   || 0;
 }
+
+// Aplica badge de notificações a partir do localStorage (atualizado ao visitar notificacoes.html)
+aplicarBadgeNotif();
