@@ -42,13 +42,16 @@ function criarPostHTML(post) {
   const curtido = post.likes?.some(l => l.user_id === usuarioAtual?.id) || false;
   const tempo = tempoRelativo(post.created_at);
   const sub   = [perfil.curso, perfil.periodo].filter(Boolean).join(' • ') || 'BrainHUB';
-  const isPro = perfil.is_pro === true;
-  const isOwn = post.user_id === usuarioAtual?.id;
-  const proBadge = isPro ? `<span class="pro-badge-inline" style="font-size:0.7rem;padding:2px 7px"><i data-lucide="crown"></i> PRO</span>` : '';
-  const verified = isPro ? `<span class="verified-post" title="Verificado"><i data-lucide="badge-check"></i></span>` : '';
+  const isPro     = perfil.is_pro === true;
+  const isOwn     = post.user_id === usuarioAtual?.id;
+  const proBadge  = isPro ? `<span class="pro-badge-inline" style="font-size:0.7rem;padding:2px 7px"><i data-lucide="crown"></i> PRO</span>` : '';
+  const verified  = isPro ? `<span class="verified-post" title="Verificado"><i data-lucide="badge-check"></i></span>` : '';
+  const featClass = isPro ? ' post-featured' : '';
+  const featLabel = isPro ? `<div class="post-featured-label"><i data-lucide="zap"></i> Post em Destaque</div>` : '';
 
   return `
-    <article class="post-card card" data-id="${post.id}">
+    <article class="post-card card${featClass}" data-id="${post.id}">
+      ${featLabel}
       <div class="post-header">
         <div class="post-user">
           <a href="usuario.html?id=${post.user_id}" class="avatar-link">

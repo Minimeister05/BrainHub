@@ -168,7 +168,7 @@ async function init() {
   // Busca perfil do usuário
   const { data: perfil } = await window.supabase
     .from('profiles')
-    .select('*')
+    .select('*, is_pro')
     .eq('id', targetUserId)
     .single();
 
@@ -183,16 +183,30 @@ async function init() {
   const iniciais = gerarIniciais(nome);
   const sub = [perfil.curso, perfil.faculdade, perfil.periodo].filter(Boolean).join(' • ');
 
-  document.getElementById('usuarioAvatar').textContent = nome ? iniciais : '?';
+  const isPro = perfil.is_pro === true;
+
+  document.getElementById('usuarioAvatar').textContent = iniciais;
   document.getElementById('usuarioAvatar').className = `perfil-avatar ${cor}`;
-  document.getElementById('usuarioNome').textContent = nome;
+
+  const nomeEl = document.getElementById('usuarioNome');
+  nomeEl.innerHTML = nome
+    + (isPro ? ` <span class="verified-perfil" title="Verificado"><i data-lucide="badge-check"></i></span>` : '');
+
+  if (isPro) {
+    const proBadgeEl = document.createElement('div');
+    proBadgeEl.className = 'pro-badge-perfil';
+    proBadgeEl.innerHTML = '<i data-lucide="crown"></i> BrainHUB PRO';
+    nomeEl.insertAdjacentElement('afterend', proBadgeEl);
+  }
+
   document.getElementById('usuarioCurso').textContent = sub;
   document.getElementById('usuarioBio').textContent = perfil.bio || '';
 
   // Sidebar
   document.getElementById('sideAvatar').textContent = iniciais;
   document.getElementById('sideAvatar').className = `profile-avatar ${cor}`;
-  document.getElementById('sideNome').textContent = nome;
+  document.getElementById('sideNome').innerHTML = nome
+    + (isPro ? ` <span class="pro-badge-inline" style="font-size:0.65rem;padding:2px 6px;vertical-align:middle"><i data-lucide="crown"></i> PRO</span>` : '');
   document.getElementById('sideCurso').textContent = sub;
   document.title = `BrainHUB | ${nome}`;
   document.getElementById('btnMsg').href = `chat.html?userId=${targetUserId}`;
