@@ -1,0 +1,85 @@
+.usuario-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 24px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.usuario-avatar-wrap { flex-shrink: 0; }
+
+.usuario-info { flex: 1; min-width: 0; }
+
+.usuario-nome-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.usuario-nome-row h2 { margin: 0; font-size: 1.3rem; }
+
+.usuario-sub { color: var(--muted); font-size: 0.9rem; margin: 2px 0 8px; }
+
+.usuario-bio { font-size: 0.9rem; color: var(--text); opacity: 0.85; }
+
+.usuario-acoes {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.usuario-follow-btn,
+.usuario-msg-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: opacity 0.2s, background 0.2s;
+  white-space: nowrap;
+}
+
+.usuario-follow-btn {
+  background: var(--purple);
+  color: #fff;
+  border: none;
+}
+
+.usuario-follow-btn.seguindo {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+
+.usuario-follow-btn:hover { opacity: 0.85; }
+
+.usuario-msg-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.usuario-msg-btn:hover {
+  border-color: var(--purple);
+  color: var(--purple);
+}
+
+.usuario-follow-btn svg,
+.usuario-msg-btn svg { width: 16px; height: 16px; }
+
+/* Link de autor nos posts */
+.author-link {
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 600;
+}
+.author-link:hover { color: var(--purple); }
+
+.avatar-link { text-decoration: none; }

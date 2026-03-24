@@ -17,57 +17,47 @@ function getConversas() {
 }
 
 
-function getUsuarios() {
-  const fixos = [
-    { nome: "RafaDEV", curso: "Sistemas de Informação" },
-    { nome: "ErickDEV", curso: "Ciência da Computação" },
-  ];
-  const cadastrados = JSON.parse(localStorage.getItem('usuarios_brainhub') || '[]');
-  return [...fixos, ...cadastrados];
+async function buscarUsuariosSupabase(termo) {
+  if (!window.supabase) return [];
+  const { data } = await window.supabase
+    .from('profiles')
+    .select('id, nome, curso, faculdade, cor_avatar')
+    .or(`nome.ilike.%${termo}%,curso.ilike.%${termo}%,faculdade.ilike.%${termo}%`)
+    .limit(8);
+  return data || [];
 }
 
-function pesquisar(termo) {
-  if (!termo || termo.length < 2) {
-    return null;
-  }
+async function pesquisar(termo) {
+  if (!termo || termo.length < 2) return null;
 
   const t = termo.toLowerCase();
 
-  const posts = getPostsSalvos().filter(p =>
-    p.titulo?.toLowerCase().includes(t) ||
-    p.texto?.toLowerCase().includes(t) ||
-    p.autor?.toLowerCase().includes(t) ||
-    p.tags?.some(tag => tag.toLowerCase().includes(t))
-  );
-
-  const gruposFound = grupos.filter(g =>
-    g.nome.toLowerCase().includes(t)
-  );
-
-  const usuarios = getUsuarios().filter(u =>
-    u.nome?.toLowerCase().includes(t) ||
-    u.curso?.toLowerCase().includes(t)
-  );
-
+  const gruposFound = grupos.filter(g => g.nome.toLowerCase().includes(t));
   const conversas = getConversas().filter(c =>
-    c.nome?.toLowerCase().includes(t) ||
-    c.subtitulo?.toLowerCase().includes(t)
+    c.nome?.toLowerCase().includes(t) || c.subtitulo?.toLowerCase().includes(t)
   );
+  const usuarios = await buscarUsuariosSupabase(termo);
 
-  return { posts, grupos: gruposFound, usuarios, conversas };
+  return { grupos: gruposFound, usuarios, conversas };
 }
 
-function renderizarResultados(termo) {
-  const resultados = pesquisar(termo);
+async function renderizarResultados(termo) {
   const container = document.getElementById('searchResults');
+  if (!termo || termo.length < 2) {
+    container.innerHTML = `<p class="search-hint">Digite algo para pesquisar...</p>`;
+    return;
+  }
+
+  container.innerHTML = `<p class="search-hint">Pesquisando...</p>`;
+  const resultados = await pesquisar(termo);
 
   if (!resultados) {
     container.innerHTML = `<p class="search-hint">Digite algo para pesquisar...</p>`;
     return;
   }
 
-  const { posts, grupos, usuarios, conversas } = resultados;
-  const total = posts.length + grupos.length + usuarios.length + conversas.length;
+  const { grupos, usuarios, conversas } = resultados;
+  const total = grupos.length + usuarios.length + conversas.length;
 
   if (total === 0) {
     container.innerHTML = `<div class="search-empty">Nenhum resultado para "<strong>${termo}</strong>"</div>`;
@@ -76,17 +66,20 @@ function renderizarResultados(termo) {
 
   let html = '';
 
-  if (posts.length > 0) {
-    html += `<div class="search-section-title">Posts</div>`;
-    html += posts.slice(0, 3).map(p => `
-      <div class="search-item">
-        <div class="search-item-icon post-icon">P</div>
-        <div class="search-item-info">
-          <div class="search-item-title">${p.titulo}</div>
-          <div class="search-item-sub">${p.autor} • ${p.curso}</div>
-        </div>
-      </div>
-    `).join('');
+  if (usuarios.length > 0) {
+    html += `<div class="search-section-title">Usuários</div>`;
+    html += usuarios.map(u => {
+      const iniciais = (u.nome || '?').split(' ').map(p => p[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
+      const sub = [u.curso, u.faculdade].filter(Boolean).join(' • ') || 'Sem curso definido';
+      return `
+        <a href="usuario.html?id=${u.id}" class="search-item" style="text-decoration:none;color:inherit">
+          <div class="search-item-icon user-icon ${u.cor_avatar || ''}">${iniciais}</div>
+          <div class="search-item-info">
+            <div class="search-item-title">${u.nome}</div>
+            <div class="search-item-sub">${sub}</div>
+          </div>
+        </a>`;
+    }).join('');
   }
 
   if (grupos.length > 0) {
@@ -98,21 +91,7 @@ function renderizarResultados(termo) {
           <div class="search-item-title">${g.nome}</div>
           <div class="search-item-sub">${g.membros}</div>
         </div>
-      </div>
-    `).join('');
-  }
-
-  if (usuarios.length > 0) {
-    html += `<div class="search-section-title">Usuários</div>`;
-    html += usuarios.map(u => `
-      <div class="search-item">
-        <div class="search-item-icon user-icon">${u.nome[0].toUpperCase()}</div>
-        <div class="search-item-info">
-          <div class="search-item-title">${u.nome}</div>
-          <div class="search-item-sub">${u.curso || 'Sem curso definido'}</div>
-        </div>
-      </div>
-    `).join('');
+      </div>`).join('');
   }
 
   if (conversas.length > 0) {
@@ -124,8 +103,7 @@ function renderizarResultados(termo) {
           <div class="search-item-title">${c.nome}</div>
           <div class="search-item-sub">${c.subtitulo || ''}</div>
         </div>
-      </div>
-    `).join('');
+      </div>`).join('');
   }
 
   container.innerHTML = html;
@@ -161,7 +139,7 @@ function iniciarSearch() {
     if (e.key === 'Escape') fecharSearch();
   });
 
-  // Pesquisa ao digitar
+  // Pesquisa ao digitar (async)
   input.addEventListener('input', () => {
     renderizarResultados(input.value.trim());
   });

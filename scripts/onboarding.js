@@ -79,7 +79,7 @@ document.getElementById('btnFinish').addEventListener('click', async () => {
     if (window.supabase) {
         const { data: { user } } = await window.supabase.auth.getUser();
         if (user) {
-            await window.supabase.from('profiles').upsert({
+            const { error } = await window.supabase.from('profiles').upsert({
                 id: user.id,
                 nome,
                 curso,
@@ -88,6 +88,11 @@ document.getElementById('btnFinish').addEventListener('click', async () => {
                 bio,
                 cor_avatar: corSelecionada
             });
+            if (error) {
+                console.error('Erro ao salvar perfil no Supabase:', error);
+                alert('Erro ao salvar perfil: ' + error.message);
+                return;
+            }
         }
     }
 

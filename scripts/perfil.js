@@ -46,6 +46,11 @@ async function carregarDados() {
   const bio       = perfil?.bio       || ''
   const corAvatar = perfil?.cor_avatar || ''
 
+  // Sincroniza localStorage com os dados do Supabase
+  localStorage.setItem(`brainhub_perfil_${user.email}`, JSON.stringify({
+    nome, curso, faculdade, periodo, bio, corAvatar
+  }))
+
   document.getElementById('infoEmail').textContent    = user.email || '—'
   document.getElementById('inputNome').value          = nome
   document.getElementById('inputCurso').value         = curso

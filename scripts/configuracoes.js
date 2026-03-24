@@ -47,6 +47,24 @@ function renderizar() {
     </div>
 
     <div class="config-grupo">
+      <h4><i data-lucide="lock"></i> Segurança</h4>
+      <div class="config-senha-form">
+        <div class="config-field">
+          <label>Nova senha</label>
+          <input type="password" id="inputNovaSenha" placeholder="Mínimo 6 caracteres" autocomplete="new-password" />
+        </div>
+        <div class="config-field">
+          <label>Confirmar nova senha</label>
+          <input type="password" id="inputConfirmarSenha" placeholder="Repita a nova senha" autocomplete="new-password" />
+        </div>
+        <button class="config-salvar-senha-btn" id="btnTrocarSenha">
+          <i data-lucide="lock"></i> Trocar senha
+        </button>
+        <p class="config-senha-msg hidden" id="msgSenha"></p>
+      </div>
+    </div>
+
+    <div class="config-grupo">
       <h4><i data-lucide="log-out"></i> Sessão</h4>
       <button class="config-sair-btn" id="btnSair"><i data-lucide="log-out"></i> Sair da conta</button>
     </div>
@@ -62,7 +80,53 @@ function renderizar() {
     });
   });
 
-  document.getElementById('btnSair').addEventListener('click', () => {
+  document.getElementById('btnTrocarSenha').addEventListener('click', async () => {
+    const nova = document.getElementById('inputNovaSenha').value;
+    const confirmar = document.getElementById('inputConfirmarSenha').value;
+    const msg = document.getElementById('msgSenha');
+
+    msg.className = 'config-senha-msg';
+
+    if (!nova || !confirmar) {
+      msg.textContent = 'Preencha os dois campos.';
+      msg.classList.add('erro');
+      return;
+    }
+    if (nova.length < 6) {
+      msg.textContent = 'A senha precisa ter pelo menos 6 caracteres.';
+      msg.classList.add('erro');
+      return;
+    }
+    if (nova !== confirmar) {
+      msg.textContent = 'As senhas não coincidem.';
+      msg.classList.add('erro');
+      return;
+    }
+
+    const btn = document.getElementById('btnTrocarSenha');
+    btn.disabled = true;
+    btn.innerHTML = '<i data-lucide="loader"></i> Salvando...';
+    lucide.createIcons();
+
+    const { error } = await window.supabase.auth.updateUser({ password: nova });
+
+    btn.disabled = false;
+    btn.innerHTML = '<i data-lucide="lock"></i> Trocar senha';
+    lucide.createIcons();
+
+    if (error) {
+      msg.textContent = 'Erro ao trocar senha: ' + error.message;
+      msg.classList.add('erro');
+    } else {
+      msg.textContent = 'Senha alterada com sucesso!';
+      msg.classList.add('sucesso');
+      document.getElementById('inputNovaSenha').value = '';
+      document.getElementById('inputConfirmarSenha').value = '';
+    }
+  });
+
+  document.getElementById('btnSair').addEventListener('click', async () => {
+    if (window.supabase) await window.supabase.auth.signOut();
     localStorage.removeItem('brainhub_usuario_logado');
     localStorage.removeItem('brainhub_pro');
     window.location.href = 'login.html';

@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BrainHUB | Home</title>
   <link rel="stylesheet" href="../css/home.css" />
+  <link rel="stylesheet" href="../css/usuario.css" />
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
@@ -40,9 +41,9 @@
         <h2>Lucas Mendes</h2>
         <p>Ciência da Computação • 5º período</p>
         <div class="profile-stats">
-          <div><strong>142</strong><span>POSTS</span></div>
-          <div><strong>89</strong><span>SEGUIDORES</span></div>
-          <div><strong>56</strong><span>SEGUINDO</span></div>
+          <div><strong id="statMeusPosts">—</strong><span>POSTS</span></div>
+          <div><strong id="statMeusSeguidores">—</strong><span>SEGUIDORES</span></div>
+          <div><strong id="statMeusSeguindo">—</strong><span>SEGUINDO</span></div>
         </div>
       </section>
 
@@ -80,62 +81,7 @@
       </section>
 
       <div class="feed-scroll" id="feedList">
-        <article class="post-card card">
-          <div class="post-header">
-            <div class="post-user">
-              <div class="mini-avatar">LM</div>
-              <div><h4>Lucas Mendes</h4><p>Ciência da Computação • 2h atrás</p></div>
-            </div>
-            <button class="icon-btn small"><i data-lucide="more-vertical"></i></button>
-          </div>
-          <h3>Alguém pode me ajudar com Estrutura de Dados?</h3>
-          <p class="post-text">Estou com dificuldade em entender árvores AVL e balanceamento. Alguém tem algum material bom ou pode explicar de forma simples? Agradeço qualquer ajuda! 🌲</p>
-          <div class="tags"><span>Estrutura de Dados</span><span>Árvore AVL</span><span>Ajuda</span></div>
-          <div class="post-actions">
-            <button class="action-btn like-btn"><i data-lucide="thumbs-up"></i> <span>24</span></button>
-            <button class="action-btn"><i data-lucide="message-square"></i> <span>8</span></button>
-            <button class="action-btn"><i data-lucide="share-2"></i> <span>3</span></button>
-            <button class="action-btn save-btn right"><i data-lucide="bookmark"></i></button>
-          </div>
-        </article>
-
-        <article class="post-card card">
-          <div class="post-header">
-            <div class="post-user">
-              <div class="mini-avatar purple">AM</div>
-              <div><h4>Ana Martins</h4><p>Engenharia de Software • 5h atrás</p></div>
-            </div>
-            <button class="icon-btn small"><i data-lucide="more-vertical"></i></button>
-          </div>
-          <h3>Resumo completo de Banco de Dados Relacional 📚</h3>
-          <p class="post-text">Galera, fiz um resumo bem detalhado sobre normalização, SQL avançado e modelagem ER. Quem quiser, é só comentar que eu mando o link do PDF.</p>
-          <div class="tags"><span>Banco de Dados</span><span>Resumo</span><span>SQL</span></div>
-          <div class="post-actions">
-            <button class="action-btn like-btn"><i data-lucide="thumbs-up"></i> <span>67</span></button>
-            <button class="action-btn"><i data-lucide="message-square"></i> <span>23</span></button>
-            <button class="action-btn"><i data-lucide="share-2"></i> <span>12</span></button>
-            <button class="action-btn save-btn right"><i data-lucide="bookmark"></i></button>
-          </div>
-        </article>
-
-        <article class="post-card card">
-          <div class="post-header">
-            <div class="post-user">
-              <div class="mini-avatar green">RF</div>
-              <div><h4>Rafael Ferreira</h4><p>Sistemas de Informação • 7h atrás</p></div>
-            </div>
-            <button class="icon-btn small"><i data-lucide="more-vertical"></i></button>
-          </div>
-          <h3>Vale a pena aprender React antes de backend?</h3>
-          <p class="post-text">Tô montando meu roadmap e queria saber se faz sentido focar em front primeiro ou se já começo com Node junto. Quem já passou por isso?</p>
-          <div class="tags"><span>Carreira</span><span>React</span><span>Frontend</span></div>
-          <div class="post-actions">
-            <button class="action-btn like-btn"><i data-lucide="thumbs-up"></i> <span>18</span></button>
-            <button class="action-btn"><i data-lucide="message-square"></i> <span>11</span></button>
-            <button class="action-btn"><i data-lucide="share-2"></i> <span>2</span></button>
-            <button class="action-btn save-btn right"><i data-lucide="bookmark"></i></button>
-          </div>
-        </article>
+        <p style="color:var(--muted);text-align:center;padding:32px">Carregando posts...</p>
       </div>
     </section>
 
@@ -202,14 +148,8 @@
   </main>
 
   <script src="../scripts/brainhub-shared.js"></script>
-  <script src="../scripts/home.js"></script>
-  <script>
-    function toggleSeguir(btn) {
-      const isSeguindo = btn.classList.contains('seguindo');
-      btn.classList.toggle('seguindo');
-      btn.textContent = isSeguindo ? 'Seguir' : 'Seguindo';
-    }
-  </script>
+  <script type="module" src="../scripts/supabaseClient.js"></script>
+  <script defer src="../scripts/home.js"></script>
 
   <div class="search-overlay hidden" id="searchOverlay">
     <div class="search-modal">
@@ -227,6 +167,6 @@
     </div>
   </div>
 
-  <script src="../scripts/search.js"></script>
+  <script defer src="../scripts/search.js"></script>
 </body>
 </html>
