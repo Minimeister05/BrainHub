@@ -293,3 +293,21 @@ function ativarEventosDosPosts(container = document) {
     input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); const t = input.value.trim(); if (t) adicionarComentario(id, t); } });
   });
 }
+
+// ===== STATS SIDEBAR (Supabase) =====
+async function carregarEstatisticasSidebar() {
+  if (!window.supabase) return;
+  const { data: { user } } = await window.supabase.auth.getUser();
+  if (!user) return;
+
+  const [{ count: posts }, { count: seguidores }, { count: seguindo }] = await Promise.all([
+    window.supabase.from('posts').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
+    window.supabase.from('follows').select('*', { count: 'exact', head: true }).eq('following_id', user.id),
+    window.supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', user.id)
+  ]);
+
+  const el = (id) => document.getElementById(id);
+  if (el('statMeusPosts'))      el('statMeusPosts').textContent      = posts      || 0;
+  if (el('statMeusSeguidores')) el('statMeusSeguidores').textContent = seguidores || 0;
+  if (el('statMeusSeguindo'))   el('statMeusSeguindo').textContent   = seguindo   || 0;
+}

@@ -37,9 +37,9 @@
         <h2>Usuário</h2>
         <p>Carregando...</p>
         <div class="profile-stats">
-          <div><strong>142</strong><span>POSTS</span></div>
-          <div><strong>89</strong><span>SEGUIDORES</span></div>
-          <div><strong>56</strong><span>SEGUINDO</span></div>
+          <div><strong id="statMeusPosts">—</strong><span>POSTS</span></div>
+          <div><strong id="statMeusSeguidores">—</strong><span>SEGUIDORES</span></div>
+          <div><strong id="statMeusSeguindo">—</strong><span>SEGUINDO</span></div>
         </div>
       </section>
 
@@ -77,7 +77,8 @@
   </main>
 
   <script src="../scripts/brainhub-shared.js"></script>
-  <script src="../scripts/salvos.js"></script>
+  <script type="module" src="../scripts/supabaseClient.js"></script>
+  <script defer src="../scripts/salvos.js"></script>
 
   <div class="search-overlay hidden" id="searchOverlay">
     <div class="search-modal">

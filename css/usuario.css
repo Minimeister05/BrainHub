@@ -83,3 +83,6 @@
 .author-link:hover { color: var(--purple); }
 
 .avatar-link { text-decoration: none; }
+
+.comment-author-link { text-decoration: none; }
+.comment-author-link:hover .comment-author { color: var(--purple); }

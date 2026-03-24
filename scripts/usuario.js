@@ -195,6 +195,7 @@ async function init() {
   document.getElementById('sideNome').textContent = nome;
   document.getElementById('sideCurso').textContent = sub;
   document.title = `BrainHUB | ${nome}`;
+  document.getElementById('btnMsg').href = `chat.html?userId=${targetUserId}`;
 
   // Conta de seguidores/seguindo
   const [{ count: seguidores }, { count: seguindoCount }, { count: postsCount }] = await Promise.all([

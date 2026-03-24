@@ -1,6 +1,7 @@
 lucide.createIcons();
 sincronizarStatusPro();
 aplicarPerfilNoSidebar();
+carregarEstatisticasSidebar();
 
 const painelConfig = document.getElementById('painelConfig');
 

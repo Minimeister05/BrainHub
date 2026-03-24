@@ -139,11 +139,15 @@ let filtroAtual    = 'all';
 
 // ===== INIT =====
 function inicializar() {
-  const dmsReais     = carregarDMsReais();
-  const nomesReais   = new Set(dmsReais.map(d => d.nome));
-  // Grupos não mudam com o login; DMs fake só aparecem se não houver thread real com o mesmo contato
+  const dmsReais   = carregarDMsReais();
+  const nomesReais = new Set(dmsReais.map(d => d.nome));
   conversas = [...dmsReais, ...gruposFake.filter(g => !nomesReais.has(g.nome))];
   renderizarLista();
+}
+
+async function init() {
+  inicializar();
+  await verificarUrlUsuario();
 }
 
 function salvarGrupo() {
@@ -374,8 +378,41 @@ const novaConversaModal  = document.getElementById('novaConversaModal');
 const novaConversaInput  = document.getElementById('novaConversaInput');
 const novaConversaResult = document.getElementById('novaConversaResultados');
 
-document.getElementById('newChatBtn').addEventListener('click', () => {
+let usuariosParaChat = []; // populado do Supabase
+
+async function carregarSeguidosMutuos() {
+  if (!window.supabase) return;
+  const { data: { user } } = await window.supabase.auth.getUser();
+  if (!user) return;
+
+  // Pega quem eu sigo
+  const { data: seguindo } = await window.supabase
+    .from('follows')
+    .select('following_id')
+    .eq('follower_id', user.id);
+
+  if (!seguindo || seguindo.length === 0) return;
+  const ids = seguindo.map(f => f.following_id);
+
+  // Busca perfis dessas pessoas
+  const { data: perfis } = await window.supabase
+    .from('profiles')
+    .select('id, nome, cor_avatar, curso')
+    .in('id', ids);
+
+  usuariosParaChat = (perfis || []).map(p => ({
+    id:       p.id,
+    nome:     p.nome || 'Usuário',
+    iniciais: (p.nome || '?').split(' ').map(x => x[0]).filter(Boolean).slice(0, 2).join('').toUpperCase(),
+    cor:      p.cor_avatar || '',
+    sub:      p.curso || ''
+  }));
+}
+
+document.getElementById('newChatBtn').addEventListener('click', async () => {
   novaConversaModal.classList.remove('hidden');
+  novaConversaResult.innerHTML = `<p style="padding:16px;color:var(--muted);font-size:0.9rem;text-align:center;">Carregando...</p>`;
+  await carregarSeguidosMutuos();
   renderizarSugestoesModal('');
   setTimeout(() => novaConversaInput?.focus(), 80);
   lucide.createIcons();
@@ -390,35 +427,92 @@ novaConversaInput?.addEventListener('input', () => {
 });
 
 function renderizarSugestoesModal(busca) {
-  const todos = getUsuariosParaChat();
-  const filtrados = busca ? todos.filter(u => u.nome.toLowerCase().includes(busca)) : todos;
+  const filtrados = busca
+    ? usuariosParaChat.filter(u => u.nome.toLowerCase().includes(busca))
+    : usuariosParaChat;
 
   if (filtrados.length === 0) {
-    novaConversaResult.innerHTML = `<p style="padding:16px;color:var(--muted);font-size:0.9rem;text-align:center;">Nenhum usuário encontrado.</p>`;
+    novaConversaResult.innerHTML = `<p style="padding:16px;color:var(--muted);font-size:0.9rem;text-align:center;">${busca ? 'Nenhum usuário encontrado.' : 'Siga alguém para iniciar uma conversa.'}</p>`;
     return;
   }
 
   novaConversaResult.innerHTML = filtrados.map(u => `
-    <div class="nova-conv-item"
-         data-nome="${u.nome}" data-email="${u.email}"
-         data-iniciais="${u.iniciais}" data-cor="${u.cor}" data-sub="${u.subtitulo}">
+    <div class="nova-conv-item" data-uid="${u.id}" data-nome="${u.nome}"
+         data-iniciais="${u.iniciais}" data-cor="${u.cor}" data-sub="${u.sub}">
       <div class="conv-avatar ${u.cor}" style="width:38px;height:38px;font-size:0.8rem;">${u.iniciais}</div>
       <div>
         <div style="font-weight:600;font-size:0.95rem;">${u.nome}</div>
-        <div style="font-size:0.8rem;color:var(--muted);">${u.subtitulo}</div>
+        <div style="font-size:0.8rem;color:var(--muted);">${u.sub}</div>
       </div>
     </div>`).join('');
 
   novaConversaResult.querySelectorAll('.nova-conv-item').forEach(item => {
-    item.addEventListener('click', () => criarOuAbrirConversa(item));
+    item.addEventListener('click', () => iniciarConversaPorItem(item));
   });
-  lucide.createIcons();
+}
+
+function iniciarConversaPorItem(item) {
+  const uid      = item.dataset.uid;
+  const nome     = item.dataset.nome;
+  const iniciais = item.dataset.iniciais;
+  const cor      = item.dataset.cor;
+  const sub      = item.dataset.sub || '';
+  iniciarConversaComUsuario(uid, nome, iniciais, cor, sub);
+  fecharModalNova();
+}
+
+function iniciarConversaComUsuario(uid, nome, iniciais, cor, sub) {
+  // Usa uid como chave da thread
+  const todos    = JSON.parse(localStorage.getItem(DMS_KEY) || '[]');
+  const meuId    = ME.email; // mantém compatibilidade
+  const threadId = [meuId, uid].sort().join('::');
+
+  if (!todos.find(t => t.id === threadId)) {
+    todos.push({
+      id: threadId,
+      participantes: {
+        [meuId]: { nome: ME.nome, iniciais: ME.iniciais, cor: ME.cor },
+        [uid]:   { nome, iniciais, cor, subtitulo: sub }
+      },
+      mensagens: [],
+      naoLidas:  {}
+    });
+    localStorage.setItem(DMS_KEY, JSON.stringify(todos));
+  }
+
+  inicializar();
+  setTimeout(() => {
+    const conv = conversas.find(c => c._dmId === threadId);
+    if (conv) abrirConversa(conv.id);
+  }, 50);
 }
 
 function fecharModalNova() {
   novaConversaModal?.classList.add('hidden');
   if (novaConversaInput) novaConversaInput.value = '';
   if (novaConversaResult) novaConversaResult.innerHTML = '';
+}
+
+// Abre conversa direto se vier de usuario.html?userId=...
+async function verificarUrlUsuario() {
+  const params = new URLSearchParams(window.location.search);
+  const uid = params.get('userId');
+  if (!uid || !window.supabase) return;
+
+  const { data: perfil } = await window.supabase
+    .from('profiles')
+    .select('nome, cor_avatar, curso')
+    .eq('id', uid)
+    .single();
+
+  if (!perfil) return;
+
+  const nome     = perfil.nome || 'Usuário';
+  const iniciais = nome.split(' ').map(x => x[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
+  iniciarConversaComUsuario(uid, nome, iniciais, perfil.cor_avatar || '', perfil.curso || '');
+
+  // Limpa o param da URL sem recarregar
+  window.history.replaceState({}, '', 'chat.html');
 }
 
 // ===== EVENTOS =====
@@ -436,4 +530,4 @@ document.querySelectorAll('.chat-tab').forEach(tab => {
 });
 document.getElementById('searchInput').addEventListener('input', renderizarLista);
 
-inicializar();
+init();

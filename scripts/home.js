@@ -88,7 +88,7 @@ async function carregarComentarios(postId, lista) {
   lista.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;padding:4px 0">Carregando...</p>';
   const { data } = await window.supabase
     .from('comments')
-    .select('id, texto, created_at, profiles(nome, cor_avatar)')
+    .select('id, user_id, texto, created_at, profiles(nome, cor_avatar)')
     .eq('post_id', postId)
     .order('created_at', { ascending: true });
 
@@ -99,8 +99,11 @@ async function carregarComentarios(postId, lista) {
 
   lista.innerHTML = data.map(c => {
     const nome = c.profiles?.nome || 'Usuário';
+    const uid  = c.user_id;
     return `<div class="comment-item">
-      <strong class="comment-author">${nome}</strong>
+      <a href="usuario.html?id=${uid}" class="comment-author-link">
+        <strong class="comment-author">${nome}</strong>
+      </a>
       <p class="comment-text">${c.texto}</p>
     </div>`;
   }).join('');

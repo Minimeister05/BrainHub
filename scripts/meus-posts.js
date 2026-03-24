@@ -1,6 +1,7 @@
 lucide.createIcons();
 sincronizarStatusPro();
 aplicarPerfilNoSidebar();
+carregarEstatisticasSidebar();
 
 const feedMeusPosts = document.getElementById('feedMeusPosts');
 const publishBtn    = document.getElementById('publishBtn');
