@@ -40,14 +40,17 @@ function criarNotifHTML(notif) {
   if (notif.tipo === 'curtida') {
     textoHTML = `<strong>${notif.nome}</strong> curtiu seu post`;
     if (notif.postPreview) previewHTML = `<span class="notif-preview-text">"${notif.postPreview}"</span>`;
-    acoesHTML = `<a href="home.html" class="notif-btn">Ver feed</a>`;
+    acoesHTML = `<a href="home.html?postId=${notif.postId}" class="notif-btn">Ver post</a>`;
   } else if (notif.tipo === 'comentario') {
     textoHTML = `<strong>${notif.nome}</strong> comentou no seu post`;
     if (notif.comentarioTexto) previewHTML = `<span class="notif-preview-text">"${notif.comentarioTexto}"</span>`;
-    acoesHTML = `<a href="home.html" class="notif-btn">Ver comentário</a>`;
+    acoesHTML = `<a href="home.html?postId=${notif.postId}&openComments=1" class="notif-btn primary">Ver comentário</a>`;
   } else if (notif.tipo === 'seguidor') {
     textoHTML = `<strong>${notif.nome}</strong> começou a te seguir`;
-    acoesHTML = `<a href="usuario.html?id=${notif.userId}" class="notif-btn primary">Ver perfil</a>`;
+    const followBtn = notif.jaSeguindo
+      ? `<button class="notif-btn" disabled>Seguindo ✓</button>`
+      : `<button class="notif-btn primary btn-follow-back" data-uid="${notif.userId}">Seguir de volta</button>`;
+    acoesHTML = `${followBtn} <a href="usuario.html?id=${notif.userId}" class="notif-btn">Ver perfil</a>`;
   }
 
   return `
@@ -171,6 +174,7 @@ async function init() {
       nome:        l.profiles?.nome || 'Usuário',
       cor:         l.profiles?.cor_avatar || '',
       userId:      l.user_id,
+      postId:      l.post_id,
       postPreview: postTextoMap[l.post_id] || '',
       created_at:  l.created_at,
     }));
@@ -181,6 +185,7 @@ async function init() {
       nome:            c.profiles?.nome || 'Usuário',
       cor:             c.profiles?.cor_avatar || '',
       userId:          c.user_id,
+      postId:          c.post_id,
       comentarioTexto: (c.texto || '').slice(0, 80),
       created_at:      c.created_at,
     }));
@@ -194,13 +199,19 @@ async function init() {
     .order('created_at', { ascending: false })
     .limit(60);
 
+  // Verifica quem o usuário já segue de volta
+  const { data: euSigo } = await window.supabase
+    .from('follows').select('following_id').eq('follower_id', user.id);
+  const euSigoSet = new Set((euSigo || []).map(f => f.following_id));
+
   (follows || []).forEach(f => notifs.push({
-    id:         `follow_${f.follower_id}`,
-    tipo:       'seguidor',
-    nome:       f.profiles?.nome || 'Usuário',
-    cor:        f.profiles?.cor_avatar || '',
-    userId:     f.follower_id,
-    created_at: f.created_at,
+    id:           `follow_${f.follower_id}`,
+    tipo:         'seguidor',
+    nome:         f.profiles?.nome || 'Usuário',
+    cor:          f.profiles?.cor_avatar || '',
+    userId:       f.follower_id,
+    jaSeguindo:   euSigoSet.has(f.follower_id),
+    created_at:   f.created_at,
   }));
 
   // Ordena por data decrescente
@@ -231,6 +242,29 @@ async function init() {
     localStorage.setItem('brainhub_notif_count', '0');
     atualizarContagens();
     renderizarNotifs(filtroAtivo);
+  });
+
+  // Botão "Seguir de volta" inline
+  document.getElementById('notifList').addEventListener('click', async (e) => {
+    const btn = e.target.closest('.btn-follow-back');
+    if (!btn || btn.disabled) return;
+    const uid = btn.dataset.uid;
+    btn.disabled = true;
+    btn.textContent = 'Enviando...';
+    const { error } = await window.supabase.from('follows').insert({
+      follower_id: usuarioAtual.id,
+      following_id: uid
+    });
+    if (!error) {
+      btn.textContent = 'Seguindo ✓';
+      btn.classList.remove('primary');
+      // Atualiza o dado em memória para não reverter ao re-renderizar
+      const notif = todasNotifs.find(n => n.userId === uid && n.tipo === 'seguidor');
+      if (notif) notif.jaSeguindo = true;
+    } else {
+      btn.disabled = false;
+      btn.textContent = 'Seguir de volta';
+    }
   });
 
   // Limpar lidas (remove visualmente as já lidas)

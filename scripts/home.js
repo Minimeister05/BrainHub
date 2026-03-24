@@ -263,12 +263,37 @@ async function carregarEstatisticas(userId) {
   if (elSeguindo)   elSeguindo.textContent   = seguindo   || 0;
 }
 
+// Scroll para post específico vindo de notificações (?postId=xxx&openComments=1)
+function rolarParaPost() {
+  const params = new URLSearchParams(window.location.search);
+  const postId = params.get('postId');
+  if (!postId) return;
+
+  const card = document.querySelector(`.post-card[data-id="${postId}"]`);
+  if (!card) return;
+
+  card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  card.style.transition = 'box-shadow 0.4s';
+  card.style.boxShadow = '0 0 0 2px var(--purple)';
+  setTimeout(() => card.style.boxShadow = '', 2500);
+
+  if (params.get('openComments') === '1') {
+    const section = card.querySelector('.comments-section');
+    if (section?.classList.contains('hidden')) {
+      card.querySelector('.comment-toggle-btn')?.click();
+    }
+  }
+
+  window.history.replaceState({}, '', 'home.html');
+}
+
 // Init
 async function init() {
   const { data: { user } } = await window.supabase.auth.getUser();
   usuarioAtual = user;
   if (usuarioAtual) carregarEstatisticas(usuarioAtual.id);
   await renderizarPosts();
+  rolarParaPost();
 }
 
 init();
