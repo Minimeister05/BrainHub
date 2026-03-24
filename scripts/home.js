@@ -41,8 +41,11 @@ function criarPostHTML(post) {
   const commentsCount = post.comments?.length || 0;
   const curtido = post.likes?.some(l => l.user_id === usuarioAtual?.id) || false;
   const tempo = tempoRelativo(post.created_at);
-  const sub = [perfil.curso, perfil.periodo].filter(Boolean).join(' • ') || 'BrainHUB';
+  const sub   = [perfil.curso, perfil.periodo].filter(Boolean).join(' • ') || 'BrainHUB';
+  const isPro = perfil.is_pro === true;
   const isOwn = post.user_id === usuarioAtual?.id;
+  const proBadge = isPro ? `<span class="pro-badge-inline" style="font-size:0.7rem;padding:2px 7px"><i data-lucide="crown"></i> PRO</span>` : '';
+  const verified = isPro ? `<span class="verified-post" title="Verificado"><i data-lucide="badge-check"></i></span>` : '';
 
   return `
     <article class="post-card card" data-id="${post.id}">
@@ -52,7 +55,7 @@ function criarPostHTML(post) {
             <div class="mini-avatar ${cor}">${iniciais}</div>
           </a>
           <div>
-            <h4><a href="usuario.html?id=${post.user_id}" class="author-link">${nome}</a></h4>
+            <h4><a href="usuario.html?id=${post.user_id}" class="author-link">${nome}</a>${verified}${proBadge}</h4>
             <p>${sub} • ${tempo}</p>
           </div>
         </div>
@@ -187,7 +190,7 @@ async function renderizarPosts() {
     .from('posts')
     .select(`
       id, user_id, texto, area, tipo, created_at,
-      profiles!posts_user_id_fkey(nome, cor_avatar, curso, faculdade, periodo),
+      profiles!posts_user_id_fkey(nome, cor_avatar, curso, faculdade, periodo, is_pro),
       likes(user_id),
       comments(id)
     `)
