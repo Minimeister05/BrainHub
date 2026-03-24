@@ -1,49 +1,124 @@
-.usuario-header {
+/* ===== LAYOUT DA PÁGINA DE USUÁRIO ===== */
+.usuario-layout {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 24px;
+  max-width: 1000px;
+  margin: 24px auto;
+  padding: 0 16px;
+  align-items: start;
+}
+
+/* Sidebar esquerda */
+.usuario-sidebar { position: sticky; top: 80px; }
+
+.usuario-profile-card {
   display: flex;
-  align-items: flex-start;
-  gap: 20px;
-  padding: 24px;
-  margin-bottom: 16px;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  overflow: hidden;
+  padding: 0 0 20px;
+}
+
+.usuario-profile-card .profile-banner {
+  width: 100%;
+  height: 70px;
+  margin-bottom: 0;
+}
+
+.usuario-profile-card .perfil-avatar {
+  margin-top: -30px;
+  width: 72px;
+  height: 72px;
+  font-size: 1.4rem;
+  border: 3px solid var(--panel);
+}
+
+.usuario-profile-info {
+  padding: 10px 16px 0;
+  width: 100%;
+}
+
+.usuario-profile-info h2 {
+  font-size: 1.1rem;
+  margin: 8px 0 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   flex-wrap: wrap;
 }
 
-.usuario-avatar-wrap { flex-shrink: 0; }
+.usuario-sub { color: var(--muted); font-size: 0.85rem; margin: 2px 0 8px; }
+.usuario-bio { font-size: 0.85rem; opacity: 0.85; margin: 0; }
 
-.usuario-info { flex: 1; min-width: 0; }
-
-.usuario-nome-row {
+.usuario-profile-stats {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 4px;
+  justify-content: space-around;
+  width: 100%;
+  padding: 16px;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  margin: 14px 0;
 }
 
-.usuario-nome-row h2 { margin: 0; font-size: 1.3rem; }
-
-.usuario-sub { color: var(--muted); font-size: 0.9rem; margin: 2px 0 8px; }
-
-.usuario-bio { font-size: 0.9rem; color: var(--text); opacity: 0.85; }
-
-.usuario-acoes {
+.usuario-profile-stats div {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  flex-shrink: 0;
+  align-items: center;
+  gap: 2px;
 }
 
+.usuario-profile-stats strong { font-size: 1.1rem; }
+.usuario-profile-stats span   { font-size: 0.65rem; color: var(--muted); letter-spacing: 0.05em; }
+
+.usuario-profile-acoes {
+  display: flex;
+  gap: 10px;
+  padding: 0 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Coluna de posts */
+.usuario-posts-col { min-width: 0; }
+
+.usuario-posts-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.usuario-posts-header h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem;
+  margin: 0;
+  color: var(--muted);
+}
+
+.usuario-posts-header h3 svg { width: 18px; height: 18px; }
+
+/* Botões de ação */
 .usuario-follow-btn,
 .usuario-msg-btn {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 9px 18px;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 0;
   border-radius: 10px;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
   text-decoration: none;
-  transition: opacity 0.2s, background 0.2s;
-  white-space: nowrap;
+  transition: opacity 0.2s, background 0.2s, border-color 0.2s;
+  flex: 1;
 }
 
 .usuario-follow-btn {
@@ -66,13 +141,10 @@
   color: var(--text);
 }
 
-.usuario-msg-btn:hover {
-  border-color: var(--purple);
-  color: var(--purple);
-}
+.usuario-msg-btn:hover { border-color: var(--purple); color: var(--purple); }
 
 .usuario-follow-btn svg,
-.usuario-msg-btn svg { width: 16px; height: 16px; }
+.usuario-msg-btn svg { width: 15px; height: 15px; }
 
 /* Link de autor nos posts */
 .author-link {

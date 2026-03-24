@@ -31,40 +31,27 @@
     </div>
   </header>
 
-  <main class="layout">
-    <aside class="left-column">
-      <section class="profile-card card">
-        <div class="profile-banner"></div>
-        <div class="profile-avatar" id="sideAvatar">?</div>
-        <h2 id="sideNome">Carregando...</h2>
-        <p id="sideCurso"></p>
-        <div class="profile-stats">
-          <div><strong id="statPosts">0</strong><span>POSTS</span></div>
-          <div><strong id="statSeguidores">0</strong><span>SEGUIDORES</span></div>
-          <div><strong id="statSeguindo">0</strong><span>SEGUINDO</span></div>
-        </div>
-      </section>
-      <section class="menu-card card">
-        <a href="home.html" class="menu-item"><i data-lucide="user-round"></i> Feed</a>
-        <a href="meus-posts.html" class="menu-item"><i data-lucide="file-text"></i> Meus Posts</a>
-        <a href="salvos.html" class="menu-item"><i data-lucide="bookmark"></i> Salvos</a>
-        <a href="configuracoes.html" class="menu-item"><i data-lucide="settings"></i> Configurações</a>
-      </section>
-    </aside>
+  <main class="usuario-layout">
 
-    <section class="center-column">
-      <div class="usuario-header card" id="usuarioHeader">
-        <div class="usuario-avatar-wrap">
-          <div class="perfil-avatar" id="usuarioAvatar">?</div>
-        </div>
-        <div class="usuario-info">
-          <div class="usuario-nome-row">
-            <h2 id="usuarioNome">Carregando...</h2>
-          </div>
+    <!-- Coluna esquerda: perfil -->
+    <aside class="usuario-sidebar">
+      <div class="usuario-profile-card card">
+        <div class="profile-banner"></div>
+        <div class="perfil-avatar" id="usuarioAvatar">?</div>
+
+        <div class="usuario-profile-info">
+          <h2 id="usuarioNome">Carregando...</h2>
           <p id="usuarioCurso" class="usuario-sub"></p>
           <p id="usuarioBio" class="usuario-bio"></p>
         </div>
-        <div class="usuario-acoes">
+
+        <div class="usuario-profile-stats">
+          <div><strong id="statPosts">—</strong><span>POSTS</span></div>
+          <div><strong id="statSeguidores">—</strong><span>SEGUIDORES</span></div>
+          <div><strong id="statSeguindo">—</strong><span>SEGUINDO</span></div>
+        </div>
+
+        <div class="usuario-profile-acoes">
           <button class="usuario-follow-btn" id="btnFollow">
             <i data-lucide="user-plus"></i> Seguir
           </button>
@@ -73,21 +60,18 @@
           </a>
         </div>
       </div>
+    </aside>
 
-      <div class="feed-scroll" id="usuarioPosts">
+    <!-- Coluna principal: posts -->
+    <section class="usuario-posts-col">
+      <div class="usuario-posts-header">
+        <h3><i data-lucide="file-text"></i> Posts</h3>
+      </div>
+      <div id="usuarioPosts">
         <p style="color:var(--muted);text-align:center;padding:32px">Carregando posts...</p>
       </div>
     </section>
 
-    <aside class="right-column">
-      <section class="subjects-card card">
-        <h3><i data-lucide="book-open"></i> Matérias Populares</h3>
-        <div class="chips">
-          <span>Cálculo</span><span>Física</span><span>Algoritmos</span>
-          <span>Estatística</span><span>Redes</span><span>IA</span>
-        </div>
-      </section>
-    </aside>
   </main>
 
   <div id="toast-container"></div>

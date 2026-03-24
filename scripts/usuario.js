@@ -202,12 +202,6 @@ async function init() {
   document.getElementById('usuarioCurso').textContent = sub;
   document.getElementById('usuarioBio').textContent = perfil.bio || '';
 
-  // Sidebar
-  document.getElementById('sideAvatar').textContent = iniciais;
-  document.getElementById('sideAvatar').className = `profile-avatar ${cor}`;
-  document.getElementById('sideNome').innerHTML = nome
-    + (isPro ? ` <span class="pro-badge-inline" style="font-size:0.65rem;padding:2px 6px;vertical-align:middle"><i data-lucide="crown"></i> PRO</span>` : '');
-  document.getElementById('sideCurso').textContent = sub;
   document.title = `BrainHUB | ${nome}`;
   document.getElementById('btnMsg').href = `chat.html?userId=${targetUserId}`;
 
