@@ -137,6 +137,16 @@ function atualizarContagens() {
   localStorage.setItem('brainhub_notif_count', total);
 }
 
+function getNotifPrefs(userId) {
+  const raw = localStorage.getItem(`brainhub_prefs_${userId}`);
+  const p = raw ? JSON.parse(raw) : {};
+  return {
+    comentarios: p['notif-comentarios'] !== false,
+    curtidas:    p['notif-curtidas']    !== false,
+    seguidores:  p['notif-seguidores']  !== false,
+  };
+}
+
 async function init() {
   if (!window.supabase) { setTimeout(init, 200); return; }
 
@@ -214,14 +224,23 @@ async function init() {
     created_at:   f.created_at,
   }));
 
+  // Filtra por prefs do usuário
+  const prefs = getNotifPrefs(user.id);
+  const notifsFiltradas = notifs.filter(n => {
+    if (n.tipo === 'curtida'   && !prefs.curtidas)    return false;
+    if (n.tipo === 'comentario' && !prefs.comentarios) return false;
+    if (n.tipo === 'seguidor'  && !prefs.seguidores)  return false;
+    return true;
+  });
+
   // Ordena por data decrescente
-  notifs.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-  todasNotifs = notifs;
+  notifsFiltradas.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  todasNotifs = notifsFiltradas;
 
   // Resumo (totais absolutos)
-  document.getElementById('sumLikes').textContent    = notifs.filter(n => n.tipo === 'curtida').length;
-  document.getElementById('sumComments').textContent = notifs.filter(n => n.tipo === 'comentario').length;
-  document.getElementById('sumFollowers').textContent = notifs.filter(n => n.tipo === 'seguidor').length;
+  document.getElementById('sumLikes').textContent     = notifsFiltradas.filter(n => n.tipo === 'curtida').length;
+  document.getElementById('sumComments').textContent  = notifsFiltradas.filter(n => n.tipo === 'comentario').length;
+  document.getElementById('sumFollowers').textContent = notifsFiltradas.filter(n => n.tipo === 'seguidor').length;
 
   atualizarContagens();
   renderizarNotifs('todas');

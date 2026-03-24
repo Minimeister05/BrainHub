@@ -184,6 +184,23 @@ async function init() {
     return;
   }
 
+  // Perfil privado
+  if (perfil.perfil_publico === false) {
+    document.getElementById('usuarioNome').textContent = perfil.nome || 'Usuário';
+    document.getElementById('usuarioCurso').textContent = '';
+    document.getElementById('usuarioBio').textContent = '';
+    document.getElementById('usuarioPosts').innerHTML = `
+      <div class="card" style="text-align:center;padding:48px 32px;color:var(--muted)">
+        <i data-lucide="lock" style="width:40px;height:40px;opacity:0.4"></i>
+        <p style="margin-top:16px;font-size:1rem;font-weight:600;color:var(--text);opacity:0.7">Este perfil é privado</p>
+        <p style="margin-top:6px;font-size:0.85rem">O usuário optou por manter o perfil privado.</p>
+      </div>`;
+    document.getElementById('btnFollow').style.display = 'none';
+    document.getElementById('btnMsg').style.display = 'none';
+    lucide.createIcons();
+    return;
+  }
+
   // Preenche header
   const nome = perfil.nome || 'Usuário';
   const cor = perfil.cor_avatar || '';
@@ -243,7 +260,22 @@ async function init() {
   lucide.createIcons();
 
   document.title = `BrainHUB | ${nome}`;
-  document.getElementById('btnMsg').href = `chat.html?userId=${targetUserId}`;
+  // Botão de mensagem: verifica se aceita msgs de desconhecidos
+  const btnMsg = document.getElementById('btnMsg');
+  btnMsg.href = `chat.html?userId=${targetUserId}`;
+  if (perfil.msg_desconhecidos === false && usuarioAtual) {
+    // Checa se são amigos mútuos
+    const [{ data: euSigoEle }, { data: eleSegueMim }] = await Promise.all([
+      window.supabase.from('follows').select('follower_id').eq('follower_id', usuarioAtual.id).eq('following_id', targetUserId).single(),
+      window.supabase.from('follows').select('follower_id').eq('follower_id', targetUserId).eq('following_id', usuarioAtual.id).single()
+    ]);
+    if (!euSigoEle || !eleSegueMim) {
+      btnMsg.removeAttribute('href');
+      btnMsg.style.opacity = '0.4';
+      btnMsg.style.cursor = 'not-allowed';
+      btnMsg.title = 'Este usuário não aceita mensagens de desconhecidos';
+    }
+  }
 
   // Conta de seguidores/seguindo
   const [{ count: seguidores }, { count: seguindoCount }, { count: postsCount }] = await Promise.all([

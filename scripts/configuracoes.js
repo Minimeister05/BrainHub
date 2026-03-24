@@ -4,46 +4,53 @@ aplicarPerfilNoSidebar();
 carregarEstatisticasSidebar();
 
 const painelConfig = document.getElementById('painelConfig');
+let usuarioAtual = null;
+// Prefs de notificação ficam em localStorage (são pessoais do dispositivo)
+const PREFS_KEY = () => `brainhub_prefs_${usuarioAtual?.id}`;
+const getPrefs = () => JSON.parse(localStorage.getItem(PREFS_KEY()) || '{}');
+const cfg = (chave, padrao) => { const p = getPrefs(); return p[chave] !== undefined ? p[chave] : padrao; };
+const savePrefs = (chave, valor) => {
+  const p = getPrefs(); p[chave] = valor;
+  localStorage.setItem(PREFS_KEY(), JSON.stringify(p));
+};
 
-function toggleConfig(chave, label, valor, usuario) {
+function toggleHTML(chave, label, valor, tipo = 'local') {
   return `
     <label class="config-toggle-row">
       <span>${label}</span>
       <div class="toggle-wrap">
-        <input type="checkbox" class="toggle-input" data-chave="${chave}" data-usuario="${usuario}" ${valor ? 'checked' : ''} />
+        <input type="checkbox" class="toggle-input" data-chave="${chave}" data-tipo="${tipo}" ${valor ? 'checked' : ''} />
         <span class="toggle-slider"></span>
       </div>
     </label>`;
 }
 
-function renderizar() {
-  const u = getPerfilAtual();
-  const prefs = JSON.parse(localStorage.getItem(`brainhub_prefs_${u.nome}`) || '{}');
-  const cfg = (chave, padrao) => prefs[chave] !== undefined ? prefs[chave] : padrao;
+async function renderizar(perfil) {
+  const u = getPrefs();
+  const pp  = perfil?.perfil_publico    !== false; // default true
+  const msg = perfil?.msg_desconhecidos !== false; // default true
 
   painelConfig.innerHTML = `
     <h2 class="config-titulo"><i data-lucide="settings"></i> Configurações</h2>
 
     <div class="config-grupo">
       <h4><i data-lucide="bell"></i> Notificações</h4>
-      ${toggleConfig('notif-comentarios', 'Comentários nos seus posts',       cfg('notif-comentarios', true),  u.nome)}
-      ${toggleConfig('notif-curtidas',    'Curtidas nos seus posts',          cfg('notif-curtidas',    true),  u.nome)}
-      ${toggleConfig('notif-seguidores',  'Novos seguidores',                 cfg('notif-seguidores',  true),  u.nome)}
-      ${toggleConfig('notif-mensagens',   'Mensagens diretas',                cfg('notif-mensagens',   true),  u.nome)}
+      ${toggleHTML('notif-comentarios', 'Comentários nos seus posts', cfg('notif-comentarios', true))}
+      ${toggleHTML('notif-curtidas',    'Curtidas nos seus posts',    cfg('notif-curtidas',    true))}
+      ${toggleHTML('notif-seguidores',  'Novos seguidores',           cfg('notif-seguidores',  true))}
     </div>
 
     <div class="config-grupo">
       <h4><i data-lucide="shield"></i> Privacidade</h4>
-      ${toggleConfig('perfil-publico',     'Perfil público',                        cfg('perfil-publico',     true),  u.nome)}
-      ${toggleConfig('msg-desconhecidos',  'Receber mensagens de desconhecidos',    cfg('msg-desconhecidos',  false), u.nome)}
-      ${toggleConfig('mostrar-online',     'Mostrar quando estou online',           cfg('mostrar-online',     true),  u.nome)}
+      ${toggleHTML('perfil_publico',     'Perfil público',                     pp,  'db')}
+      ${toggleHTML('msg_desconhecidos',  'Receber mensagens de desconhecidos', msg, 'db')}
     </div>
 
     <div class="config-grupo">
       <h4><i data-lucide="user-cog"></i> Conta</h4>
-      <a href="perfil.html" class="config-link-btn"><i data-lucide="pencil"></i> Editar perfil</a>
-      <a href="planos.html" class="config-link-btn${u.isPro ? ' is-pro' : ''}">
-        <i data-lucide="crown"></i> ${u.isPro ? 'Gerenciar plano Pro' : 'Assinar BrainHUB Pro'}
+      <a href="perfil.html"  class="config-link-btn"><i data-lucide="pencil"></i> Editar perfil</a>
+      <a href="planos.html"  class="config-link-btn">
+        <i data-lucide="crown"></i> ${perfil?.is_pro ? 'Gerenciar plano Pro' : 'Assinar BrainHUB Pro'}
       </a>
     </div>
 
@@ -73,36 +80,34 @@ function renderizar() {
 
   lucide.createIcons();
 
+  // ===== TOGGLES =====
   painelConfig.querySelectorAll('.toggle-input').forEach(input => {
-    input.addEventListener('change', () => {
-      const prefs = JSON.parse(localStorage.getItem(`brainhub_prefs_${input.dataset.usuario}`) || '{}');
-      prefs[input.dataset.chave] = input.checked;
-      localStorage.setItem(`brainhub_prefs_${input.dataset.usuario}`, JSON.stringify(prefs));
+    input.addEventListener('change', async () => {
+      const chave = input.dataset.chave;
+      const valor = input.checked;
+
+      if (input.dataset.tipo === 'db') {
+        // Salva no Supabase
+        input.disabled = true;
+        await window.supabase.from('profiles').update({ [chave]: valor }).eq('id', usuarioAtual.id);
+        input.disabled = false;
+      } else {
+        // Salva em localStorage
+        savePrefs(chave, valor);
+      }
     });
   });
 
+  // ===== TROCAR SENHA =====
   document.getElementById('btnTrocarSenha').addEventListener('click', async () => {
-    const nova = document.getElementById('inputNovaSenha').value;
+    const nova      = document.getElementById('inputNovaSenha').value;
     const confirmar = document.getElementById('inputConfirmarSenha').value;
     const msg = document.getElementById('msgSenha');
-
     msg.className = 'config-senha-msg';
 
-    if (!nova || !confirmar) {
-      msg.textContent = 'Preencha os dois campos.';
-      msg.classList.add('erro');
-      return;
-    }
-    if (nova.length < 6) {
-      msg.textContent = 'A senha precisa ter pelo menos 6 caracteres.';
-      msg.classList.add('erro');
-      return;
-    }
-    if (nova !== confirmar) {
-      msg.textContent = 'As senhas não coincidem.';
-      msg.classList.add('erro');
-      return;
-    }
+    if (!nova || !confirmar)  { msg.textContent = 'Preencha os dois campos.'; msg.classList.add('erro'); return; }
+    if (nova.length < 6)      { msg.textContent = 'A senha precisa ter pelo menos 6 caracteres.'; msg.classList.add('erro'); return; }
+    if (nova !== confirmar)   { msg.textContent = 'As senhas não coincidem.'; msg.classList.add('erro'); return; }
 
     const btn = document.getElementById('btnTrocarSenha');
     btn.disabled = true;
@@ -110,13 +115,12 @@ function renderizar() {
     lucide.createIcons();
 
     const { error } = await window.supabase.auth.updateUser({ password: nova });
-
     btn.disabled = false;
     btn.innerHTML = '<i data-lucide="lock"></i> Trocar senha';
     lucide.createIcons();
 
     if (error) {
-      msg.textContent = 'Erro ao trocar senha: ' + error.message;
+      msg.textContent = 'Erro: ' + error.message;
       msg.classList.add('erro');
     } else {
       msg.textContent = 'Senha alterada com sucesso!';
@@ -126,6 +130,7 @@ function renderizar() {
     }
   });
 
+  // ===== SAIR =====
   document.getElementById('btnSair').addEventListener('click', async () => {
     if (window.supabase) await window.supabase.auth.signOut();
     localStorage.removeItem('brainhub_usuario_logado');
@@ -134,4 +139,16 @@ function renderizar() {
   });
 }
 
-renderizar();
+async function init() {
+  if (!window.supabase) { setTimeout(init, 150); return; }
+  const { data: { user } } = await window.supabase.auth.getUser();
+  if (!user) { window.location.href = 'login.html'; return; }
+  usuarioAtual = user;
+
+  const { data: perfil } = await window.supabase
+    .from('profiles').select('*').eq('id', user.id).single();
+
+  renderizar(perfil);
+}
+
+init();
