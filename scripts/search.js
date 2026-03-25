@@ -27,6 +27,17 @@ async function buscarUsuariosSupabase(termo) {
   return data || [];
 }
 
+async function buscarPostsSupabase(termo) {
+  if (!window.supabase) return [];
+  const { data } = await window.supabase
+    .from('posts')
+    .select('id, texto, user_id, profiles!posts_user_id_fkey(nome, cor_avatar)')
+    .ilike('texto', `%${termo}%`)
+    .order('created_at', { ascending: false })
+    .limit(6);
+  return data || [];
+}
+
 async function pesquisar(termo) {
   if (!termo || termo.length < 2) return null;
 
@@ -36,9 +47,12 @@ async function pesquisar(termo) {
   const conversas = getConversas().filter(c =>
     c.nome?.toLowerCase().includes(t) || c.subtitulo?.toLowerCase().includes(t)
   );
-  const usuarios = await buscarUsuariosSupabase(termo);
+  const [usuarios, posts] = await Promise.all([
+    buscarUsuariosSupabase(termo),
+    buscarPostsSupabase(termo),
+  ]);
 
-  return { grupos: gruposFound, usuarios, conversas };
+  return { grupos: gruposFound, usuarios, conversas, posts };
 }
 
 async function renderizarResultados(termo) {
@@ -56,8 +70,8 @@ async function renderizarResultados(termo) {
     return;
   }
 
-  const { grupos, usuarios, conversas } = resultados;
-  const total = grupos.length + usuarios.length + conversas.length;
+  const { grupos, usuarios, conversas, posts } = resultados;
+  const total = grupos.length + usuarios.length + conversas.length + posts.length;
 
   if (total === 0) {
     container.innerHTML = `<div class="search-empty">Nenhum resultado para "<strong>${termo}</strong>"</div>`;
@@ -104,6 +118,24 @@ async function renderizarResultados(termo) {
           <div class="search-item-sub">${c.subtitulo || ''}</div>
         </div>
       </div>`).join('');
+  }
+
+  if (posts.length > 0) {
+    html += `<div class="search-section-title">Posts</div>`;
+    html += posts.map(p => {
+      const nome = p.profiles?.nome || 'Usuário';
+      const cor  = p.profiles?.cor_avatar || '';
+      const iniciais = (nome).split(' ').map(x => x[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
+      const preview = (p.texto || '').slice(0, 80) + ((p.texto || '').length > 80 ? '…' : '');
+      return `
+        <a href="home.html?postId=${p.id}" class="search-item" style="text-decoration:none;color:inherit">
+          <div class="search-item-icon user-icon ${cor}">${iniciais}</div>
+          <div class="search-item-info">
+            <div class="search-item-title">${nome}</div>
+            <div class="search-item-sub">${preview}</div>
+          </div>
+        </a>`;
+    }).join('');
   }
 
   container.innerHTML = html;

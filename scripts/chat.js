@@ -233,8 +233,17 @@ async function abrirConversa(id) {
       <div class="chat-header-sub">${c.tipo === 'dm' ? '⚫ Offline' : `👥 ${c.subtitulo}`}</div>
     </div>
     <div class="chat-header-actions">
-      <button class="icon-btn"><i data-lucide="phone"></i></button>
-      <button class="icon-btn"><i data-lucide="video"></i></button>
+      ${c.tipo === 'dm' && c.parceiro_id ? `
+        <a class="icon-btn" title="Chamada de voz" target="_blank"
+          href="https://meet.jit.si/brainhub-audio-${[usuarioAtual.id, c.parceiro_id].sort().join('-')}">
+          <i data-lucide="phone"></i></a>
+        <a class="icon-btn" title="Chamada de vídeo" target="_blank"
+          href="https://meet.jit.si/brainhub-${[usuarioAtual.id, c.parceiro_id].sort().join('-')}">
+          <i data-lucide="video"></i></a>
+      ` : `
+        <button class="icon-btn"><i data-lucide="phone"></i></button>
+        <button class="icon-btn"><i data-lucide="video"></i></button>
+      `}
       ${perfilLink ? `<a href="${perfilLink}" class="icon-btn" title="Ver perfil"><i data-lucide="user"></i></a>` : `<button class="icon-btn"><i data-lucide="info"></i></button>`}
     </div>`;
 

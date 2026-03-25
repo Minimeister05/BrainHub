@@ -9,12 +9,103 @@ const feedList   = document.getElementById('feedList');
 
 let usuarioAtual = null;
 
+// ===== COMPOSITOR: MÍDIA & HUMOR =====
+let mediaArquivo  = null; // File selecionado (imagem ou doc)
+let mediaTipo     = null; // 'imagem' | 'arquivo'
+let humorSelecionado = null;
+
+const btnImagem        = document.getElementById('btnImagem');
+const btnArquivo       = document.getElementById('btnArquivo');
+const btnHumor         = document.getElementById('btnHumor');
+const inputImagem      = document.getElementById('inputImagem');
+const inputArquivo     = document.getElementById('inputArquivo');
+const composerPreview  = document.getElementById('composerPreview');
+const composerImgPrev  = document.getElementById('composerImgPreview');
+const composerFilePrev = document.getElementById('composerFilePreview');
+const composerRemove   = document.getElementById('composerRemoveMedia');
+const humorDropdown    = document.getElementById('humorDropdown');
+
+function mostrarPreview() {
+  composerPreview.style.display = 'flex';
+}
+function limparMedia() {
+  mediaArquivo = null; mediaTipo = null;
+  inputImagem.value = ''; inputArquivo.value = '';
+  composerImgPrev.style.display = 'none';
+  composerImgPrev.src = '';
+  composerFilePrev.style.display = 'none';
+  composerFilePrev.textContent = '';
+  if (!humorSelecionado) composerPreview.style.display = 'none';
+}
+
+btnImagem?.addEventListener('click', () => inputImagem.click());
+btnArquivo?.addEventListener('click', () => inputArquivo.click());
+
+inputImagem?.addEventListener('change', () => {
+  const file = inputImagem.files[0];
+  if (!file) return;
+  mediaArquivo = file; mediaTipo = 'imagem';
+  const reader = new FileReader();
+  reader.onload = e => {
+    composerImgPrev.src = e.target.result;
+    composerImgPrev.style.display = '';
+    composerFilePrev.style.display = 'none';
+    mostrarPreview();
+  };
+  reader.readAsDataURL(file);
+});
+
+inputArquivo?.addEventListener('change', () => {
+  const file = inputArquivo.files[0];
+  if (!file) return;
+  mediaArquivo = file; mediaTipo = 'arquivo';
+  composerFilePrev.textContent = `📎 ${file.name}`;
+  composerFilePrev.style.display = '';
+  composerImgPrev.style.display = 'none';
+  mostrarPreview();
+});
+
+composerRemove?.addEventListener('click', () => {
+  limparMedia();
+});
+
+btnHumor?.addEventListener('click', () => {
+  const isOpen = humorDropdown.style.display !== 'none';
+  humorDropdown.style.display = isOpen ? 'none' : 'flex';
+});
+
+humorDropdown?.querySelectorAll('.humor-opt').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const humor = btn.dataset.humor;
+    if (humorSelecionado === humor) {
+      // deseleciona
+      humorSelecionado = null;
+      humorDropdown.querySelectorAll('.humor-opt').forEach(b => b.classList.remove('active'));
+      btnHumor.classList.remove('active');
+      composerPreview.style.display = mediaArquivo ? 'flex' : 'none';
+    } else {
+      humorSelecionado = humor;
+      humorDropdown.querySelectorAll('.humor-opt').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      btnHumor.classList.add('active');
+      mostrarPreview();
+    }
+    humorDropdown.style.display = 'none';
+  });
+});
+
 // Mini-avatar na caixa de criar post
 ;(function () {
   const u = getPerfilAtual();
   const mini = document.querySelector('.create-top .mini-avatar');
   if (mini) { mini.textContent = u.iniciais; mini.className = `mini-avatar ${u.corAvatar}`; }
 })();
+
+// Auto-resize do textarea
+postInput?.addEventListener('input', () => {
+  postInput.style.height = 'auto';
+  postInput.style.height = postInput.scrollHeight + 'px';
+});
 
 function gerarIniciais(nome) {
   return (nome || '?').split(' ').map(p => p[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
@@ -64,7 +155,10 @@ function criarPostHTML(post) {
         </div>
         ${isOwn ? `<button class="icon-btn small delete-post-btn" title="Excluir post"><i data-lucide="trash-2"></i></button>` : `<button class="icon-btn small"><i data-lucide="more-vertical"></i></button>`}
       </div>
+      ${post.humor ? `<div class="post-humor">${post.humor}</div>` : ''}
       <p class="post-text">${post.texto}</p>
+      ${post.imagem_url ? `<img src="${post.imagem_url}" class="post-img" loading="lazy" />` : ''}
+      ${post.arquivo_url ? `<a href="${post.arquivo_url}" target="_blank" class="post-file-link" download="${post.arquivo_nome || 'arquivo'}">📎 ${post.arquivo_nome || 'Baixar arquivo'}</a>` : ''}
       <div class="post-actions">
         <button class="action-btn like-btn ${curtido ? 'liked' : ''}">
           <i data-lucide="thumbs-up"></i><span>${likesCount}</span>
@@ -192,7 +286,7 @@ async function renderizarPosts() {
   const { data: posts, error } = await window.supabase
     .from('posts')
     .select(`
-      id, user_id, texto, area, tipo, created_at,
+      id, user_id, texto, area, tipo, created_at, imagem_url, arquivo_url, arquivo_nome, humor,
       profiles!posts_user_id_fkey(nome, cor_avatar, curso, faculdade, periodo, is_pro),
       likes(user_id),
       comments(id)
@@ -225,14 +319,37 @@ async function renderizarPosts() {
 
 async function publicarNovoPost() {
   const texto = postInput.value.trim();
-  if (!texto || !usuarioAtual) return;
+  if (!texto && !mediaArquivo && !humorSelecionado) return;
+  if (!usuarioAtual) return;
 
   publishBtn.disabled = true;
   publishBtn.textContent = 'Publicando...';
 
+  let imagem_url = null, arquivo_url = null, arquivo_nome = null;
+
+  if (mediaArquivo) {
+    const ext  = mediaArquivo.name.split('.').pop();
+    const path = `${usuarioAtual.id}/${Date.now()}.${ext}`;
+    const pasta = mediaTipo === 'imagem' ? 'images' : 'files';
+    const { error: upErr } = await window.supabase.storage
+      .from('post-media')
+      .upload(`${pasta}/${path}`, mediaArquivo, { upsert: false });
+    if (!upErr) {
+      const { data: { publicUrl } } = window.supabase.storage
+        .from('post-media')
+        .getPublicUrl(`${pasta}/${path}`);
+      if (mediaTipo === 'imagem') imagem_url = publicUrl;
+      else { arquivo_url = publicUrl; arquivo_nome = mediaArquivo.name; }
+    }
+  }
+
   const { error } = await window.supabase.from('posts').insert({
     user_id: usuarioAtual.id,
-    texto
+    texto: texto || '',
+    imagem_url,
+    arquivo_url,
+    arquivo_nome,
+    humor: humorSelecionado || null,
   });
 
   publishBtn.disabled = false;
@@ -241,6 +358,10 @@ async function publicarNovoPost() {
   if (error) { console.error('Erro ao publicar:', error); return; }
 
   postInput.value = '';
+  limparMedia();
+  humorSelecionado = null;
+  btnHumor?.classList.remove('active');
+  humorDropdown.style.display = 'none';
   await renderizarPosts();
 }
 
