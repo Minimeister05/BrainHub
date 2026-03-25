@@ -561,6 +561,11 @@ body {
   color: #a98fff;
 }
 
+.save-post-btn.saved {
+  color: #a98fff;
+}
+.save-post-btn.saved i { fill: #a98fff; }
+
 .group-item {
   display: grid;
   grid-template-columns: 42px 1fr auto;

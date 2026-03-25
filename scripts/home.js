@@ -153,7 +153,10 @@ function criarPostHTML(post) {
             <p>${sub} • ${tempo}</p>
           </div>
         </div>
-        ${isOwn ? `<button class="icon-btn small delete-post-btn" title="Excluir post"><i data-lucide="trash-2"></i></button>` : `<button class="icon-btn small"><i data-lucide="more-vertical"></i></button>`}
+        <div style="display:flex;gap:4px">
+          <button class="icon-btn small save-post-btn" title="Salvar post" data-saved="false"><i data-lucide="bookmark"></i></button>
+          ${isOwn ? `<button class="icon-btn small delete-post-btn" title="Excluir post"><i data-lucide="trash-2"></i></button>` : ''}
+        </div>
       </div>
       ${post.humor ? `<div class="post-humor">${post.humor}</div>` : ''}
       <p class="post-text">${post.texto}</p>
@@ -271,6 +274,23 @@ function ativarEventosPosts() {
     sendBtn.addEventListener('click', enviar);
     input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); enviar(); } });
 
+    // Salvar / dessalvar post
+    card.querySelector('.save-post-btn')?.addEventListener('click', async () => {
+      if (!usuarioAtual) return;
+      const saveBtn = card.querySelector('.save-post-btn');
+      const jaSalvo = saveBtn.dataset.saved === 'true';
+      if (jaSalvo) {
+        await window.supabase.from('saved_posts').delete()
+          .eq('user_id', usuarioAtual.id).eq('post_id', postId);
+        saveBtn.dataset.saved = 'false';
+        saveBtn.classList.remove('saved');
+      } else {
+        await window.supabase.from('saved_posts').insert({ user_id: usuarioAtual.id, post_id: postId });
+        saveBtn.dataset.saved = 'true';
+        saveBtn.classList.add('saved');
+      }
+    });
+
     // Excluir post (só aparece nos posts do próprio usuário)
     card.querySelector('.delete-post-btn')?.addEventListener('click', async () => {
       if (!confirm('Excluir este post?')) return;
@@ -312,7 +332,25 @@ async function renderizarPosts() {
     return;
   }
 
+  // Busca posts salvos do usuário para marcar os botões
+  let salvoSet = new Set();
+  if (usuarioAtual) {
+    const { data: saves } = await window.supabase
+      .from('saved_posts').select('post_id').eq('user_id', usuarioAtual.id);
+    salvoSet = new Set((saves || []).map(s => s.post_id));
+  }
+
   feedList.innerHTML = posts.map(criarPostHTML).join('');
+
+  // Marca botões de salvo
+  feedList.querySelectorAll('.save-post-btn').forEach(btn => {
+    const card = btn.closest('.post-card');
+    if (salvoSet.has(card.dataset.id)) {
+      btn.dataset.saved = 'true';
+      btn.classList.add('saved');
+    }
+  });
+
   lucide.createIcons();
   ativarEventosPosts();
 }
@@ -408,11 +446,92 @@ function rolarParaPost() {
   window.history.replaceState({}, '', 'home.html');
 }
 
+async function carregarSugestoes(userId) {
+  const container = document.getElementById('sugestoesContainer');
+  if (!container) return;
+
+  // Busca quem o usuário já segue
+  const { data: seguindo } = await window.supabase
+    .from('follows').select('following_id').eq('follower_id', userId);
+  const seguindoIds = new Set((seguindo || []).map(f => f.following_id));
+  seguindoIds.add(userId); // exclui o próprio usuário
+
+  // Busca usuários aleatórios não seguidos
+  const { data: usuarios } = await window.supabase
+    .from('profiles')
+    .select('id, nome, cor_avatar, curso, faculdade')
+    .not('id', 'in', `(${[...seguindoIds].join(',')})`)
+    .limit(3);
+
+  if (!usuarios || usuarios.length === 0) {
+    container.closest('section')?.remove();
+    return;
+  }
+
+  container.innerHTML = usuarios.map(u => {
+    const iniciais = (u.nome || '?').split(' ').map(p => p[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
+    const sub = [u.curso, u.faculdade].filter(Boolean).join(' · ') || 'BrainHUB';
+    return `
+      <div class="group-item">
+        <a href="usuario.html?id=${u.id}" style="text-decoration:none">
+          <div class="mini-avatar ${u.cor_avatar || ''}" style="width:42px;height:42px;font-size:0.85rem;flex-shrink:0">${iniciais}</div>
+        </a>
+        <div class="group-info"><strong>${u.nome}</strong><small>${sub}</small></div>
+        <button class="sugestao-seguir-btn" data-uid="${u.id}">Seguir</button>
+      </div>`;
+  }).join('');
+
+  container.querySelectorAll('.sugestao-seguir-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const uid = btn.dataset.uid;
+      btn.disabled = true;
+      await window.supabase.from('follows').insert({ follower_id: userId, following_id: uid });
+      btn.textContent = 'Seguindo ✓';
+    });
+  });
+}
+
+async function carregarEmAlta() {
+  const ul = document.getElementById('emAltaList');
+  if (!ul) return;
+
+  const semanaAtras = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+  const { data: posts } = await window.supabase
+    .from('posts').select('texto').gte('created_at', semanaAtras);
+
+  if (!posts || posts.length === 0) return;
+
+  const temas = [
+    { label: 'Inteligência Artificial', termos: ['ia', 'intelig', 'gpt', 'machine learning', 'ai'] },
+    { label: 'Cálculo',                termos: ['cálculo', 'calculo', 'integral', 'derivada'] },
+    { label: 'Programação',            termos: ['código', 'codigo', 'programação', 'python', 'javascript', 'dev'] },
+    { label: 'Estágio',                termos: ['estágio', 'estagio', 'emprego', 'vaga'] },
+    { label: 'Física',                 termos: ['física', 'fisica', 'mecânica', 'termodinâmica'] },
+  ];
+
+  const contagens = temas.map(t => {
+    const count = posts.filter(p =>
+      t.termos.some(termo => (p.texto || '').toLowerCase().includes(termo))
+    ).length;
+    return { label: t.label, count };
+  }).filter(t => t.count > 0).sort((a, b) => b.count - a.count).slice(0, 3);
+
+  if (contagens.length === 0) return;
+
+  ul.innerHTML = contagens.map(t =>
+    `<li><span>#</span> ${t.label}<small>${t.count} post${t.count > 1 ? 's' : ''}</small></li>`
+  ).join('');
+}
+
 // Init
 async function init() {
   const { data: { user } } = await window.supabase.auth.getUser();
   usuarioAtual = user;
-  if (usuarioAtual) carregarEstatisticas(usuarioAtual.id);
+  if (usuarioAtual) {
+    carregarEstatisticas(usuarioAtual.id);
+    carregarSugestoes(usuarioAtual.id);
+  }
+  carregarEmAlta();
   await renderizarPosts();
   rolarParaPost();
 }

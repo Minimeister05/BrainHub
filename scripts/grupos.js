@@ -1,19 +1,52 @@
-// scripts/groups.js
+// scripts/grupos.js
 lucide.createIcons();
 
-// ===== PARTICIPAR / SAIR DE GRUPO =====
-function toggleEntrar(btn) {
-  const participando = btn.classList.contains('participando');
-  btn.classList.toggle('participando');
-  btn.textContent = participando ? 'Participar' : 'Participando ✓';
-  mostrarAviso(participando ? 'Você saiu do grupo.' : 'Você entrou no grupo!', participando ? 'info' : 'success');
+let usuarioAtual = null;
+
+async function init() {
+  if (!window.supabase) { setTimeout(init, 200); return; }
+  const { data: { user } } = await window.supabase.auth.getUser();
+  usuarioAtual = user;
+  if (!user) return;
+
+  // Carrega grupos que o usuário já participa
+  const { data: memberships } = await window.supabase
+    .from('group_members').select('group_id').eq('user_id', user.id);
+  const meuGrupos = new Set((memberships || []).map(m => m.group_id));
+
+  // Atualiza todos os botões de grupo com estado correto
+  document.querySelectorAll('[data-group-id]').forEach(btn => {
+    const gid = btn.dataset.groupId;
+    if (meuGrupos.has(gid)) {
+      btn.textContent = 'Participando';
+      btn.classList.add('participando');
+    }
+    btn.addEventListener('click', () => toggleGrupo(btn, gid, meuGrupos));
+  });
 }
 
-function toggleEntrarCard(btn) {
-  const participando = btn.classList.contains('participando');
-  btn.classList.toggle('participando');
-  btn.textContent = participando ? 'Participar' : 'Participando';
-  mostrarAviso(participando ? 'Você saiu do grupo.' : 'Você entrou no grupo!', participando ? 'info' : 'success');
+async function toggleGrupo(btn, groupId, meuGrupos) {
+  if (!usuarioAtual) return;
+  const participando = meuGrupos.has(groupId);
+  btn.disabled = true;
+
+  if (participando) {
+    await window.supabase.from('group_members').delete()
+      .eq('user_id', usuarioAtual.id).eq('group_id', groupId);
+    meuGrupos.delete(groupId);
+    btn.textContent = 'Participar';
+    btn.classList.remove('participando');
+    mostrarAviso('Você saiu do grupo.', 'info');
+  } else {
+    await window.supabase.from('group_members').insert({
+      user_id: usuarioAtual.id, group_id: groupId
+    });
+    meuGrupos.add(groupId);
+    btn.textContent = 'Participando';
+    btn.classList.add('participando');
+    mostrarAviso('Você entrou no grupo!', 'success');
+  }
+  btn.disabled = false;
 }
 
 // ===== CRIAR GRUPO =====
@@ -27,20 +60,4 @@ function setCategoria(btn) {
   btn.classList.add('active');
 }
 
-// ===== VIEW FILTRO =====
-function setViewFiltro(btn) {
-  // Apenas feedback visual por enquanto
-  document.querySelectorAll('.section-row .btn-ver-todos').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-}
-
-// ===== SIDEBAR: ATIVAR ITEM =====
-document.querySelectorAll('.grupo-sidebar-item').forEach(item => {
-  item.addEventListener('click', () => {
-    document.querySelectorAll('.grupo-sidebar-item').forEach(i => i.classList.remove('active'));
-    item.classList.add('active');
-  });
-});
-
-// ===== INIT =====
-// Nada extra necessário — interações são inline por enquanto
+init();

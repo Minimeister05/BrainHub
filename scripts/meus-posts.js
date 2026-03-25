@@ -3,25 +3,74 @@ sincronizarStatusPro();
 aplicarPerfilNoSidebar();
 carregarEstatisticasSidebar();
 
-const feedMeusPosts = document.getElementById('feedMeusPosts');
-const publishBtn    = document.getElementById('publishBtn');
-const postInput     = document.getElementById('postInput');
+let usuarioAtual = null;
 
-function carregarMeusPosts() {
-  const u = getPerfilAtual();
-  const sessao = JSON.parse(localStorage.getItem('brainhub_usuario_logado') || 'null');
-  const todos = carregarPosts();
-
-  return todos.filter(p =>
-    p.autor === u.nome ||
-    (p.isOwnPost === true && p.proAuthorEmail === sessao?.email)
-  );
+function gerarIniciais(nome) {
+  return (nome || '?').split(' ').map(p => p[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
 }
 
-function renderizar() {
-  const meus = carregarMeusPosts();
-  if (meus.length === 0) {
-    feedMeusPosts.innerHTML = `
+function tempoRelativo(dataStr) {
+  const diff = Date.now() - new Date(dataStr).getTime();
+  const min = Math.floor(diff / 60000);
+  if (min < 1) return 'agora';
+  if (min < 60) return `${min}m`;
+  const h = Math.floor(min / 60);
+  if (h < 24) return `${h}h`;
+  const d = Math.floor(h / 24);
+  if (d < 7) return `${d}d`;
+  return new Date(dataStr).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+}
+
+function criarPostHTML(post) {
+  const perfil = post.profiles || {};
+  const nome = perfil.nome || 'Usuário';
+  const cor = perfil.cor_avatar || '';
+  const iniciais = gerarIniciais(nome);
+  const likesCount = post.likes?.length || 0;
+  const commentsCount = post.comments?.length || 0;
+  const tempo = tempoRelativo(post.created_at);
+  const sub = [perfil.curso, perfil.periodo].filter(Boolean).join(' • ') || 'BrainHUB';
+
+  return `
+    <article class="post-card card" data-id="${post.id}">
+      <div class="post-header">
+        <div class="post-user">
+          <div class="mini-avatar ${cor}">${iniciais}</div>
+          <div><h4>${nome}</h4><p>${sub} • ${tempo}</p></div>
+        </div>
+        <button class="icon-btn small delete-post-btn" title="Excluir post">
+          <i data-lucide="trash-2"></i>
+        </button>
+      </div>
+      ${post.humor ? `<div class="post-humor">${post.humor}</div>` : ''}
+      <p class="post-text">${post.texto}</p>
+      ${post.imagem_url ? `<img src="${post.imagem_url}" class="post-img" loading="lazy" />` : ''}
+      ${post.arquivo_url ? `<a href="${post.arquivo_url}" target="_blank" class="post-file-link" download="${post.arquivo_nome || 'arquivo'}">📎 ${post.arquivo_nome || 'Baixar arquivo'}</a>` : ''}
+      <div class="post-actions">
+        <button class="action-btn"><i data-lucide="thumbs-up"></i><span>${likesCount}</span></button>
+        <button class="action-btn"><i data-lucide="message-square"></i><span>${commentsCount}</span></button>
+      </div>
+    </article>`;
+}
+
+async function renderizar() {
+  const container = document.getElementById('feedMeusPosts');
+  if (!window.supabase) { setTimeout(renderizar, 200); return; }
+
+  const { data: { user } } = await window.supabase.auth.getUser();
+  if (!user) { window.location.href = 'login.html'; return; }
+  usuarioAtual = user;
+
+  container.innerHTML = '<p style="color:var(--muted);text-align:center;padding:32px">Carregando...</p>';
+
+  const { data: posts } = await window.supabase
+    .from('posts')
+    .select('id, user_id, texto, created_at, humor, imagem_url, arquivo_url, arquivo_nome, profiles!posts_user_id_fkey(nome, cor_avatar, curso, periodo), likes(user_id), comments(id)')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false });
+
+  if (!posts || posts.length === 0) {
+    container.innerHTML = `
       <div class="aba-empty">
         <i data-lucide="edit-3"></i>
         <h3>Você ainda não publicou nenhum post.</h3>
@@ -30,38 +79,19 @@ function renderizar() {
     lucide.createIcons();
     return;
   }
-  renderizarFeed(feedMeusPosts, meus, false);
-}
 
-function publicarPost() {
-  const texto = postInput.value.trim();
-  if (!texto) return;
-  const u = getPerfilAtual();
-  const sessao = JSON.parse(localStorage.getItem('brainhub_usuario_logado') || 'null');
-  const posts = carregarPosts();
-  posts.unshift({
-    id: Date.now(),
-    autor: u.nome,
-    curso: u.curso,
-    tempo: 'agora',
-    titulo: 'Novo post',
-    texto,
-    tags: ['Post', 'BrainHUB'],
-    likes: 0,
-    comentarios: [],
-    curtido: false,
-    salvo: false,
-    corAvatar: u.corAvatar || 'default',
-    isOwnPost: true,
-    isProPost: u.isPro,
-    proAuthorEmail: sessao?.email || ''
+  container.innerHTML = posts.map(criarPostHTML).join('');
+  lucide.createIcons();
+
+  container.querySelectorAll('.delete-post-btn').forEach(btn => {
+    const card = btn.closest('.post-card');
+    const postId = card.dataset.id;
+    btn.addEventListener('click', async () => {
+      if (!confirm('Excluir este post?')) return;
+      await window.supabase.from('posts').delete().eq('id', postId);
+      card.remove();
+    });
   });
-  salvarPosts(posts);
-  postInput.value = '';
-  renderizar();
 }
-
-publishBtn.addEventListener('click', publicarPost);
-postInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); publicarPost(); } });
 
 renderizar();

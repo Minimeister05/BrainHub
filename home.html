@@ -56,10 +56,8 @@
 
       <section class="trending-card card">
         <h3><i data-lucide="trending-up"></i> Em Alta</h3>
-        <ul>
-          <li><span>#</span> Inteligência Artificial<small>1.2k posts</small></li>
-          <li><span>#</span> Cálculo III<small>856 posts</small></li>
-          <li><span>#</span> Estágio 2026<small>634 posts</small></li>
+        <ul id="emAltaList">
+          <li><span>#</span> Carregando...<small></small></li>
         </ul>
       </section>
     </aside>
@@ -109,23 +107,11 @@
     </section>
 
     <aside class="right-column">
-      <!-- Sugestões de pessoas (novo) -->
+      <!-- Sugestões de pessoas (reais) -->
       <section class="groups-card card">
         <h3><i data-lucide="user-plus"></i> Sugestões</h3>
-        <div class="group-item">
-          <div class="mini-avatar" style="width:42px;height:42px;font-size:0.85rem;flex-shrink:0">PS</div>
-          <div class="group-info"><strong>Pedro Souza</strong><small>Físico · INPE</small></div>
-          <button onclick="toggleSeguir(this)">Seguir</button>
-        </div>
-        <div class="group-item">
-          <div class="mini-avatar green" style="width:42px;height:42px;font-size:0.85rem;flex-shrink:0">LF</div>
-          <div class="group-info"><strong>Lara Ferreira</strong><small>Bioquímica · UFMG</small></div>
-          <button onclick="toggleSeguir(this)">Seguir</button>
-        </div>
-        <div class="group-item">
-          <div class="mini-avatar purple" style="width:42px;height:42px;font-size:0.85rem;flex-shrink:0">TM</div>
-          <div class="group-info"><strong>Thiago Melo</strong><small>Economista · FGV</small></div>
-          <button onclick="toggleSeguir(this)">Seguindo</button>
+        <div id="sugestoesContainer">
+          <p style="color:var(--muted);font-size:0.85rem;padding:8px 0">Carregando...</p>
         </div>
       </section>
 
