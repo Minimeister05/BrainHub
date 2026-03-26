@@ -61,6 +61,12 @@ const bannerMap = {
   'av-pro-ocean':    'bn-ocean',
   'av-pro-magenta':  'bn-magenta',
   'av-pro-sunset':   'bn-sunset',
+  'av-pro-ruby':     'bn-pro',
+  'av-pro-ice':      'bn-teal',
+  'av-pro-lime':     'bn-neon',
+  'av-pro-violet':   'bn-magenta',
+  'av-pro-coral':    'bn-pro',
+  'av-pro-mint':     'bn-teal',
 }
 
 function atualizarPreview({ nome, curso, faculdade, periodo, bio, corAvatar }) {
@@ -270,6 +276,7 @@ async function carregarMeusPosts() {
     .from('posts')
     .select('id, texto, created_at, likes(user_id), comments(id)')
     .eq('user_id', user.id)
+    .order('pinned', { ascending: false })
     .order('created_at', { ascending: false })
 
   if (error) {
@@ -289,19 +296,35 @@ async function carregarMeusPosts() {
   }
 
   container.innerHTML = posts.map(p => `
-    <div class="perfil-post-card">
+    <div class="perfil-post-card ${p.pinned ? 'pinned' : ''}" data-id="${p.id}">
+      ${p.pinned ? '<div class="perfil-post-pinned"><i data-lucide="pin"></i> Post fixado</div>' : ''}
       <div class="perfil-post-texto">${p.texto}</div>
+      ${p.imagem_url ? `<img src="${p.imagem_url}" class="perfil-post-img" loading="lazy" />` : ''}
       <div class="perfil-post-meta">
         <span><i data-lucide="heart"></i> ${p.likes?.length || 0} curtidas</span>
         <span><i data-lucide="message-circle"></i> ${p.comments?.length || 0} comentários</span>
         <span class="perfil-post-data">${tempoRelativo(p.created_at)}</span>
       </div>
       <div class="perfil-post-footer">
+        ${_isPro ? `<button class="perfil-post-pin" data-id="${p.id}" data-pinned="${!!p.pinned}">
+          <i data-lucide="${p.pinned ? 'pin-off' : 'pin'}"></i> ${p.pinned ? 'Desafixar' : 'Fixar'}
+        </button>` : ''}
         <button class="perfil-post-delete" data-id="${p.id}">
           <i data-lucide="trash-2"></i> Excluir
         </button>
       </div>
     </div>`).join('')
+
+  // Fixar / Desafixar
+  container.querySelectorAll('.perfil-post-pin').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.id
+      const isPinned = btn.dataset.pinned === 'true'
+      await window.supabase.from('posts').update({ pinned: !isPinned }).eq('id', id)
+      postsCarregados = false
+      carregarMeusPosts()
+    })
+  })
 
   container.querySelectorAll('.perfil-post-delete').forEach(btn => {
     btn.addEventListener('click', async () => {
@@ -317,6 +340,134 @@ async function carregarMeusPosts() {
   lucide.createIcons()
 }
 
+// ===== ESTATÍSTICAS (Pro) =====
+let statsCarregado = false
+
+async function carregarEstatisticas() {
+  const container = document.getElementById('statsContainer')
+  if (!_isPro) {
+    container.innerHTML = `
+      <div class="stats-locked">
+        <div class="stats-locked-icon"><i data-lucide="lock"></i></div>
+        <h3>Estatísticas Pro</h3>
+        <p>Veja dados detalhados sobre o desempenho dos seus posts, curtidas recebidas e alcance do seu perfil.</p>
+        <a href="planos.html" class="btn-upgrade-stats"><i data-lucide="crown"></i> Assinar Pro</a>
+      </div>`
+    lucide.createIcons()
+    return
+  }
+
+  const { data: { user } } = await window.supabase.auth.getUser()
+  if (!user) return
+
+  // Busca posts com likes e comentários
+  const { data: posts } = await window.supabase
+    .from('posts')
+    .select('id, texto, created_at, pinned, likes(id), comments(id)')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+
+  if (!posts?.length) {
+    container.innerHTML = `
+      <div style="text-align:center;padding:48px;color:var(--muted)">
+        <i data-lucide="bar-chart-3" style="width:48px;height:48px"></i>
+        <p style="margin-top:12px">Publique posts para ver suas estatísticas aqui.</p>
+      </div>`
+    lucide.createIcons()
+    return
+  }
+
+  const totalPosts = posts.length
+  const totalLikes = posts.reduce((sum, p) => sum + (p.likes?.length || 0), 0)
+  const totalComments = posts.reduce((sum, p) => sum + (p.comments?.length || 0), 0)
+  const avgLikes = totalPosts > 0 ? (totalLikes / totalPosts).toFixed(1) : 0
+  const avgComments = totalPosts > 0 ? (totalComments / totalPosts).toFixed(1) : 0
+  const totalEngagement = totalLikes + totalComments
+
+  // Post mais popular
+  const topPost = posts.reduce((best, p) => {
+    const score = (p.likes?.length || 0) + (p.comments?.length || 0)
+    return score > (best.score || 0) ? { ...p, score } : best
+  }, { score: 0 })
+
+  // Atividade por semana (últimos 30 dias)
+  const agora = Date.now()
+  const semanas = [0, 0, 0, 0]
+  posts.forEach(p => {
+    const dias = Math.floor((agora - new Date(p.created_at).getTime()) / (24*60*60*1000))
+    if (dias < 7) semanas[0]++
+    else if (dias < 14) semanas[1]++
+    else if (dias < 21) semanas[2]++
+    else if (dias < 28) semanas[3]++
+  })
+  const maxSemana = Math.max(...semanas, 1)
+
+  container.innerHTML = `
+    <div class="stats-grid">
+      <div class="stat-card stat-purple">
+        <div class="stat-icon"><i data-lucide="file-text"></i></div>
+        <div class="stat-value">${totalPosts}</div>
+        <div class="stat-label">Posts publicados</div>
+      </div>
+      <div class="stat-card stat-pink">
+        <div class="stat-icon"><i data-lucide="heart"></i></div>
+        <div class="stat-value">${totalLikes}</div>
+        <div class="stat-label">Curtidas recebidas</div>
+      </div>
+      <div class="stat-card stat-blue">
+        <div class="stat-icon"><i data-lucide="message-circle"></i></div>
+        <div class="stat-value">${totalComments}</div>
+        <div class="stat-label">Comentários recebidos</div>
+      </div>
+      <div class="stat-card stat-green">
+        <div class="stat-icon"><i data-lucide="trending-up"></i></div>
+        <div class="stat-value">${totalEngagement}</div>
+        <div class="stat-label">Engajamento total</div>
+      </div>
+    </div>
+
+    <div class="stats-detail-card">
+      <h4><i data-lucide="bar-chart-3"></i> Médias por post</h4>
+      <div class="stats-averages">
+        <div class="avg-item">
+          <span class="avg-value">${avgLikes}</span>
+          <span class="avg-label">curtidas/post</span>
+        </div>
+        <div class="avg-item">
+          <span class="avg-value">${avgComments}</span>
+          <span class="avg-label">comentários/post</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats-detail-card">
+      <h4><i data-lucide="activity"></i> Atividade (últimas 4 semanas)</h4>
+      <div class="stats-chart">
+        ${semanas.map((v, i) => `
+          <div class="chart-bar-wrap">
+            <div class="chart-bar" style="height:${Math.max((v / maxSemana) * 100, 8)}%"></div>
+            <span class="chart-label">${['Esta', '2ª', '3ª', '4ª'][i]} sem</span>
+            <span class="chart-count">${v}</span>
+          </div>
+        `).reverse().join('')}
+      </div>
+    </div>
+
+    ${topPost.id ? `
+    <div class="stats-detail-card">
+      <h4><i data-lucide="trophy"></i> Post mais popular</h4>
+      <div class="top-post-preview">
+        <p class="top-post-text">${(topPost.texto || '').slice(0, 120)}${(topPost.texto || '').length > 120 ? '…' : ''}</p>
+        <div class="top-post-stats">
+          <span><i data-lucide="heart"></i> ${topPost.likes?.length || 0}</span>
+          <span><i data-lucide="message-circle"></i> ${topPost.comments?.length || 0}</span>
+        </div>
+      </div>
+    </div>` : ''}`
+
+  lucide.createIcons()
+}
+
 // ===== ABAS =====
 let postsCarregados = false
 document.querySelectorAll('.perfil-right-tab').forEach(tab => {
@@ -326,9 +477,14 @@ document.querySelectorAll('.perfil-right-tab').forEach(tab => {
     const nome = tab.dataset.tab
     document.getElementById('tabEditar').style.display = nome === 'editar' ? '' : 'none'
     document.getElementById('tabPosts').style.display  = nome === 'posts'  ? '' : 'none'
+    document.getElementById('tabStats').style.display  = nome === 'stats'  ? '' : 'none'
     if (nome === 'posts' && !postsCarregados) {
       postsCarregados = true
       carregarMeusPosts()
+    }
+    if (nome === 'stats' && !statsCarregado) {
+      statsCarregado = true
+      carregarEstatisticas()
     }
   })
 })

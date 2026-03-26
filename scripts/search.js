@@ -1,13 +1,4 @@
-// scripts/search.js
-
-function getPostsSalvos() {
-  return JSON.parse(localStorage.getItem('brainhub_posts') || '[]');
-}
-
-function getConversas() {
-  return JSON.parse(localStorage.getItem('brainhub_chat') || '[]');
-}
-
+// scripts/search.js — busca global com filtros avançados Pro
 
 async function buscarGruposSupabase(termo) {
   if (!window.supabase) return [];
@@ -29,32 +20,110 @@ async function buscarUsuariosSupabase(termo) {
   return data || [];
 }
 
-async function buscarPostsSupabase(termo) {
+async function buscarPostsSupabase(termo, filtros = {}) {
   if (!window.supabase) return [];
-  const { data } = await window.supabase
+  let query = window.supabase
     .from('posts')
-    .select('id, texto, user_id, profiles!posts_user_id_fkey(nome, cor_avatar)')
+    .select('id, texto, user_id, created_at, imagem_url, arquivo_url, profiles!posts_user_id_fkey(nome, cor_avatar)')
     .ilike('texto', `%${termo}%`)
     .order('created_at', { ascending: false })
-    .limit(6);
+    .limit(10);
+
+  // Filtros avançados (Pro)
+  if (filtros.periodo) {
+    const agora = new Date();
+    let desde;
+    if (filtros.periodo === '24h') desde = new Date(agora - 24*60*60*1000);
+    else if (filtros.periodo === '7d') desde = new Date(agora - 7*24*60*60*1000);
+    else if (filtros.periodo === '30d') desde = new Date(agora - 30*24*60*60*1000);
+    if (desde) query = query.gte('created_at', desde.toISOString());
+  }
+
+  if (filtros.tipo === 'imagem') query = query.not('imagem_url', 'is', null);
+  else if (filtros.tipo === 'arquivo') query = query.not('arquivo_url', 'is', null);
+  else if (filtros.tipo === 'texto') query = query.is('imagem_url', null).is('arquivo_url', null);
+
+  const { data } = await query;
   return data || [];
 }
 
-async function pesquisar(termo) {
+function getIsPro() {
+  return localStorage.getItem('brainhub_pro') === 'true';
+}
+
+async function pesquisar(termo, filtros = {}) {
   if (!termo || termo.length < 2) return null;
-
-  const t = termo.toLowerCase();
-
-  const conversas = getConversas().filter(c =>
-    c.nome?.toLowerCase().includes(t) || c.subtitulo?.toLowerCase().includes(t)
-  );
-  const [grupos, usuarios, posts] = await Promise.all([
-    buscarGruposSupabase(termo),
+  const [usuarios, posts, grupos] = await Promise.all([
     buscarUsuariosSupabase(termo),
-    buscarPostsSupabase(termo),
+    buscarPostsSupabase(termo, filtros),
+    buscarGruposSupabase(termo),
   ]);
+  return { usuarios, posts, grupos };
+}
 
-  return { grupos, usuarios, conversas, posts };
+function tempoRelativoSearch(dataStr) {
+  const diff = Date.now() - new Date(dataStr).getTime();
+  const min = Math.floor(diff / 60000);
+  if (min < 1) return 'agora';
+  if (min < 60) return `${min}m`;
+  const h = Math.floor(min / 60);
+  if (h < 24) return `${h}h`;
+  const d = Math.floor(h / 24);
+  if (d < 7) return `${d}d`;
+  return new Date(dataStr).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+}
+
+// ===== FILTROS STATE =====
+let filtroAtivo = {};
+
+function renderFiltrosAvancados() {
+  const isPro = getIsPro();
+  const container = document.getElementById('searchFilters');
+  if (!container) return;
+
+  if (!isPro) {
+    container.innerHTML = `
+      <div class="search-filters-locked">
+        <i data-lucide="lock"></i>
+        <span>Filtros avançados disponíveis no <a href="planos.html" style="color:#a78bfa">BrainHUB Pro</a></span>
+      </div>`;
+    lucide.createIcons();
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="search-filters-row">
+      <div class="search-filter-group">
+        <label>Período</label>
+        <select id="filtroPeriodo" class="search-filter-select">
+          <option value="">Qualquer</option>
+          <option value="24h">Últimas 24h</option>
+          <option value="7d">Última semana</option>
+          <option value="30d">Último mês</option>
+        </select>
+      </div>
+      <div class="search-filter-group">
+        <label>Tipo</label>
+        <select id="filtroTipo" class="search-filter-select">
+          <option value="">Todos</option>
+          <option value="texto">Só texto</option>
+          <option value="imagem">Com imagem</option>
+          <option value="arquivo">Com arquivo</option>
+        </select>
+      </div>
+    </div>`;
+
+  document.getElementById('filtroPeriodo')?.addEventListener('change', () => aplicarFiltros());
+  document.getElementById('filtroTipo')?.addEventListener('change', () => aplicarFiltros());
+}
+
+function aplicarFiltros() {
+  filtroAtivo = {
+    periodo: document.getElementById('filtroPeriodo')?.value || '',
+    tipo: document.getElementById('filtroTipo')?.value || '',
+  };
+  const input = document.getElementById('searchGlobal');
+  if (input?.value.trim()) renderizarResultados(input.value.trim());
 }
 
 async function renderizarResultados(termo) {
@@ -65,15 +134,15 @@ async function renderizarResultados(termo) {
   }
 
   container.innerHTML = `<p class="search-hint">Pesquisando...</p>`;
-  const resultados = await pesquisar(termo);
+  const resultados = await pesquisar(termo, filtroAtivo);
 
   if (!resultados) {
     container.innerHTML = `<p class="search-hint">Digite algo para pesquisar...</p>`;
     return;
   }
 
-  const { grupos, usuarios, conversas, posts } = resultados;
-  const total = grupos.length + usuarios.length + conversas.length + posts.length;
+  const { usuarios, posts, grupos } = resultados;
+  const total = usuarios.length + posts.length + grupos.length;
 
   if (total === 0) {
     container.innerHTML = `<div class="search-empty">Nenhum resultado para "<strong>${termo}</strong>"</div>`;
@@ -110,18 +179,6 @@ async function renderizarResultados(termo) {
       </a>`).join('');
   }
 
-  if (conversas.length > 0) {
-    html += `<div class="search-section-title">Conversas</div>`;
-    html += conversas.map(c => `
-      <div class="search-item">
-        <div class="search-item-icon chat-icon">${c.iniciais || 'C'}</div>
-        <div class="search-item-info">
-          <div class="search-item-title">${c.nome}</div>
-          <div class="search-item-sub">${c.subtitulo || ''}</div>
-        </div>
-      </div>`).join('');
-  }
-
   if (posts.length > 0) {
     html += `<div class="search-section-title">Posts</div>`;
     html += posts.map(p => {
@@ -129,11 +186,15 @@ async function renderizarResultados(termo) {
       const cor  = p.profiles?.cor_avatar || '';
       const iniciais = (nome).split(' ').map(x => x[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
       const preview = (p.texto || '').slice(0, 80) + ((p.texto || '').length > 80 ? '…' : '');
+      const tempo = tempoRelativoSearch(p.created_at);
+      const badges = [];
+      if (p.imagem_url) badges.push('📷');
+      if (p.arquivo_url) badges.push('📎');
       return `
         <a href="home.html?postId=${p.id}" class="search-item" style="text-decoration:none;color:inherit">
           <div class="search-item-icon user-icon ${cor}">${iniciais}</div>
           <div class="search-item-info">
-            <div class="search-item-title">${nome}</div>
+            <div class="search-item-title">${nome} <span style="color:var(--muted);font-weight:400;font-size:0.78rem">• ${tempo}</span> ${badges.join(' ')}</div>
             <div class="search-item-sub">${preview}</div>
           </div>
         </a>`;
@@ -148,32 +209,21 @@ function iniciarSearch() {
   const input    = document.getElementById('searchGlobal');
   const closeBtn = document.getElementById('searchClose');
 
-  // CORRIGIDO: busca pelo botão pai direto em vez do ícone interno
   document.querySelectorAll('.top-actions .icon-btn').forEach(btn => {
-    // Verifica se é o botão da lupa (não tem badge de notificação)
     if (!btn.querySelector('.badge')) {
       btn.addEventListener('click', () => {
         overlay.classList.remove('hidden');
+        renderFiltrosAvancados();
         lucide.createIcons();
         setTimeout(() => input.focus(), 100);
       });
     }
   });
 
-  // Fecha ao clicar no X
   closeBtn.addEventListener('click', fecharSearch);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) fecharSearch(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') fecharSearch(); });
 
-  // Fecha ao clicar fora do modal
-  overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) fecharSearch();
-  });
-
-  // Fecha com ESC
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') fecharSearch();
-  });
-
-  // Pesquisa ao digitar (async)
   input.addEventListener('input', () => {
     renderizarResultados(input.value.trim());
   });
@@ -184,6 +234,7 @@ function fecharSearch() {
   const input   = document.getElementById('searchGlobal');
   overlay.classList.add('hidden');
   input.value = '';
+  filtroAtivo = {};
   document.getElementById('searchResults').innerHTML = `<p class="search-hint">Digite algo para pesquisar...</p>`;
 }
 

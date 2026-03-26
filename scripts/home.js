@@ -437,6 +437,15 @@ async function publicarNovoPost() {
   let imagem_url = null, arquivo_url = null, arquivo_nome = null;
 
   if (mediaArquivo) {
+    const isPro = localStorage.getItem('brainhub_pro') === 'true';
+    const maxMB = isPro ? 25 : 5;
+    const maxBytes = maxMB * 1024 * 1024;
+    if (mediaArquivo.size > maxBytes) {
+      publishBtn.disabled = false;
+      publishBtn.textContent = 'Publicar';
+      alert(`Arquivo muito grande! Limite: ${maxMB}MB.${!isPro ? ' Assine o Pro para enviar até 25MB.' : ''}`);
+      return;
+    }
     const ext  = mediaArquivo.name.split('.').pop();
     const path = `${usuarioAtual.id}/${Date.now()}.${ext}`;
     const pasta = mediaTipo === 'imagem' ? 'images' : 'files';

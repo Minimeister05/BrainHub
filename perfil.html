@@ -98,6 +98,9 @@
         <button class="perfil-right-tab" data-tab="posts">
           <i data-lucide="file-text"></i> Meus Posts
         </button>
+        <button class="perfil-right-tab" data-tab="stats">
+          <i data-lucide="bar-chart-3"></i> Estatísticas
+        </button>
       </div>
 
       <!-- TAB: Editar -->
@@ -191,6 +194,18 @@
                 title="Magenta Pro"></button>
               <button class="color-opt pro-color" data-cor="av-pro-sunset" style="background: linear-gradient(135deg,#ff6b35,#f7c59f);"
                 title="Pôr do Sol Pro"></button>
+              <button class="color-opt pro-color" data-cor="av-pro-ruby" style="background: linear-gradient(135deg,#e11d48,#be123c);"
+                title="Rubi Pro"></button>
+              <button class="color-opt pro-color" data-cor="av-pro-ice" style="background: linear-gradient(135deg,#67e8f9,#06b6d4);"
+                title="Gelo Pro"></button>
+              <button class="color-opt pro-color" data-cor="av-pro-lime" style="background: linear-gradient(135deg,#a3e635,#65a30d);"
+                title="Limão Pro"></button>
+              <button class="color-opt pro-color" data-cor="av-pro-violet" style="background: linear-gradient(135deg,#c084fc,#7c3aed);"
+                title="Violeta Pro"></button>
+              <button class="color-opt pro-color" data-cor="av-pro-coral" style="background: linear-gradient(135deg,#fb7185,#f43f5e);"
+                title="Coral Pro"></button>
+              <button class="color-opt pro-color" data-cor="av-pro-mint" style="background: linear-gradient(135deg,#6ee7b7,#10b981);"
+                title="Menta Pro"></button>
             </div>
           </div>
           <!-- Aviso de bloqueio para não-Pro -->
@@ -236,10 +251,13 @@
         </div>
         <div class="pro-plan-features">
           <div class="pro-feature-item"><i data-lucide="badge-check"></i> Checkmark verificado ativo</div>
-          <div class="pro-feature-item"><i data-lucide="crown"></i> Badge PRO em todos os posts</div>
-          <div class="pro-feature-item"><i data-lucide="palette"></i> 6 cores exclusivas de avatar</div>
-          <div class="pro-feature-item"><i data-lucide="zap"></i> Posts em destaque no feed</div>
-          <div class="pro-feature-item"><i data-lucide="users"></i> Acesso a grupos exclusivos Pro</div>
+          <div class="pro-feature-item"><i data-lucide="crown"></i> Selo PRO em todos os posts</div>
+          <div class="pro-feature-item"><i data-lucide="palette"></i> 12 cores exclusivas de avatar</div>
+          <div class="pro-feature-item"><i data-lucide="pin"></i> Fixar posts no perfil</div>
+          <div class="pro-feature-item"><i data-lucide="upload"></i> Upload até 25MB</div>
+          <div class="pro-feature-item"><i data-lucide="search"></i> Filtros avançados de busca</div>
+          <div class="pro-feature-item"><i data-lucide="bar-chart-3"></i> Estatísticas de desempenho</div>
+          <div class="pro-feature-item"><i data-lucide="lock-open"></i> Grupos e canais exclusivos</div>
           <div class="pro-feature-item"><i data-lucide="headphones"></i> Suporte prioritário</div>
         </div>
         <div class="info-row" style="margin-top: 8px;">
@@ -265,7 +283,7 @@
           <div class="pro-cta-icon"><i data-lucide="crown"></i></div>
           <div>
             <strong>Torne-se Pro</strong>
-            <p>Badge exclusivo, checkmark verificado, cores únicas e muito mais por R$ 14,90/mês</p>
+            <p>Selo exclusivo, estatísticas, fixar posts, 12 cores, upload maior e muito mais por R$ 14,90/mês</p>
           </div>
         </div>
         <a href="planos.html" class="btn-upgrade-pro">Ver plano Pro</a>
@@ -277,6 +295,13 @@
       <div id="tabPosts" style="display:none">
         <div id="perfilPostsList">
           <p style="text-align:center;padding:32px;color:var(--muted)">Carregando posts...</p>
+        </div>
+      </div>
+
+      <!-- TAB: Estatísticas (Pro) -->
+      <div id="tabStats" style="display:none">
+        <div id="statsContainer">
+          <p style="text-align:center;padding:32px;color:var(--muted)">Carregando estatísticas...</p>
         </div>
       </div>
 
@@ -299,6 +324,7 @@
         </button>
       </div>
 
+      <div id="searchFilters"></div>
       <div class="search-results" id="searchResults">
         <p class="search-hint">Digite algo para pesquisar...</p>
       </div>
