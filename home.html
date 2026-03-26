@@ -63,43 +63,56 @@
     </aside>
 
     <section class="center-column">
-      <section class="create-post card" id="createPostBox">
-        <div class="create-top">
-          <div class="mini-avatar" id="composerAvatar">?</div>
-          <textarea id="postInput" placeholder="No que você está pensando?" rows="1"></textarea>
-        </div>
+      <!-- Barra compacta de criar post -->
+      <div class="create-post-bar card" id="createPostBar" onclick="abrirCompositor()">
+        <div class="mini-avatar" id="composerAvatar">?</div>
+        <span class="create-post-bar-placeholder">No que você está pensando?</span>
+      </div>
 
-        <!-- Preview de imagem/arquivo selecionado -->
-        <div id="composerPreview" style="display:none;padding:0 16px 10px;gap:10px;align-items:center">
-          <img id="composerImgPreview" style="display:none;max-height:160px;border-radius:10px;max-width:100%" />
-          <span id="composerFilePreview" style="display:none;font-size:0.85rem;color:var(--muted)"></span>
-          <button id="composerRemoveMedia" style="background:transparent;border:none;color:#ff8080;cursor:pointer;font-size:0.85rem;margin-left:auto">✕ Remover</button>
-        </div>
-
-        <!-- Humor dropdown -->
-        <div id="humorDropdown" style="display:none;padding:8px 16px;gap:8px;flex-wrap:wrap">
-          <span style="font-size:0.78rem;color:var(--muted);width:100%;margin-bottom:4px">Como você está?</span>
-          <button class="humor-opt" data-humor="😊 Animado">😊 Animado</button>
-          <button class="humor-opt" data-humor="🤔 Curioso">🤔 Curioso</button>
-          <button class="humor-opt" data-humor="🥳 Celebrando">🥳 Celebrando</button>
-          <button class="humor-opt" data-humor="💡 Inspirado">💡 Inspirado</button>
-          <button class="humor-opt" data-humor="📚 Estudando">📚 Estudando</button>
-          <button class="humor-opt" data-humor="😤 Frustrado">😤 Frustrado</button>
-        </div>
-
-        <div class="create-bottom">
-          <div class="post-types">
-            <button id="btnImagem"><i data-lucide="image"></i> Imagem</button>
-            <button id="btnArquivo"><i data-lucide="file"></i> Arquivo</button>
-            <button id="btnHumor"><i data-lucide="smile"></i> Humor</button>
+      <!-- Modal compositor de post -->
+      <div class="composer-overlay hidden" id="composerOverlay">
+        <div class="composer-modal" id="composerModal">
+          <div class="composer-header">
+            <span>Criar post</span>
+            <button class="icon-btn" id="composerFechar"><i data-lucide="x"></i></button>
           </div>
-          <button class="publish-btn" id="publishBtn">Publicar</button>
-        </div>
 
-        <!-- Inputs de arquivo ocultos -->
-        <input type="file" id="inputImagem" accept="image/*" style="display:none" />
-        <input type="file" id="inputArquivo" accept=".pdf,.doc,.docx,.txt,.zip,.ppt,.pptx,.xls,.xlsx" style="display:none" />
-      </section>
+          <div class="composer-body">
+            <div class="create-top" style="padding:0;border:none">
+              <div class="mini-avatar" id="composerAvatarModal">?</div>
+              <textarea id="postInput" placeholder="No que você está pensando?" rows="3" style="resize:none"></textarea>
+            </div>
+
+            <div id="composerPreview" style="display:none;padding:8px 0;gap:10px;align-items:center">
+              <img id="composerImgPreview" style="display:none;max-height:180px;border-radius:10px;max-width:100%" />
+              <span id="composerFilePreview" style="display:none;font-size:0.85rem;color:var(--muted)"></span>
+              <button id="composerRemoveMedia" style="background:transparent;border:none;color:#ff8080;cursor:pointer;font-size:0.85rem;margin-left:auto">✕ Remover</button>
+            </div>
+
+            <div id="humorDropdown" style="display:none;padding:8px 0;gap:8px;flex-wrap:wrap">
+              <span style="font-size:0.78rem;color:var(--muted);width:100%;margin-bottom:4px">Como você está?</span>
+              <button class="humor-opt" data-humor="😊 Animado">😊 Animado</button>
+              <button class="humor-opt" data-humor="🤔 Curioso">🤔 Curioso</button>
+              <button class="humor-opt" data-humor="🥳 Celebrando">🥳 Celebrando</button>
+              <button class="humor-opt" data-humor="💡 Inspirado">💡 Inspirado</button>
+              <button class="humor-opt" data-humor="📚 Estudando">📚 Estudando</button>
+              <button class="humor-opt" data-humor="😤 Frustrado">😤 Frustrado</button>
+            </div>
+          </div>
+
+          <div class="composer-footer">
+            <div class="post-types">
+              <button id="btnImagem"><i data-lucide="image"></i> Imagem</button>
+              <button id="btnArquivo"><i data-lucide="file"></i> Arquivo</button>
+              <button id="btnHumor"><i data-lucide="smile"></i> Humor</button>
+            </div>
+            <button class="publish-btn" id="publishBtn">Publicar</button>
+          </div>
+
+          <input type="file" id="inputImagem" accept="image/*" style="display:none" />
+          <input type="file" id="inputArquivo" accept=".pdf,.doc,.docx,.txt,.zip,.ppt,.pptx,.xls,.xlsx" style="display:none" />
+        </div>
+      </div>
 
       <!-- Abas Para Você / Seguindo -->
       <div class="feed-tabs">

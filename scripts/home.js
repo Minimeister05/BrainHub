@@ -480,12 +480,36 @@ async function publicarNovoPost() {
   humorSelecionado = null;
   btnHumor?.classList.remove('active');
   humorDropdown.style.display = 'none';
+  fecharCompositor();
   await renderizarPosts();
 }
 
 publishBtn.addEventListener('click', publicarNovoPost);
 postInput.addEventListener('keydown', e => {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); publicarNovoPost(); }
+});
+
+// ===== COMPOSITOR MODAL =====
+function abrirCompositor() {
+  document.getElementById('composerOverlay').classList.remove('hidden');
+  // Sincroniza avatar do modal com o da barra
+  const barAvatar = document.getElementById('composerAvatar');
+  const modalAvatar = document.getElementById('composerAvatarModal');
+  if (barAvatar && modalAvatar) {
+    modalAvatar.className  = barAvatar.className;
+    modalAvatar.textContent = barAvatar.textContent;
+  }
+  setTimeout(() => postInput?.focus(), 80);
+  lucide.createIcons();
+}
+
+function fecharCompositor() {
+  document.getElementById('composerOverlay').classList.add('hidden');
+}
+
+document.getElementById('composerFechar').addEventListener('click', fecharCompositor);
+document.getElementById('composerOverlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('composerOverlay')) fecharCompositor();
 });
 
 async function carregarEstatisticas(userId) {
