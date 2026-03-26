@@ -61,3 +61,68 @@ create policy "members_delete" on group_members
 -- ============================================================
 alter table posts
   add column if not exists group_id uuid references grupos(id) on delete set null;
+
+-- ============================================================
+-- TABELAS DE CHAT EM GRUPO (separadas dos grupos de comunidade)
+-- ============================================================
+
+-- Grupos de conversa no chat
+create table if not exists group_chats (
+  id         uuid default gen_random_uuid() primary key,
+  nome       text not null,
+  criado_por uuid references profiles(id) on delete set null,
+  created_at timestamptz default now()
+);
+
+-- Membros de grupos de chat
+create table if not exists chat_members (
+  id        uuid default gen_random_uuid() primary key,
+  group_id  uuid references group_chats(id) on delete cascade not null,
+  user_id   uuid references profiles(id)    on delete cascade not null,
+  joined_at timestamptz default now(),
+  unique(group_id, user_id)
+);
+
+-- Mensagens de grupos de chat
+create table if not exists group_messages (
+  id         uuid default gen_random_uuid() primary key,
+  group_id   uuid references group_chats(id) on delete cascade not null,
+  sender_id  uuid references profiles(id)    on delete set null,
+  texto      text not null,
+  created_at timestamptz default now()
+);
+
+-- RLS para as novas tabelas
+alter table group_chats    enable row level security;
+alter table chat_members   enable row level security;
+alter table group_messages enable row level security;
+
+-- group_chats policies
+create policy "gc_select" on group_chats for select using (
+  exists (select 1 from chat_members where group_id = group_chats.id and user_id = auth.uid())
+);
+create policy "gc_insert" on group_chats for insert with check (auth.uid() = criado_por);
+create policy "gc_update" on group_chats for update using (auth.uid() = criado_por);
+create policy "gc_delete" on group_chats for delete using (auth.uid() = criado_por);
+
+-- chat_members policies
+create policy "cm_select" on chat_members for select using (
+  exists (select 1 from chat_members cm where cm.group_id = chat_members.group_id and cm.user_id = auth.uid())
+);
+create policy "cm_insert" on chat_members for insert with check (
+  auth.uid() = user_id or
+  exists (select 1 from group_chats where id = group_id and criado_por = auth.uid())
+);
+create policy "cm_delete" on chat_members for delete using (
+  auth.uid() = user_id or
+  exists (select 1 from group_chats where id = group_id and criado_por = auth.uid())
+);
+
+-- group_messages policies
+create policy "gm_select" on group_messages for select using (
+  exists (select 1 from chat_members where group_id = group_messages.group_id and user_id = auth.uid())
+);
+create policy "gm_insert" on group_messages for insert with check (
+  auth.uid() = sender_id and
+  exists (select 1 from chat_members where group_id = group_messages.group_id and user_id = auth.uid())
+);
