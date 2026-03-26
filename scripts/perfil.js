@@ -234,6 +234,8 @@ document.getElementById('btnEditarPerfil').addEventListener('click', () => {
 document.getElementById('btnSair').addEventListener('click', async () => {
   await window.supabase.auth.signOut()
   localStorage.removeItem('brainhub_usuario_logado')
+  localStorage.removeItem('brainhub_remember')
+  sessionStorage.removeItem('brainhub_remember')
   window.location.href = 'login.html'
 })
 

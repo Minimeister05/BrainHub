@@ -198,6 +198,56 @@ body {
   align-items: center;
   gap: 8px;
   color: #bdbdbd;
+  cursor: pointer;
+  user-select: none;
+}
+
+.remember-me input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #3a3a46;
+  border-radius: 5px;
+  background: #161618;
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.remember-me input[type="checkbox"]:hover {
+  border-color: var(--purple);
+  box-shadow: 0 0 0 3px rgba(124, 92, 255, 0.12);
+}
+
+.remember-me input[type="checkbox"]:checked {
+  background: var(--purple);
+  border-color: var(--purple);
+  box-shadow: 0 0 0 3px rgba(124, 92, 255, 0.2);
+}
+
+.remember-me input[type="checkbox"]:checked::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 6px;
+  height: 10px;
+  border: 2px solid #fff;
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg);
+}
+
+.remember-me span:last-child {
+  font-size: 0.9rem;
+  color: #bdbdbd;
+  transition: color 0.2s ease;
+}
+
+.remember-me:hover span:last-child {
+  color: #e0e0e0;
 }
 
 .forgot-password {
@@ -377,6 +427,73 @@ body {
 
 .register-text a:hover {
   text-shadow: 0 0 8px #ffffff;
+}
+
+/* ===== MODAL RECUPERAR SENHA ===== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal-box {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 40px 34px 36px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+  text-align: center;
+  animation: fadeIn 0.25s ease;
+  margin: 16px;
+}
+
+.modal-close {
+  position: absolute;
+  top: 16px;
+  right: 18px;
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 1.5rem;
+  cursor: pointer;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.modal-close:hover {
+  color: #fff;
+}
+
+.modal-icon {
+  font-size: 2.2rem;
+  margin-bottom: 14px;
+}
+
+.modal-box h3 {
+  font-size: 1.4rem;
+  margin-bottom: 10px;
+  color: var(--text);
+}
+
+.modal-box p {
+  font-size: 0.9rem;
+  color: #b9b9b9;
+  line-height: 1.55;
+  margin-bottom: 24px;
+}
+
+.modal-box .input-group {
+  margin-bottom: 20px;
+  text-align: left;
 }
 
 

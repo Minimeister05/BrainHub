@@ -40,11 +40,12 @@
 
         <div class="form-options">
           <label class="remember-me">
-            <input type="checkbox" />
+            <input type="checkbox" id="lembrar" />
+            <span class="checkmark"></span>
             <span>Lembrar de mim</span>
           </label>
 
-          <a href="#" class="forgot-password">Esqueceu a senha?</a>
+          <a href="#" class="forgot-password" id="btnEsqueceuSenha">Esqueceu a senha?</a>
         </div>
 
         <button type="submit" class="login-button">Entrar</button>
@@ -56,6 +57,23 @@
       </p>
     </section>
   </main>
+
+  <!-- Modal: Esqueceu a senha -->
+  <div id="modalRecuperarSenha" class="modal-overlay" style="display:none;">
+    <div class="modal-box">
+      <button class="modal-close" id="btnFecharModal">&times;</button>
+      <div class="modal-icon">&#128274;</div>
+      <h3>Recuperar senha</h3>
+      <p>Digite seu e-mail cadastrado e enviaremos um link para redefinir sua senha.</p>
+      <form id="formRecuperarSenha">
+        <div class="input-group">
+          <label for="emailRecuperar">Email</label>
+          <input type="email" id="emailRecuperar" placeholder="Digite seu e-mail" required />
+        </div>
+        <button type="submit" class="login-button" id="btnEnviarRecuperar">Enviar link</button>
+      </form>
+    </div>
+  </div>
 
   <script type="module" src="./scripts/auth-supabase.js"></script>
 </body>

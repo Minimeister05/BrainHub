@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BrainHUB | Redefinir Senha</title>
+  <link rel="stylesheet" href="./css/login.css" />
+</head>
+<body>
+  <div class="background-overlay"></div>
+
+  <header class="topbar">
+    <div class="logo-area">
+      <div class="logo-circle">B</div>
+      <h1>BrainHUB</h1>
+    </div>
+    <nav class="top-nav">
+      <a href="sobre.html">Sobre</a>
+      <a href="suporte.html">Suporte</a>
+    </nav>
+  </header>
+
+  <main class="login-page">
+    <section class="login-card" id="cardRedefinir">
+      <div class="login-icon">&#128274;</div>
+      <h2>Nova senha</h2>
+      <p class="subtitle">Escolha uma senha forte para proteger sua conta.</p>
+
+      <form id="formRedefinirSenha" class="login-form">
+        <div class="input-group">
+          <label for="novaSenha">Nova senha</label>
+          <input type="password" id="novaSenha" placeholder="Mínimo 6 caracteres" required minlength="6" />
+        </div>
+        <div class="input-group">
+          <label for="confirmarSenha">Confirmar senha</label>
+          <input type="password" id="confirmarSenha" placeholder="Repita a nova senha" required minlength="6" />
+        </div>
+        <button type="submit" class="login-button">Redefinir senha</button>
+      </form>
+    </section>
+
+    <!-- Estado: link inválido ou expirado -->
+    <section class="login-card" id="cardLinkInvalido" style="display:none;">
+      <div class="login-icon">&#10060;</div>
+      <h2>Link inválido</h2>
+      <p class="subtitle">Este link de redefinição expirou ou já foi utilizado. Solicite um novo.</p>
+      <a href="login.html" class="login-button" style="display:block; text-align:center; text-decoration:none; margin-top:8px;">
+        Voltar ao login
+      </a>
+    </section>
+  </main>
+
+  <script type="module" src="./scripts/redefinir-senha.js"></script>
+</body>
+</html>

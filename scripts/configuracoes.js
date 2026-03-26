@@ -135,6 +135,8 @@ async function renderizar(perfil) {
     if (window.supabase) await window.supabase.auth.signOut();
     localStorage.removeItem('brainhub_usuario_logado');
     localStorage.removeItem('brainhub_pro');
+    localStorage.removeItem('brainhub_remember');
+    sessionStorage.removeItem('brainhub_remember');
     window.location.href = 'login.html';
   });
 }

@@ -52,6 +52,7 @@ if (loginForm) {
     e.preventDefault()
     const email = document.getElementById('email').value.trim()
     const senha = document.getElementById('senha').value
+    const lembrar = document.getElementById('lembrar')?.checked ?? false
 
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
@@ -68,6 +69,15 @@ if (loginForm) {
       nome: data.user.user_metadata?.nome || email,
       email: data.user.email
     }))
+
+    // Controla persistência da sessão com base no "Lembrar de mim"
+    if (lembrar) {
+      localStorage.setItem('brainhub_remember', 'true')
+      sessionStorage.removeItem('brainhub_remember')
+    } else {
+      sessionStorage.setItem('brainhub_remember', 'true')
+      localStorage.removeItem('brainhub_remember')
+    }
 
     mostrarAviso(`Bem vindo!`, 'success')
 
@@ -92,10 +102,69 @@ const paginasPublicas = ['login.html', 'cadastro.html', 'sobre.html', 'suporte.h
 const paginaAtual = window.location.pathname.split('/').pop()
 
 if (!paginasPublicas.includes(paginaAtual)) {
-  supabase.auth.getSession().then(({ data }) => {
+  supabase.auth.getSession().then(async ({ data }) => {
     if (!data.session) {
       window.location.href = 'login.html'
+      return
     }
+
+    // Se tem sessão ativa no Supabase, verifica se o usuário quis ser lembrado
+    const rememberedPermanently = localStorage.getItem('brainhub_remember') === 'true'
+    const rememberedInSession   = sessionStorage.getItem('brainhub_remember') === 'true'
+
+    if (!rememberedPermanently && !rememberedInSession) {
+      // Sessão existe no Supabase (localStorage), mas o usuário não marcou "lembrar de mim"
+      // e a aba/browser foi fechado → faz logout automático
+      await supabase.auth.signOut()
+      localStorage.removeItem('brainhub_usuario_logado')
+      window.location.href = 'login.html'
+    }
+  })
+}
+
+// ===== RECUPERAR SENHA =====
+const btnEsqueceu    = document.getElementById('btnEsqueceuSenha')
+const modalRecuperar = document.getElementById('modalRecuperarSenha')
+const btnFecharModal = document.getElementById('btnFecharModal')
+const formRecuperar  = document.getElementById('formRecuperarSenha')
+
+if (btnEsqueceu && modalRecuperar) {
+  btnEsqueceu.addEventListener('click', (e) => {
+    e.preventDefault()
+    modalRecuperar.style.display = 'flex'
+  })
+
+  btnFecharModal.addEventListener('click', () => {
+    modalRecuperar.style.display = 'none'
+  })
+
+  modalRecuperar.addEventListener('click', (e) => {
+    if (e.target === modalRecuperar) modalRecuperar.style.display = 'none'
+  })
+
+  formRecuperar.addEventListener('submit', async (e) => {
+    e.preventDefault()
+    const email = document.getElementById('emailRecuperar').value.trim()
+    const btnEnviar = document.getElementById('btnEnviarRecuperar')
+
+    btnEnviar.disabled = true
+    btnEnviar.textContent = 'Enviando...'
+
+    const redirectTo = `${window.location.origin}${window.location.pathname.replace('login.html', '')}redefinir-senha.html`
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo })
+
+    btnEnviar.disabled = false
+    btnEnviar.textContent = 'Enviar link'
+
+    if (error) {
+      mostrarAviso('Erro ao enviar e-mail. Tente novamente.', 'error')
+      return
+    }
+
+    mostrarAviso('Link enviado! Verifique seu e-mail.', 'success')
+    modalRecuperar.style.display = 'none'
+    formRecuperar.reset()
   })
 }
 
