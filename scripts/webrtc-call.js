@@ -62,7 +62,7 @@ const CallManager = (() => {
 
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
-    _subscribeSignal(toId);
+    await _subscribeSignal(toId);
 
     await _sendSignal(toId, 'call-invite', {
       from: myId, fromName: myName, type, sdp: pc.localDescription
@@ -92,6 +92,7 @@ const CallManager = (() => {
     const answer = await pc.createAnswer();
     await pc.setLocalDescription(answer);
 
+    await _subscribeSignal(partnerId);
     await _sendSignal(partnerId, 'call-answer', { from: myId, sdp: pc.localDescription });
   }
 
@@ -141,44 +142,42 @@ const CallManager = (() => {
   }
 
   // ===== SINALIZAÇÃO =====
-  function _subscribeSignal(toId) {
+  async function _subscribeSignal(toId) {
     const name = `call_signal_${[myId, toId].sort().join('_')}`;
-    signalChannel = window.supabase.channel(name)
-      .on('broadcast', { event: 'call-answer' }, async ({ payload }) => {
-        if (pc && pc.signalingState !== 'closed') {
-          await pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
-          _showActive(partnerName, callType);
-        }
-      })
-      .on('broadcast', { event: 'ice-candidate' }, async ({ payload }) => {
-        if (payload.from !== myId && pc?.remoteDescription) {
-          try { await pc.addIceCandidate(new RTCIceCandidate(payload.candidate)); } catch (_) {}
-        }
-      })
-      .on('broadcast', { event: 'call-reject' }, () => {
-        _hideOutgoing(); _cleanup(); _toast('Chamada recusada');
-      })
-      .on('broadcast', { event: 'call-end' }, () => {
-        _hideActive(); _cleanup(); _toast('Chamada encerrada');
-      })
-      .subscribe();
+    await new Promise(resolve => {
+      signalChannel = window.supabase.channel(name)
+        .on('broadcast', { event: 'call-answer' }, async ({ payload }) => {
+          if (pc && pc.signalingState !== 'closed') {
+            await pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+            _showActive(partnerName, callType);
+          }
+        })
+        .on('broadcast', { event: 'ice-candidate' }, async ({ payload }) => {
+          if (payload.from !== myId && pc?.remoteDescription) {
+            try { await pc.addIceCandidate(new RTCIceCandidate(payload.candidate)); } catch (_) {}
+          }
+        })
+        .on('broadcast', { event: 'call-reject' }, () => {
+          _hideOutgoing(); _cleanup(); _toast('Chamada recusada');
+        })
+        .on('broadcast', { event: 'call-end' }, () => {
+          _hideActive(); _cleanup(); _toast('Chamada encerrada');
+        })
+        .subscribe(status => { if (status === 'SUBSCRIBED') resolve(); });
+    });
   }
 
   async function _sendSignal(toId, event, payload) {
-    // Para convites usa o canal inbox pessoal, para resto usa o canal compartilhado
-    const name = event === 'call-invite'
-      ? `call_inbox_${toId}`
-      : `call_signal_${[myId, toId].sort().join('_')}`;
-
-    const ch = window.supabase.channel(name);
-    await new Promise(resolve => {
-      const unsub = ch.subscribe(status => {
-        if (status === 'SUBSCRIBED') resolve();
-      });
-    });
-    await ch.send({ type: 'broadcast', event, payload });
-    // Deixa 1s antes de cancelar para garantir entrega
-    setTimeout(() => ch.unsubscribe(), 1000);
+    if (event === 'call-invite') {
+      // Convite vai pro inbox pessoal do destinatário
+      const ch = window.supabase.channel(`call_inbox_${toId}`);
+      await new Promise(resolve => ch.subscribe(s => s === 'SUBSCRIBED' && resolve()));
+      await ch.send({ type: 'broadcast', event, payload });
+      setTimeout(() => ch.unsubscribe(), 2000);
+    } else if (signalChannel) {
+      // Usa o canal compartilhado já subscrito — evita conflito de canais
+      await signalChannel.send({ type: 'broadcast', event, payload });
+    }
   }
 
   // ===== CONTROLES =====
