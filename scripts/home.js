@@ -7,7 +7,12 @@ const publishBtn = document.getElementById('publishBtn');
 const postInput  = document.getElementById('postInput');
 const feedList   = document.getElementById('feedList');
 
-let usuarioAtual = null;
+let usuarioAtual  = null;
+let feedTab       = 'fyp';      // 'fyp' | 'following'
+let seguindoIds   = new Set();
+let latestPostAt  = null;       // timestamp do post mais novo carregado
+let novosCount    = 0;
+let pollInterval  = null;
 
 // ===== COMPOSITOR: MÍDIA & HUMOR =====
 let mediaArquivo  = null; // File selecionado (imagem ou doc)
@@ -300,10 +305,56 @@ function ativarEventosPosts() {
   });
 }
 
+// ===== ABAS FEED =====
+function setFeedTab(btn) {
+  document.querySelectorAll('.feed-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  feedTab = btn.dataset.tab;
+  renderizarPosts();
+}
+
+// ===== NOVOS POSTS (polling) =====
+function iniciarPolling() {
+  if (pollInterval) clearInterval(pollInterval);
+  pollInterval = setInterval(verificarNovos, 30000);
+}
+
+async function verificarNovos() {
+  if (!latestPostAt || !window.supabase) return;
+
+  let query = window.supabase
+    .from('posts')
+    .select('id', { count: 'exact', head: true })
+    .gt('created_at', latestPostAt)
+    .is('group_id', null);
+
+  if (feedTab === 'following' && seguindoIds.size > 0) {
+    query = query.in('user_id', [...seguindoIds]);
+  }
+
+  const { count } = await query;
+  if (!count || count === 0) return;
+
+  novosCount = count;
+  const banner = document.getElementById('newPostsBanner');
+  document.getElementById('newPostsLabel').textContent =
+    `${count} novo${count > 1 ? 's posts' : ' post'} — clique para ver`;
+  banner.classList.remove('hidden');
+  lucide.createIcons();
+}
+
+async function verNovos() {
+  document.getElementById('newPostsBanner').classList.add('hidden');
+  novosCount = 0;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  await renderizarPosts();
+}
+
 async function renderizarPosts() {
   feedList.innerHTML = '<p style="color:var(--muted);text-align:center;padding:32px">Carregando posts...</p>';
+  document.getElementById('newPostsBanner')?.classList.add('hidden');
 
-  const { data: posts, error } = await window.supabase
+  let query = window.supabase
     .from('posts')
     .select(`
       id, user_id, texto, area, tipo, created_at, imagem_url, arquivo_url, arquivo_nome, humor,
@@ -311,8 +362,24 @@ async function renderizarPosts() {
       likes(user_id),
       comments(id)
     `)
+    .is('group_id', null)
     .order('created_at', { ascending: false })
     .limit(30);
+
+  if (feedTab === 'following') {
+    if (seguindoIds.size === 0) {
+      feedList.innerHTML = `
+        <div class="aba-empty" style="padding:48px;text-align:center">
+          <i data-lucide="user-plus" style="width:48px;height:48px;color:var(--muted)"></i>
+          <h3 style="margin-top:12px;color:var(--muted)">Siga pessoas para ver os posts delas aqui.</h3>
+        </div>`;
+      lucide.createIcons();
+      return;
+    }
+    query = query.in('user_id', [...seguindoIds]);
+  }
+
+  const { data: posts, error } = await query;
 
   if (error) console.error('Erro detalhado:', JSON.stringify(error));
 
@@ -339,6 +406,9 @@ async function renderizarPosts() {
       .from('saved_posts').select('post_id').eq('user_id', usuarioAtual.id);
     salvoSet = new Set((saves || []).map(s => s.post_id));
   }
+
+  // Salva timestamp do post mais recente pra polling
+  if (posts.length > 0) latestPostAt = posts[0].created_at;
 
   feedList.innerHTML = posts.map(criarPostHTML).join('');
 
@@ -530,10 +600,16 @@ async function init() {
   if (usuarioAtual) {
     carregarEstatisticas(usuarioAtual.id);
     carregarSugestoes(usuarioAtual.id);
+
+    // Carrega quem o usuário segue (pra aba Seguindo)
+    const { data: follows } = await window.supabase
+      .from('follows').select('following_id').eq('follower_id', usuarioAtual.id);
+    seguindoIds = new Set((follows || []).map(f => f.following_id));
   }
   carregarEmAlta();
   await renderizarPosts();
   rolarParaPost();
+  iniciarPolling();
 }
 
 init();

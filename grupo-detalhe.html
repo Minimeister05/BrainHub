@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BrainHUB | Grupo</title>
+  <link rel="stylesheet" href="./css/home.css" />
+  <link rel="stylesheet" href="./css/grupos.css" />
+  <link rel="stylesheet" href="./css/grupo-detalhe.css" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-icon">🧠</div>
+      <h1>Brain<span>HUB</span></h1>
+    </div>
+    <nav class="main-nav">
+      <a href="home.html"><i data-lucide="house"></i> Feed</a>
+      <a href="grupos.html" class="active"><i data-lucide="users"></i> Grupos</a>
+      <a href="chat.html"><i data-lucide="message-circle"></i> Mensagens</a>
+      <a href="perfil.html"><i data-lucide="user"></i> Perfil</a>
+    </nav>
+    <div class="top-actions">
+      <button class="icon-btn notification-btn" onclick="window.location.href='notificacoes.html'">
+        <i data-lucide="bell"></i>
+        <span class="badge" style="display:none">0</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="gd-layout">
+
+    <!-- BANNER DO GRUPO -->
+    <div class="gd-banner" id="gdBanner">
+      <div class="gd-banner-inner">
+        <div class="gd-loading">
+          <div class="grupos-loading-spinner"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTEÚDO -->
+    <div class="gd-content">
+
+      <!-- ABAS -->
+      <div class="gd-tabs">
+        <button class="gd-tab active" data-tab="posts" onclick="setTab(this, 'posts')">
+          <i data-lucide="layout-list"></i> Posts
+        </button>
+        <button class="gd-tab" data-tab="membros" onclick="setTab(this, 'membros')">
+          <i data-lucide="users"></i> Membros
+        </button>
+        <button class="gd-tab" data-tab="sobre" onclick="setTab(this, 'sobre')">
+          <i data-lucide="info"></i> Sobre
+        </button>
+      </div>
+
+      <!-- ABA: POSTS -->
+      <div class="gd-tab-panel" id="tab-posts">
+
+        <!-- Compositor (só aparece se for membro) -->
+        <div class="gd-composer hidden" id="gdComposer">
+          <div class="create-top" style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+            <div class="mini-avatar" id="composerAvatar">?</div>
+            <textarea
+              id="gdPostInput"
+              class="post-composer"
+              placeholder="Compartilhe algo com o grupo..."
+              rows="1"
+            ></textarea>
+          </div>
+          <div class="create-actions" style="display:flex;justify-content:flex-end;gap:8px">
+            <button class="publish-btn" id="gdPublishBtn">
+              <i data-lucide="send"></i> Publicar
+            </button>
+          </div>
+        </div>
+
+        <div class="gd-nao-membro hidden" id="gdNaoMembro">
+          <i data-lucide="lock"></i>
+          <p>Entre no grupo para publicar e ver os posts.</p>
+        </div>
+
+        <div id="gdFeedList"></div>
+      </div>
+
+      <!-- ABA: MEMBROS -->
+      <div class="gd-tab-panel hidden" id="tab-membros">
+        <div class="gd-membros-grid" id="gdMembrosGrid">
+          <div class="grupos-loading" style="padding:40px 0">
+            <div class="grupos-loading-spinner"></div>
+            <span>Carregando membros...</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ABA: SOBRE -->
+      <div class="gd-tab-panel hidden" id="tab-sobre">
+        <div class="gd-sobre-card" id="gdSobreCard"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="./scripts/brainhub-shared.js"></script>
+  <script type="module" src="./scripts/supabaseClient.js"></script>
+  <script defer src="./scripts/grupo-detalhe.js"></script>
+
+  <nav class="mobile-bottom-nav">
+    <a href="home.html" class="mob-nav-item"><i data-lucide="house"></i><span>Feed</span></a>
+    <a href="grupos.html" class="mob-nav-item active"><i data-lucide="users"></i><span>Grupos</span></a>
+    <a href="chat.html" class="mob-nav-item"><i data-lucide="message-circle"></i><span>Chat</span></a>
+    <a href="notificacoes.html" class="mob-nav-item"><span class="mob-notif-wrap"><i data-lucide="bell"></i><span class="mob-notif-dot" id="mobNotifDot"></span></span><span>Notifs</span></a>
+    <a href="perfil.html" class="mob-nav-item"><i data-lucide="user"></i><span>Perfil</span></a>
+  </nav>
+</body>
+</html>

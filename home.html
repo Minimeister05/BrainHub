@@ -101,6 +101,18 @@
         <input type="file" id="inputArquivo" accept=".pdf,.doc,.docx,.txt,.zip,.ppt,.pptx,.xls,.xlsx" style="display:none" />
       </section>
 
+      <!-- Abas Para Você / Seguindo -->
+      <div class="feed-tabs">
+        <button class="feed-tab active" data-tab="fyp" onclick="setFeedTab(this)">Para você</button>
+        <button class="feed-tab" data-tab="following" onclick="setFeedTab(this)">Seguindo</button>
+      </div>
+
+      <!-- Banner novos posts -->
+      <div class="new-posts-banner hidden" id="newPostsBanner" onclick="verNovos()">
+        <i data-lucide="arrow-up"></i>
+        <span id="newPostsLabel">Novos posts</span>
+      </div>
+
       <div class="feed-scroll" id="feedList">
         <p style="color:var(--muted);text-align:center;padding:32px">Carregando posts...</p>
       </div>

@@ -404,6 +404,54 @@ body {
   font-weight: 700;
 }
 
+/* ===== ABAS FEED ===== */
+.feed-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
+}
+
+.feed-tab {
+  flex: 1;
+  padding: 12px 0;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.18s;
+  margin-bottom: -1px;
+}
+
+.feed-tab:hover { color: var(--text); }
+.feed-tab.active { color: #c4b7ff; border-bottom-color: var(--purple); }
+
+/* ===== BANNER NOVOS POSTS ===== */
+.new-posts-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--purple);
+  color: white;
+  font-size: 0.88rem;
+  font-weight: 600;
+  border-radius: 999px;
+  cursor: pointer;
+  margin: 8px auto;
+  width: fit-content;
+  box-shadow: 0 4px 16px rgba(124,92,255,0.4);
+  animation: toastIn 0.3s ease;
+  transition: 0.18s;
+}
+
+.new-posts-banner:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(124,92,255,0.5); }
+.new-posts-banner.hidden { display: none; }
+
 .feed-scroll {
   flex: 1;
   min-height: 0;

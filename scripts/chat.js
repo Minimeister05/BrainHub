@@ -97,9 +97,10 @@ async function carregarConversasDM() {
       naoLidas:    unreadMap.get(p.id) || 0,
       preview:     last?.texto || '',
       hora:        last ? tempoRelativo(last.created_at) : '',
+      _lastTime:   last?.created_at || '',
       mensagens:   []
     };
-  });
+  }).sort((a, b) => new Date(b._lastTime) - new Date(a._lastTime));
 }
 
 async function carregarMensagensDM(parceiroId) {
@@ -306,7 +307,10 @@ async function enviarMensagem() {
   c.mensagens.push(novaMsg);
   c.preview = texto;
   c.hora = 'agora';
+  c._lastTime = new Date().toISOString();
   input.value = '';
+  // Sobe conversa ativa pro topo
+  conversas = [c, ...conversas.filter(x => x.id !== c.id)];
   renderizarMensagens(c);
   renderizarLista();
 
