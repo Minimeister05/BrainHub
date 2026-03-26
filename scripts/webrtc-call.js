@@ -147,6 +147,7 @@ const CallManager = (() => {
       .on('broadcast', { event: 'call-answer' }, async ({ payload }) => {
         if (pc && pc.signalingState !== 'closed') {
           await pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+          _showActive(partnerName, callType);
         }
       })
       .on('broadcast', { event: 'ice-candidate' }, async ({ payload }) => {
