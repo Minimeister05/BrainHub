@@ -431,6 +431,53 @@ async function abrirConversa(id) {
   document.getElementById('msgInput').focus();
 }
 
+// ===== UPLOAD DE ARQUIVO =====
+async function uploadAndSendArquivo(file) {
+  const c = conversas.find(x => x.id === conversaAtualId);
+  if (!c) return;
+
+  if (file.size > 25 * 1024 * 1024) { alert('Arquivo muito grande (máx 25MB).'); return; }
+
+  const ext  = file.name.split('.').pop();
+  const path = `${usuarioAtual.id}/${Date.now()}.${ext}`;
+  const { error: upErr } = await window.supabase.storage
+    .from('chat-files').upload(path, file, { cacheControl: '3600', upsert: false });
+  if (upErr) { alert('Erro ao enviar arquivo: ' + upErr.message); return; }
+
+  const { data: { publicUrl } } = window.supabase.storage.from('chat-files').getPublicUrl(path);
+
+  const isImage = file.type.startsWith('image/');
+  const texto   = isImage ? `__img__:${publicUrl}` : `__file__:${file.name}||${publicUrl}`;
+  const preview = isImage ? '📷 Imagem' : `📎 ${file.name}`;
+
+  const agora  = new Date();
+  const horaStr = `${String(agora.getHours()).padStart(2,'0')}:${String(agora.getMinutes()).padStart(2,'0')}`;
+  c.mensagens.push({ id: Date.now(), autor: ME.nome, iniciais: ME.iniciais, cor: ME.cor, texto, hora: horaStr, minha: true });
+  c.preview = preview; c.hora = 'agora'; c._lastTime = new Date().toISOString();
+  conversas = [c, ...conversas.filter(x => x.id !== c.id)];
+  renderizarMensagens(c);
+  renderizarLista();
+
+  if (c.tipo === 'dm' && c.parceiro_id) await enviarMensagemDM(c.parceiro_id, texto);
+  else if (c.tipo === 'group' && c.group_id) await enviarMensagemGrupo(c.group_id, texto);
+}
+
+function renderTextoMensagem(texto) {
+  if (texto.startsWith('__img__:')) {
+    const url = texto.slice(8);
+    return `<img src="${url}" class="msg-img" alt="imagem" onclick="window.open('${url}','_blank')" onerror="this.style.display='none'">`;
+  }
+  if (texto.startsWith('__file__:')) {
+    const rest     = texto.slice(9);
+    const sepIdx   = rest.indexOf('||');
+    const nome     = sepIdx >= 0 ? rest.slice(0, sepIdx) : 'Arquivo';
+    const url      = sepIdx >= 0 ? rest.slice(sepIdx + 2) : rest;
+    return `<a href="${url}" target="_blank" rel="noopener" class="msg-file"><span>📎</span> ${nome}</a>`;
+  }
+  // Escapa HTML básico para texto normal
+  return texto.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
 // ===== MENSAGENS =====
 function renderizarMensagens(c) {
   const area = document.getElementById('chatMessages');
@@ -453,7 +500,7 @@ function renderizarMensagens(c) {
         </div>` : ''}
       <div class="msg-bubble ${msg.minha ? 'mine' : 'theirs'}">
         ${mostrarAutor ? `<div class="msg-author">${msg.autor}</div>` : ''}
-        ${msg.texto}
+        ${renderTextoMensagem(msg.texto)}
         <div class="msg-time">${msg.hora}</div>
       </div>`;
     area.appendChild(row);
@@ -588,11 +635,12 @@ async function carregarInfoGrupo(c) {
   lucide.createIcons();
 }
 
-function toggleGiAddSearch(membrosAtuais) {
+async function toggleGiAddSearch(membrosAtuais) {
   const wrap = document.getElementById('giAddSearch');
   wrap.classList.toggle('hidden');
   if (!wrap.classList.contains('hidden')) {
-    const membroIds = new Set(membrosAtuais.map(m => m.user_id));
+    if (!todosUsuarios.length) await carregarAmigosMutuos();
+    const membroIds   = new Set(membrosAtuais.map(m => m.user_id));
     const disponiveis = todosUsuarios.filter(u => !membroIds.has(u.id));
     renderGiAddResultados(disponiveis);
     document.getElementById('giAddInput').oninput = (e) => {
@@ -747,6 +795,16 @@ async function carregarAmigosMutuos() {
     sub:      p.curso || ''
   }));
 }
+
+document.getElementById('attachBtn').addEventListener('click', () => {
+  if (!conversaAtualId) return;
+  document.getElementById('fileInput').click();
+});
+document.getElementById('fileInput').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (file) await uploadAndSendArquivo(file);
+  e.target.value = '';
+});
 
 document.getElementById('newChatBtn').addEventListener('click', async () => {
   novaConversaModal.classList.remove('hidden');

@@ -85,7 +85,8 @@
         <div class="chat-messages" id="chatMessages"></div>
 
         <div class="chat-input-area">
-          <button class="icon-btn attach-btn">
+          <input type="file" id="fileInput" style="display:none" accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.txt" />
+          <button class="icon-btn attach-btn" id="attachBtn" title="Enviar arquivo">
             <i data-lucide="paperclip"></i>
           </button>
           <input type="text" id="msgInput" placeholder="Escreva uma mensagem..." />
