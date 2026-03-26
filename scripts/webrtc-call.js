@@ -86,7 +86,6 @@ const CallManager = (() => {
     _showActive(partnerName, callType);
     _setupPC(partnerId);
     localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
-    _subscribeSignal(partnerId);
 
     await pc.setRemoteDescription(new RTCSessionDescription(pendingOffer));
     const answer = await pc.createAnswer();
