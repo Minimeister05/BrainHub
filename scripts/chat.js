@@ -134,37 +134,61 @@ async function enviarMensagemDM(parceiroId, texto) {
   });
 }
 
-function subscribeRealtime(parceiroId) {
+function subscribeRealtimeGlobal() {
   if (realtimeChannel) realtimeChannel.unsubscribe();
 
   realtimeChannel = window.supabase
-    .channel(`dm_${[usuarioAtual.id, parceiroId].sort().join('_')}`)
+    .channel(`inbox_${usuarioAtual.id}`)
     .on('postgres_changes', {
       event: 'INSERT', schema: 'public', table: 'messages',
       filter: `receiver_id=eq.${usuarioAtual.id}`
     }, async (payload) => {
       const msg = payload.new;
-      if (msg.sender_id !== parceiroId) return;
+      const senderId = msg.sender_id;
 
-      const c = conversas.find(x => x.parceiro_id === parceiroId);
-      if (!c) return;
+      // Acha ou cria a conversa com o remetente
+      let c = conversas.find(x => x.parceiro_id === senderId);
+      if (!c) {
+        // Novo remetente — busca perfil e cria conversa na lista
+        const { data: perfil } = await window.supabase
+          .from('profiles').select('nome, cor_avatar, curso').eq('id', senderId).single();
+        const nome = perfil?.nome || 'Usuário';
+        c = {
+          id: `dm_${senderId}`, tipo: 'dm', nome,
+          iniciais: gerarIniciais(nome), cor: perfil?.cor_avatar || '',
+          parceiro_id: senderId, online: false, subtitulo: perfil?.curso || '',
+          naoLidas: 0, preview: '', hora: '', _lastTime: '', mensagens: []
+        };
+        conversas.unshift(c);
+      }
 
-      c.mensagens.push({
-        id: msg.id, autor: c.nome, iniciais: c.iniciais, cor: c.cor,
-        texto: msg.texto, hora: hora(msg.created_at), minha: false
-      });
+      c.preview   = msg.texto;
+      c.hora      = tempoRelativo(msg.created_at);
+      c._lastTime = msg.created_at;
 
       if (conversaAtualId === c.id) {
+        // Conversa aberta: adiciona mensagem e marca como lida
+        c.mensagens.push({
+          id: msg.id, autor: c.nome, iniciais: c.iniciais, cor: c.cor,
+          texto: msg.texto, hora: hora(msg.created_at), minha: false
+        });
         renderizarMensagens(c);
         window.supabase.from('messages').update({ lida: true })
           .eq('id', msg.id).then(() => {});
       } else {
+        // Conversa fechada: incrementa não lidas
         c.naoLidas = (c.naoLidas || 0) + 1;
       }
+
+      // Sobe conversa pro topo
+      conversas = [c, ...conversas.filter(x => x.id !== c.id)];
       renderizarLista();
     })
     .subscribe();
 }
+
+// Substituído por subscribeRealtimeGlobal
+function subscribeRealtime(_parceiroId) { /* no-op */ }
 
 // ===== LISTA =====
 function renderizarLista() {
@@ -481,6 +505,7 @@ async function init() {
   const dmsReais = await carregarConversasDM();
   conversas = [...dmsReais, ...gruposFake];
   renderizarLista();
+  subscribeRealtimeGlobal();
   await verificarUrlUsuario();
 }
 
