@@ -4,7 +4,14 @@
   max-width: 760px;
   margin: 0 auto;
   padding: 0 0 80px;
+  height: calc(100vh - 72px);
+  overflow-y: auto;
+  overflow-x: hidden;
 }
+
+.gd-layout::-webkit-scrollbar { width: 8px; }
+.gd-layout::-webkit-scrollbar-track { background: transparent; }
+.gd-layout::-webkit-scrollbar-thumb { background: #343443; border-radius: 999px; }
 
 /* Banner */
 .gd-banner {
@@ -97,6 +104,30 @@
 }
 
 .gd-back-btn:hover { border-color: rgba(124,92,255,0.4); color: #c4b7ff; }
+
+.gd-sair-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 75, 75, 0.35);
+  background: rgba(255, 75, 75, 0.08);
+  color: #ff8080;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.18s;
+}
+
+.gd-sair-btn:hover {
+  background: rgba(255, 75, 75, 0.18);
+  border-color: rgba(255, 75, 75, 0.55);
+  color: #ffaaaa;
+}
+
+.gd-sair-btn i { width: 14px; height: 14px; }
 
 /* Conteúdo */
 .gd-content {

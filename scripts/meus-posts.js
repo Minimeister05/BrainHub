@@ -87,7 +87,8 @@ async function renderizar() {
     const card = btn.closest('.post-card');
     const postId = card.dataset.id;
     btn.addEventListener('click', async () => {
-      if (!confirm('Excluir este post?')) return;
+      const confirmado = await confirmarExclusao('Tem certeza que deseja excluir este post? Esta ação não pode ser desfeita.')
+      if (!confirmado) return;
       await window.supabase.from('posts').delete().eq('id', postId);
       card.remove();
     });

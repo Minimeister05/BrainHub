@@ -51,8 +51,12 @@ body {
   border-radius: 10px;
   display: grid;
   place-items: center;
-  background: #09090d;
-  font-size: 1.1rem;
+  background: linear-gradient(135deg, #7c5cff, #4e2edf);
+  color: #fff;
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: -1px;
+  box-shadow: 0 0 0 1.5px rgba(124, 92, 255, 0.4), 0 4px 12px rgba(124, 92, 255, 0.35);
 }
 
 .brand h1 {
@@ -840,6 +844,21 @@ body {
   font-size: 0.94rem;
 }
 
+/* ===== LINKS DE AUTOR NOS POSTS ===== */
+.author-link {
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 700;
+  transition: color 0.15s;
+}
+
+.author-link:hover { color: #c4b7ff; }
+
+.avatar-link {
+  display: contents;
+  text-decoration: none;
+}
+
 /* ===== ANIMAÇÕES E INTERAÇÕES ===== */
 .post-card {
   animation: aparecerPost 0.3s ease;
@@ -1355,4 +1374,108 @@ body {
   color: #5a5a70;
   font-size: 0.9rem;
   padding: 32px;
+}
+
+/* ===== MODAL DE CONFIRMAÇÃO DE EXCLUSÃO ===== */
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: confirmFadeIn 0.18s ease;
+}
+
+@keyframes confirmFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.confirm-box {
+  width: 100%;
+  max-width: 380px;
+  background: #1e1e26;
+  border: 1px solid rgba(255, 75, 75, 0.2);
+  border-radius: 20px;
+  padding: 32px 28px 24px;
+  text-align: center;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  animation: confirmSlideUp 0.2s ease;
+}
+
+@keyframes confirmSlideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.confirm-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(255, 75, 75, 0.12);
+  border: 1px solid rgba(255, 75, 75, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 18px;
+  font-size: 1.4rem;
+}
+
+.confirm-box h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #f3f3f6;
+  margin-bottom: 10px;
+}
+
+.confirm-box p {
+  font-size: 0.88rem;
+  color: #a4a4b3;
+  line-height: 1.6;
+  margin-bottom: 26px;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.confirm-btn-cancel {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #d0d0de;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.confirm-btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.confirm-btn-delete {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 12px;
+  background: #e53935;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.confirm-btn-delete:hover {
+  background: #c62828;
+  box-shadow: 0 4px 14px rgba(229, 57, 53, 0.35);
 }

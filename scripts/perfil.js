@@ -2,6 +2,27 @@ lucide.createIcons()
 
 let _isPro = false
 
+function confirmarExclusao(mensagem = 'Esta ação não pode ser desfeita.') {
+  return new Promise((resolve) => {
+    const overlay = document.createElement('div')
+    overlay.className = 'confirm-overlay'
+    overlay.innerHTML = `
+      <div class="confirm-box">
+        <div class="confirm-icon">🗑️</div>
+        <h3>Excluir post</h3>
+        <p>${mensagem}</p>
+        <div class="confirm-actions">
+          <button class="confirm-btn-cancel">Cancelar</button>
+          <button class="confirm-btn-delete">Excluir</button>
+        </div>
+      </div>`
+    document.body.appendChild(overlay)
+    overlay.querySelector('.confirm-btn-cancel').addEventListener('click', () => { overlay.remove(); resolve(false) })
+    overlay.querySelector('.confirm-btn-delete').addEventListener('click', () => { overlay.remove(); resolve(true) })
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) { overlay.remove(); resolve(false) } })
+  })
+}
+
 function gerarIniciais(nome) {
   return nome.split(' ').map(p => p[0]).filter(Boolean).slice(0, 2).join('').toUpperCase() || '?'
 }
@@ -245,11 +266,17 @@ async function carregarMeusPosts() {
   const { data: { user } } = await window.supabase.auth.getUser()
   if (!user) return
 
-  const { data: posts } = await window.supabase
+  const { data: posts, error } = await window.supabase
     .from('posts')
-    .select('*, likes(id), comments(id)')
+    .select('id, texto, created_at, likes(user_id), comments(id)')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
+
+  if (error) {
+    container.innerHTML = '<p style="text-align:center;padding:32px;color:var(--muted)">Erro ao carregar posts.</p>'
+    console.error('Erro ao carregar posts do perfil:', error)
+    return
+  }
 
   if (!posts?.length) {
     container.innerHTML = `
@@ -278,7 +305,8 @@ async function carregarMeusPosts() {
 
   container.querySelectorAll('.perfil-post-delete').forEach(btn => {
     btn.addEventListener('click', async () => {
-      if (!confirm('Excluir este post permanentemente?')) return
+      const confirmado = await confirmarExclusao('Tem certeza que deseja excluir este post? Esta ação não pode ser desfeita.')
+      if (!confirmado) return
       await window.supabase.from('posts').delete().eq('id', btn.dataset.id)
       btn.closest('.perfil-post-card').remove()
       const stat = document.getElementById('perfilStatPosts')

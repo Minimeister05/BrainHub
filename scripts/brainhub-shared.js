@@ -327,3 +327,40 @@ async function carregarEstatisticasSidebar() {
 
 // Aplica badge de notificações a partir do localStorage (atualizado ao visitar notificacoes.html)
 aplicarBadgeNotif();
+
+// ===== MODAL DE CONFIRMAÇÃO =====
+function confirmarExclusao(mensagem = 'Esta ação não pode ser desfeita.') {
+  return new Promise((resolve) => {
+    const overlay = document.createElement('div')
+    overlay.className = 'confirm-overlay'
+    overlay.innerHTML = `
+      <div class="confirm-box">
+        <div class="confirm-icon">🗑️</div>
+        <h3>Excluir post</h3>
+        <p>${mensagem}</p>
+        <div class="confirm-actions">
+          <button class="confirm-btn-cancel">Cancelar</button>
+          <button class="confirm-btn-delete">Excluir</button>
+        </div>
+      </div>`
+
+    document.body.appendChild(overlay)
+
+    overlay.querySelector('.confirm-btn-cancel').addEventListener('click', () => {
+      overlay.remove()
+      resolve(false)
+    })
+
+    overlay.querySelector('.confirm-btn-delete').addEventListener('click', () => {
+      overlay.remove()
+      resolve(true)
+    })
+
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) {
+        overlay.remove()
+        resolve(false)
+      }
+    })
+  })
+}

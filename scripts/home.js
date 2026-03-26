@@ -298,7 +298,8 @@ function ativarEventosPosts() {
 
     // Excluir post (só aparece nos posts do próprio usuário)
     card.querySelector('.delete-post-btn')?.addEventListener('click', async () => {
-      if (!confirm('Excluir este post?')) return;
+      const confirmado = await confirmarExclusao('Tem certeza que deseja excluir este post? Esta ação não pode ser desfeita.')
+      if (!confirmado) return;
       await window.supabase.from('posts').delete().eq('id', postId);
       card.remove();
     });

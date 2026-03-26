@@ -1,13 +1,5 @@
 // scripts/search.js
 
-const grupos = [
-  { nome: "Programação & Dev", membros: "2.4k membros" },
-  { nome: "Economia & Finanças", membros: "1.8k membros" },
-  { nome: "Direito & Legislação", membros: "1.3k membros" },
-  { nome: "Medicina & Saúde", membros: "3.1k membros" },
-  { nome: "Engenharias", membros: "2.7k membros" },
-];
-
 function getPostsSalvos() {
   return JSON.parse(localStorage.getItem('brainhub_posts') || '[]');
 }
@@ -16,6 +8,16 @@ function getConversas() {
   return JSON.parse(localStorage.getItem('brainhub_chat') || '[]');
 }
 
+
+async function buscarGruposSupabase(termo) {
+  if (!window.supabase) return [];
+  const { data } = await window.supabase
+    .from('grupos')
+    .select('id, nome, emoji, categoria')
+    .or(`nome.ilike.%${termo}%,categoria.ilike.%${termo}%,descricao.ilike.%${termo}%`)
+    .limit(6);
+  return data || [];
+}
 
 async function buscarUsuariosSupabase(termo) {
   if (!window.supabase) return [];
@@ -43,16 +45,16 @@ async function pesquisar(termo) {
 
   const t = termo.toLowerCase();
 
-  const gruposFound = grupos.filter(g => g.nome.toLowerCase().includes(t));
   const conversas = getConversas().filter(c =>
     c.nome?.toLowerCase().includes(t) || c.subtitulo?.toLowerCase().includes(t)
   );
-  const [usuarios, posts] = await Promise.all([
+  const [grupos, usuarios, posts] = await Promise.all([
+    buscarGruposSupabase(termo),
     buscarUsuariosSupabase(termo),
     buscarPostsSupabase(termo),
   ]);
 
-  return { grupos: gruposFound, usuarios, conversas, posts };
+  return { grupos, usuarios, conversas, posts };
 }
 
 async function renderizarResultados(termo) {
@@ -99,13 +101,13 @@ async function renderizarResultados(termo) {
   if (grupos.length > 0) {
     html += `<div class="search-section-title">Grupos</div>`;
     html += grupos.map(g => `
-      <div class="search-item">
-        <div class="search-item-icon group-icon">G</div>
+      <a href="grupo-detalhe.html?id=${g.id}" class="search-item" style="text-decoration:none;color:inherit">
+        <div class="search-item-icon group-icon" style="font-size:1.2rem">${g.emoji || '🧠'}</div>
         <div class="search-item-info">
           <div class="search-item-title">${g.nome}</div>
-          <div class="search-item-sub">${g.membros}</div>
+          <div class="search-item-sub">${g.categoria || 'Grupo'}</div>
         </div>
-      </div>`).join('');
+      </a>`).join('');
   }
 
   if (conversas.length > 0) {

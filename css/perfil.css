@@ -691,7 +691,8 @@
 }
 
 /* ===== POSTS NA ABA DE PERFIL ===== */
-#tabPosts { display: flex; flex-direction: column; gap: 14px; }
+#tabEditar { display: flex; flex-direction: column; gap: 16px; }
+#tabPosts  { display: flex; flex-direction: column; gap: 14px; }
 
 .perfil-post-card {
   background: rgba(31,31,39,0.92);

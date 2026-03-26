@@ -4,9 +4,11 @@ lucide.createIcons();
 const params     = new URLSearchParams(window.location.search);
 const GRUPO_ID   = params.get('id');
 
-let usuarioAtual = null;
-let grupoAtual   = null;
-let ehMembro     = false;
+let usuarioAtual  = null;
+let grupoAtual    = null;
+let ehMembro      = false;
+let gdMediaArquivo = null;
+let gdMediaTipo    = null;
 
 // ===== TOAST =====
 function mostrarAviso(msg, tipo = 'info') {
@@ -96,9 +98,17 @@ function renderBanner(grupo, totalMembros) {
           </div>
         </div>
         <div class="gd-banner-right">
-          <button class="btn-entrar gd-toggle-btn ${ehMembro ? 'participando' : ''}" onclick="toggleMembro(this)">
-            ${ehMembro ? '<i data-lucide="check"></i> Participando' : '<i data-lucide="plus"></i> Participar'}
-          </button>
+          ${ehMembro
+            ? `<button class="btn-entrar gd-toggle-btn participando" onclick="toggleMembro(this)" style="pointer-events:none;opacity:0.75">
+                <i data-lucide="check"></i> Participando
+               </button>
+               <button class="gd-sair-btn" onclick="sairDoGrupo(this)">
+                <i data-lucide="log-out"></i> Sair
+               </button>`
+            : `<button class="btn-entrar gd-toggle-btn" onclick="toggleMembro(this)">
+                <i data-lucide="plus"></i> Participar
+               </button>`
+          }
           <button class="gd-back-btn" onclick="window.location.href='grupos.html'">
             <i data-lucide="arrow-left"></i> Grupos
           </button>
@@ -109,44 +119,63 @@ function renderBanner(grupo, totalMembros) {
   lucide.createIcons();
 }
 
-// ===== ENTRAR / SAIR =====
+// ===== ENTRAR =====
 async function toggleMembro(btn) {
+  if (ehMembro) return;
   btn.disabled = true;
 
-  if (ehMembro) {
-    const { error } = await window.supabase
-      .from('group_members')
-      .delete()
-      .eq('group_id', GRUPO_ID)
-      .eq('user_id', usuarioAtual.id);
+  const { error } = await window.supabase
+    .from('group_members')
+    .upsert({ group_id: GRUPO_ID, user_id: usuarioAtual.id }, { onConflict: 'group_id,user_id' });
 
-    if (!error) {
-      ehMembro = false;
-      btn.className = 'btn-entrar gd-toggle-btn';
-      btn.innerHTML = '<i data-lucide="plus"></i> Participar';
-      lucide.createIcons();
-      mostrarAviso('Você saiu do grupo.', 'info');
-      document.getElementById('gdComposer').classList.add('hidden');
-      document.getElementById('gdNaoMembro').classList.remove('hidden');
-    }
-  } else {
-    // upsert evita erro de unique constraint se já for membro
-    const { error } = await window.supabase
-      .from('group_members')
-      .upsert({ group_id: GRUPO_ID, user_id: usuarioAtual.id }, { onConflict: 'group_id,user_id' });
-
-    if (!error) {
-      ehMembro = true;
-      btn.className = 'btn-entrar gd-toggle-btn participando';
-      btn.innerHTML = '<i data-lucide="check"></i> Participando';
-      lucide.createIcons();
-      mostrarAviso('Você entrou no grupo!', 'success');
-      document.getElementById('gdComposer').classList.remove('hidden');
-      document.getElementById('gdNaoMembro').classList.add('hidden');
-      await carregarPosts();
-    }
-  }
   btn.disabled = false;
+
+  if (!error) {
+    ehMembro = true;
+    mostrarAviso('Você entrou no grupo!', 'success');
+    document.getElementById('gdComposer').classList.remove('hidden');
+    document.getElementById('gdNaoMembro').classList.add('hidden');
+
+    // Substitui o botão "Participar" pelos botões "Participando" + "Sair"
+    btn.outerHTML = `
+      <button class="btn-entrar gd-toggle-btn participando" style="pointer-events:none;opacity:0.75">
+        <i data-lucide="check"></i> Participando
+      </button>
+      <button class="gd-sair-btn" onclick="sairDoGrupo(this)">
+        <i data-lucide="log-out"></i> Sair
+      </button>`;
+    lucide.createIcons();
+    await carregarPosts();
+  }
+}
+
+// ===== SAIR =====
+async function sairDoGrupo(btn) {
+  btn.disabled = true;
+
+  const { error } = await window.supabase
+    .from('group_members')
+    .delete()
+    .eq('group_id', GRUPO_ID)
+    .eq('user_id', usuarioAtual.id);
+
+  btn.disabled = false;
+
+  if (!error) {
+    ehMembro = false;
+    mostrarAviso('Você saiu do grupo.', 'info');
+    document.getElementById('gdComposer').classList.add('hidden');
+    document.getElementById('gdNaoMembro').classList.remove('hidden');
+
+    // Remove "Participando" + "Sair", coloca botão "Participar"
+    const bannerRight = btn.closest('.gd-banner-right');
+    bannerRight.querySelector('.gd-toggle-btn').remove();
+    btn.outerHTML = `
+      <button class="btn-entrar gd-toggle-btn" onclick="toggleMembro(this)">
+        <i data-lucide="plus"></i> Participar
+      </button>`;
+    lucide.createIcons();
+  }
 }
 
 // ===== COMPOSITOR =====
@@ -174,6 +203,55 @@ function configurarCompositor() {
     input.style.height = input.scrollHeight + 'px';
   });
 
+  // Botões de mídia
+  const preview    = document.getElementById('gdComposerPreview');
+  const imgPrev    = document.getElementById('gdImgPreview');
+  const filePrev   = document.getElementById('gdFilePreview');
+  const removeBtn  = document.getElementById('gdRemoveMedia');
+  const inputImg   = document.getElementById('gdInputImagem');
+  const inputFile  = document.getElementById('gdInputArquivo');
+
+  function mostrarPreviewCompositor() {
+    if (preview) preview.style.display = 'flex';
+  }
+
+  function limparMediaGrupo() {
+    gdMediaArquivo = null; gdMediaTipo = null;
+    if (inputImg)  inputImg.value  = '';
+    if (inputFile) inputFile.value = '';
+    if (imgPrev)  { imgPrev.style.display  = 'none'; imgPrev.src = ''; }
+    if (filePrev) { filePrev.style.display = 'none'; filePrev.textContent = ''; }
+    if (preview)    preview.style.display  = 'none';
+  }
+
+  document.getElementById('gdBtnImagem')?.addEventListener('click', () => inputImg?.click());
+  document.getElementById('gdBtnArquivo')?.addEventListener('click', () => inputFile?.click());
+  removeBtn?.addEventListener('click', limparMediaGrupo);
+
+  inputImg?.addEventListener('change', () => {
+    const file = inputImg.files[0];
+    if (!file) return;
+    gdMediaArquivo = file; gdMediaTipo = 'imagem';
+    const reader = new FileReader();
+    reader.onload = e => {
+      imgPrev.src = e.target.result;
+      imgPrev.style.display = '';
+      filePrev.style.display = 'none';
+      mostrarPreviewCompositor();
+    };
+    reader.readAsDataURL(file);
+  });
+
+  inputFile?.addEventListener('change', () => {
+    const file = inputFile.files[0];
+    if (!file) return;
+    gdMediaArquivo = file; gdMediaTipo = 'arquivo';
+    filePrev.textContent = `📎 ${file.name}`;
+    filePrev.style.display = '';
+    imgPrev.style.display = 'none';
+    mostrarPreviewCompositor();
+  });
+
   document.getElementById('gdPublishBtn')?.addEventListener('click', publicarPost);
   input?.addEventListener('keydown', e => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); publicarPost(); }
@@ -183,17 +261,38 @@ function configurarCompositor() {
 async function publicarPost() {
   const input = document.getElementById('gdPostInput');
   const texto = input.value.trim();
-  if (!texto) return;
+  if (!texto && !gdMediaArquivo) return;
 
   const btn = document.getElementById('gdPublishBtn');
   btn.disabled = true;
   btn.innerHTML = '<i data-lucide="loader"></i> Publicando...';
   lucide.createIcons();
 
+  // Upload de mídia (mesmo padrão do home.js)
+  let imagem_url = null, arquivo_url = null, arquivo_nome = null;
+  if (gdMediaArquivo) {
+    const ext  = gdMediaArquivo.name.split('.').pop();
+    const path = `${usuarioAtual.id}/${Date.now()}.${ext}`;
+    const pasta = gdMediaTipo === 'imagem' ? 'images' : 'files';
+    const { error: upErr } = await window.supabase.storage
+      .from('post-media')
+      .upload(`${pasta}/${path}`, gdMediaArquivo, { upsert: false });
+    if (!upErr) {
+      const { data: { publicUrl } } = window.supabase.storage
+        .from('post-media')
+        .getPublicUrl(`${pasta}/${path}`);
+      if (gdMediaTipo === 'imagem') imagem_url = publicUrl;
+      else { arquivo_url = publicUrl; arquivo_nome = gdMediaArquivo.name; }
+    }
+  }
+
   const { error } = await window.supabase.from('posts').insert({
     user_id: usuarioAtual.id,
-    texto,
+    texto: texto || '',
     group_id: GRUPO_ID,
+    imagem_url,
+    arquivo_url,
+    arquivo_nome,
   });
 
   btn.disabled = false;
@@ -207,6 +306,20 @@ async function publicarPost() {
 
   input.value = '';
   input.style.height = 'auto';
+
+  // Limpa mídia após publicar
+  gdMediaArquivo = null; gdMediaTipo = null;
+  const inputImg  = document.getElementById('gdInputImagem');
+  const inputFile = document.getElementById('gdInputArquivo');
+  const preview   = document.getElementById('gdComposerPreview');
+  const imgPrev   = document.getElementById('gdImgPreview');
+  const filePrev  = document.getElementById('gdFilePreview');
+  if (inputImg)  inputImg.value  = '';
+  if (inputFile) inputFile.value = '';
+  if (imgPrev)  { imgPrev.style.display  = 'none'; imgPrev.src = ''; }
+  if (filePrev) { filePrev.style.display = 'none'; filePrev.textContent = ''; }
+  if (preview)    preview.style.display  = 'none';
+
   await carregarPosts();
 }
 
@@ -409,7 +522,8 @@ function ativarEventosPosts(container) {
 
     // Excluir
     card.querySelector('.delete-post-btn')?.addEventListener('click', async () => {
-      if (!confirm('Excluir este post?')) return;
+      const confirmado = await confirmarExclusao('Tem certeza que deseja excluir este post? Esta ação não pode ser desfeita.')
+      if (!confirmado) return;
       await window.supabase.from('posts').delete().eq('id', postId);
       card.remove();
     });
