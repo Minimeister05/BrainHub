@@ -274,7 +274,7 @@ async function carregarMeusPosts() {
 
   const { data: posts, error } = await window.supabase
     .from('posts')
-    .select('id, texto, created_at, likes(user_id), comments(id)')
+    .select('id, texto, created_at, pinned, imagem_url, likes(user_id), comments(id)')
     .eq('user_id', user.id)
     .order('pinned', { ascending: false })
     .order('created_at', { ascending: false })
@@ -320,7 +320,8 @@ async function carregarMeusPosts() {
     btn.addEventListener('click', async () => {
       const id = btn.dataset.id
       const isPinned = btn.dataset.pinned === 'true'
-      await window.supabase.from('posts').update({ pinned: !isPinned }).eq('id', id)
+      const { error } = await window.supabase.from('posts').update({ pinned: !isPinned }).eq('id', id)
+      if (error) { console.error('Erro ao fixar:', error); mostrarToast('Erro ao fixar post.', 'error'); return }
       postsCarregados = false
       carregarMeusPosts()
     })

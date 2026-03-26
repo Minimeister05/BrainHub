@@ -49,8 +49,11 @@ function criarPostHTML(post) {
   const curtido = post.likes?.some(l => l.user_id === usuarioAtual?.id) || false;
   const tempo = tempoRelativo(post.created_at);
 
+  const pinnedLabel = post.pinned ? '<div class="post-pinned-label"><i data-lucide="pin"></i> Post fixado</div>' : '';
+
   return `
-    <article class="post-card card" data-id="${post.id}">
+    <article class="post-card card${post.pinned ? ' post-pinned' : ''}" data-id="${post.id}">
+      ${pinnedLabel}
       <div class="post-header">
         <div class="post-user">
           <div class="mini-avatar ${cor}">${iniciais}</div>
@@ -61,6 +64,8 @@ function criarPostHTML(post) {
         </div>
       </div>
       <p class="post-text">${post.texto}</p>
+      ${post.imagem_url ? `<img src="${post.imagem_url}" class="post-img" loading="lazy" />` : ''}
+      ${post.arquivo_url ? `<a href="${post.arquivo_url}" target="_blank" class="post-file-link" download="${post.arquivo_nome || 'arquivo'}">📎 ${post.arquivo_nome || 'Baixar arquivo'}</a>` : ''}
       <div class="post-actions">
         <button class="action-btn like-btn ${curtido ? 'liked' : ''}">
           <i data-lucide="thumbs-up"></i><span>${likesCount}</span>
@@ -325,8 +330,9 @@ async function init() {
   // Busca posts do usuário
   const { data: posts } = await window.supabase
     .from('posts')
-    .select('id, user_id, texto, created_at, profiles!posts_user_id_fkey(nome, cor_avatar, curso, periodo, is_pro), likes(user_id), comments(id)')
+    .select('id, user_id, texto, created_at, pinned, imagem_url, arquivo_url, arquivo_nome, profiles!posts_user_id_fkey(nome, cor_avatar, curso, periodo, is_pro), likes(user_id), comments(id)')
     .eq('user_id', targetUserId)
+    .order('pinned', { ascending: false })
     .order('created_at', { ascending: false });
 
   const container = document.getElementById('usuarioPosts');
