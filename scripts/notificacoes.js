@@ -147,8 +147,22 @@ function getNotifPrefs(userId) {
   };
 }
 
+let _initTentativas = 0;
 async function init() {
-  if (!window.supabase) { setTimeout(init, 200); return; }
+  if (!window.supabase) {
+    _initTentativas++;
+    if (_initTentativas > 30) { // 6 segundos sem supabase → mostra erro
+      document.getElementById('notifList').innerHTML = `
+        <div class="card" style="text-align:center;padding:48px;color:var(--muted)">
+          <p>Não foi possível conectar. Verifique sua conexão e recarregue a página.</p>
+        </div>`;
+      document.getElementById('notifSubtitle').textContent = 'Erro de conexão';
+      lucide.createIcons();
+      return;
+    }
+    setTimeout(init, 200);
+    return;
+  }
 
   try {
     const { data: { user } } = await window.supabase.auth.getUser();
