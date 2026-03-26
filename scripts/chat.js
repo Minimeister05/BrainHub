@@ -1,4 +1,4 @@
-// chat.js — DMs via Supabase + Realtime, grupos demo
+// chat.js — DMs e grupos de chat via Supabase + Realtime
 lucide.createIcons();
 sincronizarStatusPro();
 
@@ -10,6 +10,7 @@ let conversaAtualId = null;
 let parceiroDMAtual = null; // UUID do parceiro atual
 let filtroAtual   = 'all';
 let realtimeChannel = null;
+let grupoRealtimeChannels = {}; // group_id → channel
 
 // ===== HELPERS =====
 function gerarIniciais(nome) {
@@ -30,27 +31,153 @@ function hora(dataStr) {
   return new Date(dataStr).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 }
 
-// ===== GRUPOS FIXOS (demo) =====
-const gruposFake = [
-  {
-    id: 'g1', tipo: 'group', nome: 'Programação & Dev', iniciais: '💻', cor: 'group',
-    online: false, subtitulo: '2.4k membros', naoLidas: 2,
-    mensagens: [
-      { id: 1, autor: 'Mariana Costa', iniciais: 'MC', cor: 'c4', texto: 'Alguém sabe resolver um problema de CORS no Node?', hora: '09:00', minha: false },
-      { id: 2, autor: 'Pedro Alves',   iniciais: 'PA', cor: 'c5', texto: 'Instala o pacote cors e configura no app.use()',       hora: '09:02', minha: false },
-      { id: 3, autor: 'Mariana Costa', iniciais: 'MC', cor: 'c4', texto: 'Funcionou! Obrigada Pedro 🙏',                         hora: '09:05', minha: false },
-    ]
-  },
-  {
-    id: 'g2', tipo: 'group', nome: 'Cálculo III — Turma 3B', iniciais: '📐', cor: 'group',
-    online: false, subtitulo: '34 membros', naoLidas: 0,
-    mensagens: [
-      { id: 1, autor: 'Prof. Souza', iniciais: 'PS', cor: 'c5', texto: 'Bom dia pessoal! Prova semana que vem.',               hora: '08:00', minha: false },
-      { id: 2, autor: 'Carla Lima',  iniciais: 'CL', cor: 'c3', texto: 'Professor, vai cair integrais duplas?',                hora: '08:05', minha: false },
-      { id: 3, autor: 'Prof. Souza', iniciais: 'PS', cor: 'c5', texto: 'Sim, toda a matéria de séries e integrais múltiplas.', hora: '08:07', minha: false },
-    ]
+// ===== GRUPOS DE CHAT VIA SUPABASE =====
+async function carregarGruposChat() {
+  if (!usuarioAtual || !window.supabase) return [];
+
+  // Busca grupos do usuário
+  const { data: memberships } = await window.supabase
+    .from('chat_group_members')
+    .select('group_id')
+    .eq('user_id', usuarioAtual.id);
+
+  if (!memberships?.length) return [];
+  const groupIds = memberships.map(m => m.group_id);
+
+  const { data: grupos } = await window.supabase
+    .from('chat_groups')
+    .select('id, name, emoji, created_at')
+    .in('id', groupIds);
+
+  if (!grupos?.length) return [];
+
+  // Busca última mensagem de cada grupo
+  const { data: lastMsgs } = await window.supabase
+    .from('group_messages')
+    .select('group_id, texto, created_at')
+    .in('group_id', groupIds)
+    .order('created_at', { ascending: false });
+
+  const lastMsgMap = {};
+  for (const m of (lastMsgs || [])) {
+    if (!lastMsgMap[m.group_id]) lastMsgMap[m.group_id] = m;
   }
-];
+
+  // Busca contagem de membros
+  const { data: allMembers } = await window.supabase
+    .from('chat_group_members')
+    .select('group_id, user_id')
+    .in('group_id', groupIds);
+
+  const memberCountMap = {};
+  for (const m of (allMembers || [])) {
+    memberCountMap[m.group_id] = (memberCountMap[m.group_id] || 0) + 1;
+  }
+
+  return grupos.map(g => {
+    const last = lastMsgMap[g.id];
+    return {
+      id:        `grpchat_${g.id}`,
+      tipo:      'group',
+      nome:      g.name,
+      iniciais:  g.emoji || '💬',
+      cor:       'group',
+      group_id:  g.id,
+      subtitulo: `${memberCountMap[g.id] || 1} membros`,
+      naoLidas:  0,
+      preview:   last?.texto || 'Sem mensagens',
+      hora:      last ? tempoRelativo(last.created_at) : '',
+      _lastTime: last?.created_at || g.created_at,
+      mensagens: []
+    };
+  }).sort((a, b) => new Date(b._lastTime) - new Date(a._lastTime));
+}
+
+async function carregarMensagensGrupo(groupId) {
+  const { data } = await window.supabase
+    .from('group_messages')
+    .select('id, sender_id, texto, created_at, profiles(nome, cor_avatar)')
+    .eq('group_id', groupId)
+    .order('created_at', { ascending: true });
+
+  return (data || []).map(m => ({
+    id:       m.id,
+    autor:    m.profiles?.nome || 'Usuário',
+    iniciais: gerarIniciais(m.profiles?.nome || 'Usuário'),
+    cor:      m.profiles?.cor_avatar || '',
+    texto:    m.texto,
+    hora:     hora(m.created_at),
+    minha:    m.sender_id === usuarioAtual.id
+  }));
+}
+
+async function enviarMensagemGrupo(groupId, texto) {
+  await window.supabase.from('group_messages').insert({
+    group_id:  groupId,
+    sender_id: usuarioAtual.id,
+    texto
+  });
+}
+
+async function criarGrupoChat(nome, emoji, membroIds) {
+  const { data: grupo, error } = await window.supabase
+    .from('chat_groups')
+    .insert({ name: nome, emoji, created_by: usuarioAtual.id })
+    .select('id').single();
+
+  if (error || !grupo) return null;
+
+  // Adiciona criador + membros
+  const todos = [...new Set([usuarioAtual.id, ...membroIds])];
+  await window.supabase.from('chat_group_members').insert(
+    todos.map(uid => ({ group_id: grupo.id, user_id: uid }))
+  );
+
+  return grupo.id;
+}
+
+function subscribeGrupoRealtime(groupId) {
+  if (grupoRealtimeChannels[groupId]) return;
+
+  grupoRealtimeChannels[groupId] = window.supabase
+    .channel(`group_msg_${groupId}`)
+    .on('postgres_changes', {
+      event: 'INSERT', schema: 'public', table: 'group_messages',
+      filter: `group_id=eq.${groupId}`
+    }, async (payload) => {
+      const msg = payload.new;
+      if (msg.sender_id === usuarioAtual.id) return; // já foi adicionado localmente
+
+      const c = conversas.find(x => x.group_id === groupId);
+      if (!c) return;
+
+      // Busca nome do remetente
+      const { data: perfil } = await window.supabase
+        .from('profiles').select('nome, cor_avatar').eq('id', msg.sender_id).single();
+
+      c.mensagens.push({
+        id:       msg.id,
+        autor:    perfil?.nome || 'Usuário',
+        iniciais: gerarIniciais(perfil?.nome || 'Usuário'),
+        cor:      perfil?.cor_avatar || '',
+        texto:    msg.texto,
+        hora:     hora(msg.created_at),
+        minha:    false
+      });
+      c.preview   = msg.texto;
+      c.hora      = tempoRelativo(msg.created_at);
+      c._lastTime = msg.created_at;
+
+      if (conversaAtualId === c.id) {
+        renderizarMensagens(c);
+      } else {
+        c.naoLidas = (c.naoLidas || 0) + 1;
+      }
+      conversas = [c, ...conversas.filter(x => x.id !== c.id)];
+      renderizarLista();
+    })
+    .subscribe();
+}
 
 // ===== DMs VIA SUPABASE =====
 async function carregarConversasDM() {
@@ -278,6 +405,10 @@ async function abrirConversa(id) {
     document.getElementById('chatMessages').innerHTML = '<p style="text-align:center;color:var(--muted);padding:24px">Carregando...</p>';
     c.mensagens = await carregarMensagensDM(c.parceiro_id);
     subscribeRealtime(c.parceiro_id);
+  } else if (c.tipo === 'group' && c.group_id) {
+    document.getElementById('chatMessages').innerHTML = '<p style="text-align:center;color:var(--muted);padding:24px">Carregando...</p>';
+    c.mensagens = await carregarMensagensGrupo(c.group_id);
+    subscribeGrupoRealtime(c.group_id);
   }
 
   renderizarMensagens(c);
@@ -341,9 +472,85 @@ async function enviarMensagem() {
 
   if (c.tipo === 'dm' && c.parceiro_id) {
     await enviarMensagemDM(c.parceiro_id, texto);
-  } else if (c.tipo === 'group') {
-    // grupos são demo, não persiste
+  } else if (c.tipo === 'group' && c.group_id) {
+    await enviarMensagemGrupo(c.group_id, texto);
   }
+}
+
+// ===== CRIAR GRUPO =====
+const novoGrupoModal   = document.getElementById('novoGrupoModal');
+const novoGrupoNomeEl  = document.getElementById('novoGrupoNome');
+const novoGrupoMembros = document.getElementById('novoGrupoMembros');
+let grupoEmoji         = '💬';
+let grupoMembersSel    = new Set();
+
+document.getElementById('newGroupBtn').addEventListener('click', async () => {
+  grupoMembersSel = new Set();
+  grupoEmoji = '💬';
+  novoGrupoNomeEl.value = '';
+  novoGrupoModal.classList.remove('hidden');
+  await carregarAmigosMutuos();
+  renderizarMembrosGrupo();
+  lucide.createIcons();
+
+  // Emoji picker
+  document.getElementById('emojiPicker').querySelectorAll('span, text').forEach(() => {});
+  document.getElementById('emojiPicker').onclick = (e) => {
+    const txt = e.target.textContent.trim();
+    if (txt.length <= 2 && txt) { grupoEmoji = txt; }
+  };
+});
+
+document.getElementById('novoGrupoFechar').addEventListener('click', () => novoGrupoModal.classList.add('hidden'));
+novoGrupoModal.addEventListener('click', e => { if (e.target === novoGrupoModal) novoGrupoModal.classList.add('hidden'); });
+
+document.getElementById('novoGrupoCriar').addEventListener('click', async () => {
+  const nome = novoGrupoNomeEl.value.trim();
+  if (!nome) { novoGrupoNomeEl.focus(); return; }
+  if (grupoMembersSel.size === 0) { alert('Selecione pelo menos um membro.'); return; }
+
+  const btn = document.getElementById('novoGrupoCriar');
+  btn.textContent = 'Criando...'; btn.disabled = true;
+
+  const groupId = await criarGrupoChat(nome, grupoEmoji, [...grupoMembersSel]);
+  btn.textContent = 'Criar grupo'; btn.disabled = false;
+
+  if (!groupId) { alert('Erro ao criar grupo.'); return; }
+  novoGrupoModal.classList.add('hidden');
+
+  // Adiciona à lista local e abre
+  const novoGrupo = {
+    id: `grpchat_${groupId}`, tipo: 'group', nome,
+    iniciais: grupoEmoji, cor: 'group', group_id: groupId,
+    subtitulo: `${grupoMembersSel.size + 1} membros`,
+    naoLidas: 0, preview: '', hora: '', _lastTime: new Date().toISOString(), mensagens: []
+  };
+  conversas.unshift(novoGrupo);
+  subscribeGrupoRealtime(groupId);
+  renderizarLista();
+  abrirConversa(novoGrupo.id);
+});
+
+function renderizarMembrosGrupo() {
+  if (!todosUsuarios.length) {
+    novoGrupoMembros.innerHTML = `<p style="padding:16px;color:var(--muted);font-size:0.85rem;text-align:center">Nenhum amigo mútuo ainda.</p>`;
+    return;
+  }
+  novoGrupoMembros.innerHTML = todosUsuarios.map(u => `
+    <label class="grupo-membro-item" style="display:flex;align-items:center;gap:12px;padding:10px 16px;cursor:pointer">
+      <input type="checkbox" data-uid="${u.id}" style="width:16px;height:16px;accent-color:var(--purple)" />
+      <div class="conv-avatar ${u.cor}" style="width:36px;height:36px;font-size:0.78rem;flex-shrink:0">${u.iniciais}</div>
+      <div>
+        <div style="font-weight:600;font-size:0.9rem">${u.nome}</div>
+        <div style="font-size:0.78rem;color:var(--muted)">${u.sub}</div>
+      </div>
+    </label>`).join('');
+
+  novoGrupoMembros.querySelectorAll('input[type=checkbox]').forEach(cb => {
+    cb.addEventListener('change', () => {
+      cb.checked ? grupoMembersSel.add(cb.dataset.uid) : grupoMembersSel.delete(cb.dataset.uid);
+    });
+  });
 }
 
 // ===== NOVA CONVERSA =====
@@ -503,9 +710,14 @@ async function init() {
     };
   }
 
-  const dmsReais = await carregarConversasDM();
-  conversas = [...dmsReais, ...gruposFake];
+  const [dmsReais, gruposReais] = await Promise.all([
+    carregarConversasDM(),
+    carregarGruposChat()
+  ]);
+  conversas = [...dmsReais, ...gruposReais]
+    .sort((a, b) => new Date(b._lastTime || 0) - new Date(a._lastTime || 0));
   renderizarLista();
+  gruposReais.forEach(g => subscribeGrupoRealtime(g.group_id));
   subscribeRealtimeGlobal();
   if (user) CallManager.init(user.id, ME.nome);
   await verificarUrlUsuario();
