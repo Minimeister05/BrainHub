@@ -406,7 +406,12 @@ async function abrirConversa(id) {
         <button class="icon-btn"><i data-lucide="phone"></i></button>
         <button class="icon-btn"><i data-lucide="video"></i></button>
       `}
-      ${perfilLink ? `<a href="${perfilLink}" class="icon-btn" title="Ver perfil"><i data-lucide="user"></i></a>` : `<button class="icon-btn"><i data-lucide="info"></i></button>`}
+      ${perfilLink
+        ? `<a href="${perfilLink}" class="icon-btn" title="Ver perfil"><i data-lucide="user"></i></a>`
+        : c.group_id
+          ? `<button class="icon-btn" title="Info do grupo" onclick="abrirInfoGrupo(conversas.find(x=>x.id==='${c.id}'))"><i data-lucide="info"></i></button>`
+          : `<button class="icon-btn"><i data-lucide="info"></i></button>`
+      }
     </div>`;
 
   if (c.tipo === 'dm' && c.parceiro_id) {
@@ -484,6 +489,147 @@ async function enviarMensagem() {
   } else if (c.tipo === 'group' && c.group_id) {
     await enviarMensagemGrupo(c.group_id, texto);
   }
+}
+
+// ===== INFO DO GRUPO =====
+let grupoInfoAtual = null;
+
+document.getElementById('groupInfoFechar').addEventListener('click', () => {
+  document.getElementById('groupInfoOverlay').classList.add('hidden');
+});
+document.getElementById('groupInfoOverlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('groupInfoOverlay'))
+    document.getElementById('groupInfoOverlay').classList.add('hidden');
+});
+
+async function abrirInfoGrupo(c) {
+  grupoInfoAtual = c;
+  document.getElementById('giEmoji').textContent = c.iniciais;
+  document.getElementById('giNome').textContent  = c.nome;
+  document.getElementById('groupInfoOverlay').classList.remove('hidden');
+  lucide.createIcons();
+  await carregarInfoGrupo(c);
+}
+
+async function carregarInfoGrupo(c) {
+  const groupId = c.group_id;
+
+  // Busca grupo (criador)
+  const { data: grupo } = await window.supabase
+    .from('chat_groups').select('created_by').eq('id', groupId).single();
+  const isCreator = grupo?.created_by === usuarioAtual.id;
+
+  // Membros
+  const { data: membros } = await window.supabase
+    .from('chat_group_members')
+    .select('user_id, profiles(nome, cor_avatar, curso)')
+    .eq('group_id', groupId);
+
+  document.getElementById('giSub').textContent = `${(membros || []).length} participantes`;
+
+  const giMembros = document.getElementById('giMembros');
+  giMembros.innerHTML = (membros || []).map(m => {
+    const nome     = m.profiles?.nome || 'Usuário';
+    const iniciais = gerarIniciais(nome);
+    const cor      = m.profiles?.cor_avatar || '';
+    const isSelf   = m.user_id === usuarioAtual.id;
+    const isOwner  = m.user_id === grupo?.created_by;
+    return `
+      <div class="gi-membro" data-uid="${m.user_id}">
+        <a href="usuario.html?id=${m.user_id}" style="display:flex;align-items:center;gap:10px;flex:1;text-decoration:none;color:inherit">
+          <div class="conv-avatar ${cor}" style="width:38px;height:38px;font-size:0.8rem;flex-shrink:0">${iniciais}</div>
+          <div>
+            <div style="font-weight:600;font-size:0.9rem">${nome}${isOwner ? ' <span style="color:var(--purple);font-size:0.75rem">criador</span>' : ''}</div>
+            <div style="font-size:0.78rem;color:var(--muted)">${m.profiles?.curso || ''}</div>
+          </div>
+        </a>
+        ${isCreator && !isSelf ? `<button class="gi-remover-btn" data-uid="${m.user_id}" title="Remover"><i data-lucide="user-minus"></i></button>` : ''}
+      </div>`;
+  }).join('');
+
+  // Botão adicionar (só criador)
+  const addBtn = document.getElementById('giAdicionarBtn');
+  if (isCreator) {
+    addBtn.classList.remove('hidden');
+    addBtn.onclick = () => toggleGiAddSearch(membros || []);
+  } else {
+    addBtn.classList.add('hidden');
+  }
+
+  // Eventos remover
+  giMembros.querySelectorAll('.gi-remover-btn').forEach(btn => {
+    btn.addEventListener('click', () => removerMembroGrupo(groupId, btn.dataset.uid));
+  });
+
+  // Links nas mensagens
+  const urlRegex = /https?:\/\/[^\s<]+/g;
+  const links = [];
+  (c.mensagens || []).forEach(m => {
+    const found = m.texto.match(urlRegex);
+    if (found) links.push(...found);
+  });
+  const giLinks = document.getElementById('giLinks');
+  giLinks.innerHTML = links.length
+    ? links.map(l => `<a class="gi-link" href="${l}" target="_blank" rel="noopener">${l}</a>`).join('')
+    : `<p style="color:var(--muted);font-size:0.85rem;padding:4px 0">Nenhum link ainda.</p>`;
+
+  // Imagens (mensagens com URLs de imagem)
+  const imgRegex = /https?:\/\/[^\s<]+(\.png|\.jpg|\.jpeg|\.gif|\.webp)(\?[^\s<]*)?/gi;
+  const imgs = [];
+  (c.mensagens || []).forEach(m => {
+    const found = m.texto.match(imgRegex);
+    if (found) imgs.push(...found);
+  });
+  const giImagens = document.getElementById('giImagens');
+  giImagens.innerHTML = imgs.length
+    ? imgs.map(src => `<img src="${src}" class="gi-img" alt="imagem" onerror="this.remove()">`).join('')
+    : `<p style="color:var(--muted);font-size:0.85rem;padding:4px 0">Nenhuma imagem ainda.</p>`;
+
+  lucide.createIcons();
+}
+
+function toggleGiAddSearch(membrosAtuais) {
+  const wrap = document.getElementById('giAddSearch');
+  wrap.classList.toggle('hidden');
+  if (!wrap.classList.contains('hidden')) {
+    const membroIds = new Set(membrosAtuais.map(m => m.user_id));
+    const disponiveis = todosUsuarios.filter(u => !membroIds.has(u.id));
+    renderGiAddResultados(disponiveis);
+    document.getElementById('giAddInput').oninput = (e) => {
+      const q = e.target.value.toLowerCase();
+      renderGiAddResultados(disponiveis.filter(u => u.nome.toLowerCase().includes(q)));
+    };
+  }
+}
+
+function renderGiAddResultados(lista) {
+  const el = document.getElementById('giAddResultados');
+  if (!lista.length) { el.innerHTML = `<p style="color:var(--muted);font-size:0.85rem;padding:8px">Nenhum amigo disponível.</p>`; return; }
+  el.innerHTML = lista.map(u => `
+    <div class="nova-conv-item" style="cursor:pointer" data-uid="${u.id}">
+      <div class="conv-avatar ${u.cor}" style="width:34px;height:34px;font-size:0.78rem">${u.iniciais}</div>
+      <div><div style="font-weight:600;font-size:0.88rem">${u.nome}</div><div style="font-size:0.78rem;color:var(--muted)">${u.sub}</div></div>
+    </div>`).join('');
+  el.querySelectorAll('.nova-conv-item').forEach(item => {
+    item.addEventListener('click', () => adicionarMembroGrupo(grupoInfoAtual.group_id, item.dataset.uid));
+  });
+}
+
+async function adicionarMembroGrupo(groupId, userId) {
+  const { error } = await window.supabase
+    .from('chat_group_members').insert({ group_id: groupId, user_id: userId });
+  if (error) { alert('Erro ao adicionar: ' + error.message); return; }
+  document.getElementById('giAddSearch').classList.add('hidden');
+  await carregarInfoGrupo(grupoInfoAtual);
+}
+
+async function removerMembroGrupo(groupId, userId) {
+  if (!confirm('Remover este participante?')) return;
+  const { error } = await window.supabase
+    .from('chat_group_members').delete()
+    .eq('group_id', groupId).eq('user_id', userId);
+  if (error) { alert('Erro ao remover: ' + error.message); return; }
+  await carregarInfoGrupo(grupoInfoAtual);
 }
 
 // ===== CRIAR GRUPO =====

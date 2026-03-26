@@ -196,6 +196,47 @@
     <a href="perfil.html" class="mob-nav-item"><i data-lucide="user"></i><span>Perfil</span></a>
   </nav>
 
+  <!-- Painel: Info do Grupo -->
+  <div class="group-info-overlay hidden" id="groupInfoOverlay">
+    <div class="group-info-panel">
+      <div class="group-info-header">
+        <h3>Informações do grupo</h3>
+        <button class="icon-btn" id="groupInfoFechar"><i data-lucide="x"></i></button>
+      </div>
+      <div class="group-info-body">
+        <div class="group-info-top">
+          <div class="group-info-emoji" id="giEmoji">💬</div>
+          <div class="group-info-name" id="giNome"></div>
+          <div class="group-info-sub" id="giSub"></div>
+        </div>
+
+        <div class="group-info-section">
+          <div class="group-info-section-title">
+            <span>Participantes</span>
+            <button class="gi-add-btn hidden" id="giAdicionarBtn">
+              <i data-lucide="user-plus"></i> Adicionar
+            </button>
+          </div>
+          <div id="giMembros"></div>
+          <div class="gi-add-search hidden" id="giAddSearch">
+            <input type="text" id="giAddInput" placeholder="Buscar amigo..." />
+            <div id="giAddResultados"></div>
+          </div>
+        </div>
+
+        <div class="group-info-section">
+          <div class="group-info-section-title"><span>Links compartilhados</span></div>
+          <div id="giLinks"></div>
+        </div>
+
+        <div class="group-info-section">
+          <div class="group-info-section-title"><span>Imagens</span></div>
+          <div id="giImagens" class="gi-images-grid"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal: Criar Grupo -->
   <div class="search-overlay hidden" id="novoGrupoModal">
     <div class="search-modal" style="max-width:440px">
