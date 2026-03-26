@@ -494,10 +494,15 @@ document.getElementById('newGroupBtn').addEventListener('click', async () => {
   lucide.createIcons();
 
   // Emoji picker
-  document.getElementById('emojiPicker').querySelectorAll('span, text').forEach(() => {});
-  document.getElementById('emojiPicker').onclick = (e) => {
-    const txt = e.target.textContent.trim();
-    if (txt.length <= 2 && txt) { grupoEmoji = txt; }
+  const picker = document.getElementById('emojiPicker');
+  picker.querySelectorAll('span').forEach(s => s.classList.remove('selected'));
+  picker.querySelector('span')?.classList.add('selected');
+  picker.onclick = (e) => {
+    const span = e.target.closest('span');
+    if (!span) return;
+    picker.querySelectorAll('span').forEach(s => s.classList.remove('selected'));
+    span.classList.add('selected');
+    grupoEmoji = span.textContent.trim();
   };
 });
 

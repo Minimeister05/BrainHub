@@ -745,6 +745,26 @@
   flex-shrink: 0;
 }
 
+/* ===== EMOJI PICKER ===== */
+.emoji-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.emoji-picker span {
+  font-size: 1.4rem;
+  padding: 4px 6px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: border-color 0.15s, background 0.15s;
+  line-height: 1;
+}
+.emoji-picker span:hover { background: rgba(255,255,255,0.08); }
+.emoji-picker span.selected { border-color: var(--purple); background: rgba(124,92,255,0.15); }
+
 /* ===== OVERLAYS DE CHAMADA ===== */
 .call-overlay {
   position: fixed;
