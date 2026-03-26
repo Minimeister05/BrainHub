@@ -120,18 +120,27 @@ async function enviarMensagemGrupo(groupId, texto) {
 }
 
 async function criarGrupoChat(nome, emoji, membroIds) {
-  const { data: grupo, error } = await window.supabase
+  const { data: grupo, error: errGrupo } = await window.supabase
     .from('chat_groups')
     .insert({ name: nome, emoji, created_by: usuarioAtual.id })
     .select('id').single();
 
-  if (error || !grupo) return null;
+  if (errGrupo || !grupo) {
+    console.error('Erro ao criar chat_groups:', errGrupo);
+    alert('Erro: ' + (errGrupo?.message || 'desconhecido'));
+    return null;
+  }
 
-  // Adiciona criador + membros
   const todos = [...new Set([usuarioAtual.id, ...membroIds])];
-  await window.supabase.from('chat_group_members').insert(
-    todos.map(uid => ({ group_id: grupo.id, user_id: uid }))
-  );
+  const { error: errMembros } = await window.supabase
+    .from('chat_group_members')
+    .insert(todos.map(uid => ({ group_id: grupo.id, user_id: uid })));
+
+  if (errMembros) {
+    console.error('Erro ao inserir membros:', errMembros);
+    alert('Erro ao adicionar membros: ' + errMembros.message);
+    return null;
+  }
 
   return grupo.id;
 }
