@@ -94,7 +94,73 @@
 
   </main>
 
+  <!-- Overlays de chamada -->
+  <div class="call-overlay hidden" id="callIncoming">
+    <div class="call-box">
+      <div class="call-avatar-ring">
+        <div class="call-avatar-pulse"></div>
+        <div class="call-avatar-big">?</div>
+      </div>
+      <div class="call-info">
+        <div class="call-name" id="callIncomingName">Usuário</div>
+        <div class="call-type" id="callIncomingType">Chamada de áudio</div>
+      </div>
+      <div class="call-btns">
+        <button class="call-btn reject" onclick="CallManager.rejectCall()" title="Recusar">
+          <i data-lucide="phone-off"></i>
+        </button>
+        <button class="call-btn accept" onclick="CallManager.acceptCall()" title="Aceitar">
+          <i data-lucide="phone"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="call-overlay hidden" id="callOutgoing">
+    <div class="call-box">
+      <div class="call-avatar-big" style="margin:0 auto 16px">?</div>
+      <div class="call-name" id="callOutgoingName">Usuário</div>
+      <div class="call-type" id="callOutgoingType">Chamada de áudio</div>
+      <p class="call-dots">Chamando<span class="dot-anim">...</span></p>
+      <button class="call-btn reject" style="margin:16px auto 0" onclick="CallManager.endCall()" title="Cancelar">
+        <i data-lucide="phone-off"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="call-overlay hidden" id="callActive">
+    <div class="call-active-area">
+      <div class="call-active-top">
+        <div class="call-name" id="callActiveName">Usuário</div>
+        <div class="call-timer" id="callTimer">00:00</div>
+        <div class="call-connecting hidden" id="callConnecting">Conectando...</div>
+      </div>
+
+      <div class="call-video-area hidden" id="callVideoArea">
+        <video id="callRemoteVideo" autoplay playsinline class="call-remote-video"></video>
+        <video id="callLocalVideo"  autoplay playsinline muted class="call-local-video"></video>
+      </div>
+      <div class="call-audio-area" id="callAudioArea">
+        <audio id="callRemoteAudio" autoplay></audio>
+        <div class="call-avatar-big call-audio-avatar">?</div>
+      </div>
+
+      <div class="call-controls">
+        <button class="call-ctrl-btn" id="callMuteBtn" onclick="CallManager.toggleMute()" title="Mudo">
+          <i data-lucide="mic"></i>
+        </button>
+        <button class="call-ctrl-btn" id="callCameraBtn" onclick="CallManager.toggleCamera()" title="Câmera">
+          <i data-lucide="video"></i>
+        </button>
+        <button class="call-ctrl-btn end" onclick="CallManager.endCall()" title="Encerrar">
+          <i data-lucide="phone-off"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script src="./scripts/brainhub-shared.js"></script>
+  <script src="./scripts/webrtc-call.js"></script>
   <script type="module" src="./scripts/supabaseClient.js"></script>
   <script defer src="./scripts/chat.js"></script>
 

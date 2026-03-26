@@ -260,12 +260,12 @@ async function abrirConversa(id) {
     </div>
     <div class="chat-header-actions">
       ${c.tipo === 'dm' && c.parceiro_id ? `
-        <a class="icon-btn" title="Chamada de voz" target="_blank"
-          href="https://meet.jit.si/brainhub-audio-${[usuarioAtual.id, c.parceiro_id].sort().join('-')}">
-          <i data-lucide="phone"></i></a>
-        <a class="icon-btn" title="Chamada de vídeo" target="_blank"
-          href="https://meet.jit.si/brainhub-${[usuarioAtual.id, c.parceiro_id].sort().join('-')}">
-          <i data-lucide="video"></i></a>
+        <button class="icon-btn" title="Chamada de voz"
+          onclick="CallManager.startCall('${c.parceiro_id}','${c.nome.replace(/'/g,"\\'")}','audio')">
+          <i data-lucide="phone"></i></button>
+        <button class="icon-btn" title="Chamada de vídeo"
+          onclick="CallManager.startCall('${c.parceiro_id}','${c.nome.replace(/'/g,"\\'")}','video')">
+          <i data-lucide="video"></i></button>
       ` : `
         <button class="icon-btn"><i data-lucide="phone"></i></button>
         <button class="icon-btn"><i data-lucide="video"></i></button>
@@ -507,6 +507,7 @@ async function init() {
   conversas = [...dmsReais, ...gruposFake];
   renderizarLista();
   subscribeRealtimeGlobal();
+  if (user) CallManager.init(user.id, ME.nome);
   await verificarUrlUsuario();
 }
 
