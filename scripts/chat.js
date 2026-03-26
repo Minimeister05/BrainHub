@@ -140,10 +140,11 @@ function subscribeRealtimeGlobal() {
   realtimeChannel = window.supabase
     .channel(`inbox_${usuarioAtual.id}`)
     .on('postgres_changes', {
-      event: 'INSERT', schema: 'public', table: 'messages',
-      filter: `receiver_id=eq.${usuarioAtual.id}`
+      event: 'INSERT', schema: 'public', table: 'messages'
     }, async (payload) => {
       const msg = payload.new;
+      // Ignora mensagens que não são para mim ou que eu mesmo enviei
+      if (msg.receiver_id !== usuarioAtual.id) return;
       const senderId = msg.sender_id;
 
       // Acha ou cria a conversa com o remetente
