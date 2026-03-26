@@ -14,8 +14,8 @@
       "mcp__claude_ai_Supabase__apply_migration",
       "Bash(grep -r \"feed\\\\.html\\\\|href=feed\" /c/BrainHub --include=*.html --include=*.js --include=*.md)",
       "mcp__claude_ai_Supabase__list_tables",
-      "Bash(git rebase:*)",
-      "Bash(GIT_EDITOR=true git rebase --continue)"
+      "Bash(git pull:*)",
+      "Bash(git stash:*)"
     ]
   }
 }
