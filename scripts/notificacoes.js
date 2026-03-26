@@ -150,100 +150,146 @@ function getNotifPrefs(userId) {
 async function init() {
   if (!window.supabase) { setTimeout(init, 200); return; }
 
-  const { data: { user } } = await window.supabase.auth.getUser();
-  if (!user) { window.location.href = 'login.html'; return; }
-  usuarioAtual = user;
+  try {
+    const { data: { user } } = await window.supabase.auth.getUser();
+    if (!user) { window.location.href = 'login.html'; return; }
+    usuarioAtual = user;
 
-  // Busca meus posts
-  const { data: myPosts } = await window.supabase
-    .from('posts').select('id, texto').eq('user_id', user.id);
-  const myPostIds   = (myPosts || []).map(p => p.id);
-  const postTextoMap = Object.fromEntries((myPosts || []).map(p => [p.id, p.texto?.slice(0, 80) || '']));
+    // Busca meus posts
+    const { data: myPosts } = await window.supabase
+      .from('posts').select('id, texto').eq('user_id', user.id);
+    const myPostIds   = (myPosts || []).map(p => p.id);
+    const postTextoMap = Object.fromEntries((myPosts || []).map(p => [p.id, p.texto?.slice(0, 80) || '']));
 
-  const notifs = [];
+    const notifs = [];
 
-  if (myPostIds.length > 0) {
-    const [{ data: likes }, { data: comments }] = await Promise.all([
-      window.supabase.from('likes')
-        .select('post_id, created_at, user_id, profiles(nome, cor_avatar)')
-        .in('post_id', myPostIds)
-        .neq('user_id', user.id)
+    if (myPostIds.length > 0) {
+      const [likesRes, commentsRes] = await Promise.all([
+        window.supabase.from('likes')
+          .select('post_id, created_at, user_id, profiles(nome, cor_avatar)')
+          .in('post_id', myPostIds)
+          .neq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(60),
+        window.supabase.from('comments')
+          .select('id, post_id, texto, created_at, user_id, profiles(nome, cor_avatar)')
+          .in('post_id', myPostIds)
+          .neq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(60),
+      ]);
+
+      const likes = likesRes.data || [];
+      const comments = commentsRes.data || [];
+
+      likes.forEach(l => notifs.push({
+        id:          `like_${l.post_id}_${l.user_id}`,
+        tipo:        'curtida',
+        nome:        l.profiles?.nome || 'Usuário',
+        cor:         l.profiles?.cor_avatar || '',
+        userId:      l.user_id,
+        postId:      l.post_id,
+        postPreview: postTextoMap[l.post_id] || '',
+        created_at:  l.created_at,
+      }));
+
+      comments.forEach(c => notifs.push({
+        id:              `comment_${c.id}`,
+        tipo:            'comentario',
+        nome:            c.profiles?.nome || 'Usuário',
+        cor:             c.profiles?.cor_avatar || '',
+        userId:          c.user_id,
+        postId:          c.post_id,
+        comentarioTexto: (c.texto || '').slice(0, 80),
+        created_at:      c.created_at,
+      }));
+    }
+
+    // Seguidores — tenta com FK explícita, fallback sem FK hint
+    let followsData = null;
+    const followsRes = await window.supabase
+      .from('follows')
+      .select('follower_id, created_at, profiles!follows_follower_id_fkey(nome, cor_avatar)')
+      .eq('following_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(60);
+
+    if (followsRes.error) {
+      // FK hint falhou — busca seguidores sem join e resolve nomes separadamente
+      console.warn('Follows FK query failed, using fallback:', followsRes.error.message);
+      const { data: rawFollows } = await window.supabase
+        .from('follows')
+        .select('follower_id, created_at')
+        .eq('following_id', user.id)
         .order('created_at', { ascending: false })
-        .limit(60),
-      window.supabase.from('comments')
-        .select('id, post_id, texto, created_at, user_id, profiles(nome, cor_avatar)')
-        .in('post_id', myPostIds)
-        .neq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(60),
-    ]);
+        .limit(60);
+      followsData = rawFollows || [];
 
-    (likes || []).forEach(l => notifs.push({
-      id:          `like_${l.post_id}_${l.user_id}`,
-      tipo:        'curtida',
-      nome:        l.profiles?.nome || 'Usuário',
-      cor:         l.profiles?.cor_avatar || '',
-      userId:      l.user_id,
-      postId:      l.post_id,
-      postPreview: postTextoMap[l.post_id] || '',
-      created_at:  l.created_at,
+      // Busca nomes dos seguidores
+      if (followsData.length > 0) {
+        const followerIds = followsData.map(f => f.follower_id);
+        const { data: followerProfiles } = await window.supabase
+          .from('profiles')
+          .select('id, nome, cor_avatar')
+          .in('id', followerIds);
+        const profileMap = Object.fromEntries((followerProfiles || []).map(p => [p.id, p]));
+        followsData = followsData.map(f => ({
+          ...f,
+          profiles: profileMap[f.follower_id] || null,
+        }));
+      }
+    } else {
+      followsData = followsRes.data || [];
+    }
+
+    // Verifica quem o usuário já segue de volta
+    const { data: euSigo } = await window.supabase
+      .from('follows').select('following_id').eq('follower_id', user.id);
+    const euSigoSet = new Set((euSigo || []).map(f => f.following_id));
+
+    followsData.forEach(f => notifs.push({
+      id:           `follow_${f.follower_id}`,
+      tipo:         'seguidor',
+      nome:         f.profiles?.nome || 'Usuário',
+      cor:          f.profiles?.cor_avatar || '',
+      userId:       f.follower_id,
+      jaSeguindo:   euSigoSet.has(f.follower_id),
+      created_at:   f.created_at,
     }));
 
-    (comments || []).forEach(c => notifs.push({
-      id:              `comment_${c.id}`,
-      tipo:            'comentario',
-      nome:            c.profiles?.nome || 'Usuário',
-      cor:             c.profiles?.cor_avatar || '',
-      userId:          c.user_id,
-      postId:          c.post_id,
-      comentarioTexto: (c.texto || '').slice(0, 80),
-      created_at:      c.created_at,
-    }));
+    // Filtra por prefs do usuário
+    const prefs = getNotifPrefs(user.id);
+    const notifsFiltradas = notifs.filter(n => {
+      if (n.tipo === 'curtida'   && !prefs.curtidas)    return false;
+      if (n.tipo === 'comentario' && !prefs.comentarios) return false;
+      if (n.tipo === 'seguidor'  && !prefs.seguidores)  return false;
+      return true;
+    });
+
+    // Ordena por data decrescente
+    notifsFiltradas.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    todasNotifs = notifsFiltradas;
+
+    // Resumo (totais absolutos)
+    document.getElementById('sumLikes').textContent     = notifsFiltradas.filter(n => n.tipo === 'curtida').length;
+    document.getElementById('sumComments').textContent  = notifsFiltradas.filter(n => n.tipo === 'comentario').length;
+    document.getElementById('sumFollowers').textContent = notifsFiltradas.filter(n => n.tipo === 'seguidor').length;
+
+    atualizarContagens();
+    renderizarNotifs('todas');
+
+  } catch (err) {
+    console.error('Erro ao carregar notificações:', err);
+    document.getElementById('notifList').innerHTML = `
+      <div class="card" style="text-align:center;padding:48px;color:var(--muted)">
+        <p>Erro ao carregar notificações. Tente recarregar a página.</p>
+      </div>`;
+    // Zera badge para não mostrar número errado
+    localStorage.setItem('brainhub_notif_count', '0');
   }
 
-  // Seguidores (usa FK explícita pois follows tem dois campos → profiles)
-  const { data: follows } = await window.supabase
-    .from('follows')
-    .select('follower_id, created_at, profiles!follows_follower_id_fkey(nome, cor_avatar)')
-    .eq('following_id', user.id)
-    .order('created_at', { ascending: false })
-    .limit(60);
-
-  // Verifica quem o usuário já segue de volta
-  const { data: euSigo } = await window.supabase
-    .from('follows').select('following_id').eq('follower_id', user.id);
-  const euSigoSet = new Set((euSigo || []).map(f => f.following_id));
-
-  (follows || []).forEach(f => notifs.push({
-    id:           `follow_${f.follower_id}`,
-    tipo:         'seguidor',
-    nome:         f.profiles?.nome || 'Usuário',
-    cor:          f.profiles?.cor_avatar || '',
-    userId:       f.follower_id,
-    jaSeguindo:   euSigoSet.has(f.follower_id),
-    created_at:   f.created_at,
-  }));
-
-  // Filtra por prefs do usuário
-  const prefs = getNotifPrefs(user.id);
-  const notifsFiltradas = notifs.filter(n => {
-    if (n.tipo === 'curtida'   && !prefs.curtidas)    return false;
-    if (n.tipo === 'comentario' && !prefs.comentarios) return false;
-    if (n.tipo === 'seguidor'  && !prefs.seguidores)  return false;
-    return true;
-  });
-
-  // Ordena por data decrescente
-  notifsFiltradas.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-  todasNotifs = notifsFiltradas;
-
-  // Resumo (totais absolutos)
-  document.getElementById('sumLikes').textContent     = notifsFiltradas.filter(n => n.tipo === 'curtida').length;
-  document.getElementById('sumComments').textContent  = notifsFiltradas.filter(n => n.tipo === 'comentario').length;
-  document.getElementById('sumFollowers').textContent = notifsFiltradas.filter(n => n.tipo === 'seguidor').length;
-
-  atualizarContagens();
-  renderizarNotifs('todas');
+  // Sempre roda, mesmo se houver erro acima
+  lucide.createIcons();
 
   // Tabs
   document.querySelectorAll('.notif-tab').forEach(tab => {
@@ -277,7 +323,6 @@ async function init() {
     if (!error) {
       btn.textContent = 'Seguindo ✓';
       btn.classList.remove('primary');
-      // Atualiza o dado em memória para não reverter ao re-renderizar
       const notif = todasNotifs.find(n => n.userId === uid && n.tipo === 'seguidor');
       if (notif) notif.jaSeguindo = true;
     } else {

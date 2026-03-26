@@ -307,6 +307,52 @@ function aplicarBadgeNotif() {
   });
 }
 
+// Calcula badge de notificações via Supabase (mais preciso que localStorage)
+async function atualizarBadgeNotifSupabase() {
+  if (!window.supabase) return;
+  try {
+    const { data: { user } } = await window.supabase.auth.getUser();
+    if (!user) return;
+
+    const lastRead = localStorage.getItem('brainhub_notif_lastread') || '1970-01-01T00:00:00Z';
+
+    // Busca posts do usuário
+    const { data: myPosts } = await window.supabase
+      .from('posts').select('id').eq('user_id', user.id);
+    const myPostIds = (myPosts || []).map(p => p.id);
+
+    let totalNovas = 0;
+
+    if (myPostIds.length > 0) {
+      const [{ count: newLikes }, { count: newComments }] = await Promise.all([
+        window.supabase.from('likes')
+          .select('*', { count: 'exact', head: true })
+          .in('post_id', myPostIds)
+          .neq('user_id', user.id)
+          .gt('created_at', lastRead),
+        window.supabase.from('comments')
+          .select('*', { count: 'exact', head: true })
+          .in('post_id', myPostIds)
+          .neq('user_id', user.id)
+          .gt('created_at', lastRead),
+      ]);
+      totalNovas += (newLikes || 0) + (newComments || 0);
+    }
+
+    const { count: newFollows } = await window.supabase
+      .from('follows')
+      .select('*', { count: 'exact', head: true })
+      .eq('following_id', user.id)
+      .gt('created_at', lastRead);
+    totalNovas += (newFollows || 0);
+
+    localStorage.setItem('brainhub_notif_count', totalNovas);
+    aplicarBadgeNotif();
+  } catch (e) {
+    // Silently fail — keeps existing localStorage value
+  }
+}
+
 // ===== STATS SIDEBAR (Supabase) =====
 async function carregarEstatisticasSidebar() {
   if (!window.supabase) return;
@@ -325,8 +371,14 @@ async function carregarEstatisticasSidebar() {
   if (el('statMeusSeguindo'))   el('statMeusSeguindo').textContent   = seguindo   || 0;
 }
 
-// Aplica badge de notificações a partir do localStorage (atualizado ao visitar notificacoes.html)
+// Aplica badge imediato do localStorage, depois atualiza via Supabase
 aplicarBadgeNotif();
+// Aguarda supabase carregar e atualiza com dados reais
+function _waitAndUpdateBadge() {
+  if (window.supabase) { atualizarBadgeNotifSupabase(); }
+  else { setTimeout(_waitAndUpdateBadge, 500); }
+}
+_waitAndUpdateBadge();
 
 // ===== MODAL DE CONFIRMAÇÃO =====
 function confirmarExclusao(mensagem = 'Esta ação não pode ser desfeita.') {
