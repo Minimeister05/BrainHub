@@ -1511,3 +1511,11 @@ body {
   background: #c62828;
   box-shadow: 0 4px 14px rgba(229, 57, 53, 0.35);
 }
+.confirm-btn-neutral {
+  background: var(--purple) !important;
+  box-shadow: 0 4px 14px rgba(124,92,255,0.3) !important;
+}
+.confirm-btn-neutral:hover {
+  background: #6d3aff !important;
+  box-shadow: 0 4px 14px rgba(124,92,255,0.45) !important;
+}

@@ -672,7 +672,8 @@ async function adicionarMembroGrupo(groupId, userId) {
 }
 
 async function removerMembroGrupo(groupId, userId) {
-  if (!confirm('Remover este participante?')) return;
+  const ok = await confirmar({ icone: '👤', titulo: 'Remover participante', mensagem: 'Tem certeza que quer remover este participante do grupo?', btnConfirmar: 'Remover', btnCancelar: 'Cancelar', danger: true });
+  if (!ok) return;
   const { error } = await window.supabase
     .from('chat_group_members').delete()
     .eq('group_id', groupId).eq('user_id', userId);
