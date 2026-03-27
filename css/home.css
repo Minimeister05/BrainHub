@@ -908,9 +908,11 @@ body {
   .topbar-composer { display: none; }
 
   /* FAB criar post */
-  .mob-fab {
-    display: flex !important;
-  }
+  .mob-fab { display: flex !important; }
+
+  /* Padding pra o conteúdo não ficar escondido atrás do nav */
+  .feed-scroll { padding-bottom: 80px; }
+  .center-column { padding-bottom: 0; }
 }
 
 /* ===== ÁREA DE COMENTÁRIOS ===== */

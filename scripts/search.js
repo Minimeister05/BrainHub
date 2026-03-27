@@ -74,7 +74,7 @@ function tempoRelativoSearch(dataStr) {
 }
 
 // ===== FILTROS STATE =====
-let filtroAtivo = {};
+let filtroAtivoSearch = {};
 
 function renderFiltrosAvancados() {
   const isPro = getIsPro();
@@ -118,7 +118,7 @@ function renderFiltrosAvancados() {
 }
 
 function aplicarFiltros() {
-  filtroAtivo = {
+  filtroAtivoSearch = {
     periodo: document.getElementById('filtroPeriodo')?.value || '',
     tipo: document.getElementById('filtroTipo')?.value || '',
   };
@@ -134,7 +134,7 @@ async function renderizarResultados(termo) {
   }
 
   container.innerHTML = `<p class="search-hint">Pesquisando...</p>`;
-  const resultados = await pesquisar(termo, filtroAtivo);
+  const resultados = await pesquisar(termo, filtroAtivoSearch);
 
   if (!resultados) {
     container.innerHTML = `<p class="search-hint">Digite algo para pesquisar...</p>`;
@@ -234,7 +234,7 @@ function fecharSearch() {
   const input   = document.getElementById('searchGlobal');
   overlay.classList.add('hidden');
   input.value = '';
-  filtroAtivo = {};
+  filtroAtivoSearch = {};
   document.getElementById('searchResults').innerHTML = `<p class="search-hint">Digite algo para pesquisar...</p>`;
 }
 
