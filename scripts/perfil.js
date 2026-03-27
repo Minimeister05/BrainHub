@@ -362,13 +362,33 @@ async function carregarEstatisticas() {
   if (!user) return
 
   // Busca posts com likes e comentários
-  const { data: posts } = await window.supabase
+  const { data: posts, error: postsErr } = await window.supabase
     .from('posts')
-    .select('id, texto, created_at, pinned, likes(id), comments(id)')
+    .select('id, texto, created_at, pinned')
     .eq('user_id', user.id)
+    .is('group_id', null)
     .order('created_at', { ascending: false })
 
-  if (!posts?.length) {
+  if (postsErr) console.error('Stats posts error:', postsErr)
+
+  const postIds = (posts || []).map(p => p.id)
+
+  const [{ data: likesData }, { data: commentsData }] = await Promise.all([
+    postIds.length
+      ? window.supabase.from('likes').select('post_id').in('post_id', postIds)
+      : Promise.resolve({ data: [] }),
+    postIds.length
+      ? window.supabase.from('comments').select('post_id').in('post_id', postIds)
+      : Promise.resolve({ data: [] })
+  ])
+
+  const postsComStats = (posts || []).map(p => ({
+    ...p,
+    likes: (likesData || []).filter(l => l.post_id === p.id),
+    comments: (commentsData || []).filter(c => c.post_id === p.id)
+  }))
+
+  if (!postsComStats.length) {
     container.innerHTML = `
       <div style="text-align:center;padding:48px;color:var(--muted)">
         <i data-lucide="bar-chart-3" style="width:48px;height:48px"></i>
@@ -378,15 +398,15 @@ async function carregarEstatisticas() {
     return
   }
 
-  const totalPosts = posts.length
-  const totalLikes = posts.reduce((sum, p) => sum + (p.likes?.length || 0), 0)
-  const totalComments = posts.reduce((sum, p) => sum + (p.comments?.length || 0), 0)
+  const totalPosts = postsComStats.length
+  const totalLikes = postsComStats.reduce((sum, p) => sum + (p.likes?.length || 0), 0)
+  const totalComments = postsComStats.reduce((sum, p) => sum + (p.comments?.length || 0), 0)
   const avgLikes = totalPosts > 0 ? (totalLikes / totalPosts).toFixed(1) : 0
   const avgComments = totalPosts > 0 ? (totalComments / totalPosts).toFixed(1) : 0
   const totalEngagement = totalLikes + totalComments
 
   // Post mais popular
-  const topPost = posts.reduce((best, p) => {
+  const topPost = postsComStats.reduce((best, p) => {
     const score = (p.likes?.length || 0) + (p.comments?.length || 0)
     return score > (best.score || 0) ? { ...p, score } : best
   }, { score: 0 })
@@ -394,7 +414,7 @@ async function carregarEstatisticas() {
   // Atividade por semana (últimos 30 dias)
   const agora = Date.now()
   const semanas = [0, 0, 0, 0]
-  posts.forEach(p => {
+  postsComStats.forEach(p => {
     const dias = Math.floor((agora - new Date(p.created_at).getTime()) / (24*60*60*1000))
     if (dias < 7) semanas[0]++
     else if (dias < 14) semanas[1]++
@@ -476,9 +496,10 @@ document.querySelectorAll('.perfil-right-tab').forEach(tab => {
     document.querySelectorAll('.perfil-right-tab').forEach(t => t.classList.remove('active'))
     tab.classList.add('active')
     const nome = tab.dataset.tab
-    document.getElementById('tabEditar').style.display = nome === 'editar' ? '' : 'none'
-    document.getElementById('tabPosts').style.display  = nome === 'posts'  ? '' : 'none'
-    document.getElementById('tabStats').style.display  = nome === 'stats'  ? '' : 'none'
+    document.getElementById('tabEditar').style.display  = nome === 'editar'  ? '' : 'none'
+    document.getElementById('tabPosts').style.display   = nome === 'posts'   ? '' : 'none'
+    document.getElementById('tabStats').style.display   = nome === 'stats'   ? '' : 'none'
+    document.getElementById('tabTitulos').style.display = nome === 'titulos' ? '' : 'none'
     if (nome === 'posts' && !postsCarregados) {
       postsCarregados = true
       carregarMeusPosts()
@@ -487,7 +508,67 @@ document.querySelectorAll('.perfil-right-tab').forEach(tab => {
       statsCarregado = true
       carregarEstatisticas()
     }
+    if (nome === 'titulos') carregarTitulos()
   })
 })
+
+// ===== TÍTULOS =====
+const TITULOS_DEF = [
+  { id: 'turing',      label: 'Turing',      pontos: 35000, cor: '#7c5cff' },
+  { id: 'einstein',    label: 'Einstein',    pontos: 20000, cor: '#f5c542' },
+  { id: 'genio_local', label: 'Gênio Local', pontos: 10000, cor: '#ff6ec7' },
+  { id: 'nerd',        label: 'Nerd',        pontos:  6000, cor: '#26d0a8' },
+  { id: 'cientista',   label: 'Cientista',   pontos:  3000, cor: '#6d8bff' },
+  { id: 'pesquisador', label: 'Pesquisador', pontos:  1500, cor: '#ffb144' },
+  { id: 'monitor',     label: 'Monitor',     pontos:   700, cor: '#bcaeff' },
+  { id: 'dedicado',    label: 'Dedicado',    pontos:   300, cor: '#d7d7de' },
+  { id: 'curioso',     label: 'Curioso',     pontos:   100, cor: '#d7d7de' },
+]
+const TITULO_PRO_DEF = { id: 'pro', label: '👑 Pro', pontos: 0, cor: '#f5c542' }
+
+async function carregarTitulos() {
+  const { data: { user } } = await window.supabase.auth.getUser()
+  if (!user) return
+
+  const { data: perfil } = await window.supabase
+    .from('profiles')
+    .select('pontos, titulo_ativo, titulos_desbloqueados, is_pro')
+    .eq('id', user.id).single()
+
+  const pontos = perfil?.pontos || 0
+  const tituloAtivo = perfil?.titulo_ativo || null
+  const desbloqueados = perfil?.titulos_desbloqueados || []
+  const isPro = perfil?.is_pro === true
+
+  document.getElementById('titulosPontos').textContent = pontos.toLocaleString('pt-BR')
+
+  const todos = [...TITULOS_DEF]
+  if (isPro) todos.unshift(TITULO_PRO_DEF)
+
+  const grid = document.getElementById('titulosGrid')
+  grid.innerHTML = todos.map(t => {
+    const desbloqueado = t.id === 'pro' ? isPro : desbloqueados.includes(t.id)
+    const ativo = tituloAtivo === t.id
+    return `<div class="titulo-card ${desbloqueado ? '' : 'titulo-locked'} ${ativo ? 'titulo-ativo' : ''}"
+                 data-id="${t.id}" data-desbloqueado="${desbloqueado}" style="--titulo-cor:${t.cor}">
+      <div class="titulo-badge" style="color:${t.cor};border-color:${t.cor}20;background:${t.cor}12">
+        ${desbloqueado ? t.label : '<i data-lucide="lock"></i>'}
+      </div>
+      ${t.id !== 'pro' ? `<span class="titulo-req">${t.pontos.toLocaleString('pt-BR')} pts</span>` : '<span class="titulo-req">Exclusivo Pro</span>'}
+      ${ativo ? '<span class="titulo-em-uso">Em uso</span>' : ''}
+      ${desbloqueado && !ativo ? `<button class="titulo-usar-btn" data-id="${t.id}">Usar</button>` : ''}
+    </div>`
+  }).join('')
+
+  lucide.createIcons()
+
+  grid.querySelectorAll('.titulo-usar-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.id
+      await window.supabase.from('profiles').update({ titulo_ativo: id }).eq('id', user.id)
+      carregarTitulos()
+    })
+  })
+}
 
 carregarDados()

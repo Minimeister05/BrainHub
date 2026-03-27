@@ -1087,3 +1087,86 @@
   font-size: 0.9rem;
   padding: 32px;
 }
+
+/* Autocomplete */
+.autocomplete-list {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0; right: 0;
+  background: #1e1e28;
+  border: 1px solid rgba(124,92,255,0.35);
+  border-radius: 12px;
+  overflow: hidden;
+  z-index: 999;
+  list-style: none;
+  margin: 0; padding: 4px 0;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+.autocomplete-list.visible { display: block; }
+.autocomplete-item {
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  color: #d7d7de;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.autocomplete-item:hover { background: rgba(124,92,255,0.15); color: #bcaeff; }
+
+/* ===== ABA TÍTULOS ===== */
+.titulos-pontos-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 0; font-size: 0.9rem; color: var(--muted);
+  border-bottom: 1px solid var(--border); margin-bottom: 16px;
+}
+.titulos-pontos-header i { width: 16px; height: 16px; color: #f5c542; }
+.titulos-pontos-header strong { color: #d7d7de; }
+.titulos-link-ex {
+  margin-left: auto; font-size: 0.82rem;
+  color: #bcaeff; text-decoration: none;
+}
+.titulos-link-ex:hover { text-decoration: underline; }
+.titulos-instrucao { font-size: 0.85rem; color: var(--muted); margin-bottom: 16px; }
+
+.titulos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+.titulo-card {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 16px 12px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--panel-2);
+  transition: border-color 0.2s;
+  position: relative;
+}
+.titulo-card.titulo-ativo {
+  border-color: var(--titulo-cor, #7c5cff);
+  background: color-mix(in srgb, var(--titulo-cor, #7c5cff) 8%, var(--panel-2));
+}
+.titulo-card.titulo-locked { opacity: 0.45; }
+.titulo-badge {
+  padding: 6px 14px; border-radius: 999px;
+  border: 1px solid; font-size: 0.85rem; font-weight: 700;
+  display: flex; align-items: center; gap: 6px;
+}
+.titulo-badge i { width: 14px; height: 14px; }
+.titulo-req { font-size: 0.72rem; color: var(--muted); }
+.titulo-em-uso {
+  font-size: 0.7rem; font-weight: 700;
+  color: var(--titulo-cor, #7c5cff);
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+.titulo-usar-btn {
+  padding: 5px 14px; border-radius: 999px;
+  border: 1px solid var(--titulo-cor, #7c5cff);
+  background: transparent;
+  color: var(--titulo-cor, #7c5cff);
+  font-size: 0.78rem; cursor: pointer;
+  transition: background 0.15s;
+}
+.titulo-usar-btn:hover {
+  background: color-mix(in srgb, var(--titulo-cor, #7c5cff) 15%, transparent);
+}

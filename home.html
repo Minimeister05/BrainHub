@@ -10,15 +10,22 @@
 </head>
 <body>
   <header class="topbar">
-    <div class="brand">
-      <div class="brand-icon">B</div>
-      <h1>Brain<span>HUB</span></h1>
+    <div class="topbar-left">
+      <div class="brand">
+        <div class="brand-icon">B</div>
+        <h1>Brain<span>HUB</span></h1>
+      </div>
+      <div class="topbar-composer" onclick="abrirCompositor()">
+        <div class="mini-avatar topbar-composer-avatar" id="composerAvatar">?</div>
+        <span>No que você está pensando?</span>
+      </div>
     </div>
 
     <nav class="main-nav">
       <a href="home.html" class="active"><i data-lucide="house"></i> Feed</a>
       <a href="grupos.html"><i data-lucide="users"></i> Grupos</a>
       <a href="chat.html"><i data-lucide="message-circle"></i> Mensagens</a>
+      <a href="exercicios.html"><i data-lucide="zap"></i> Exercícios</a>
       <a href="perfil.html"><i data-lucide="user"></i> Perfil</a>
     </nav>
 
@@ -63,12 +70,6 @@
     </aside>
 
     <section class="center-column">
-      <!-- Barra compacta de criar post -->
-      <div class="create-post-bar card" id="createPostBar" onclick="abrirCompositor()">
-        <div class="mini-avatar" id="composerAvatar">?</div>
-        <span class="create-post-bar-placeholder">No que você está pensando?</span>
-      </div>
-
       <!-- Modal compositor de post -->
       <div class="composer-overlay hidden" id="composerOverlay">
         <div class="composer-modal" id="composerModal">
@@ -118,6 +119,12 @@
       <div class="feed-tabs">
         <button class="feed-tab active" data-tab="fyp" onclick="setFeedTab(this)">Para você</button>
         <button class="feed-tab" data-tab="following" onclick="setFeedTab(this)">Seguindo</button>
+      </div>
+
+      <!-- Busca no feed -->
+      <div class="feed-search-wrap">
+        <i data-lucide="search"></i>
+        <input type="text" id="feedBusca" placeholder="Filtrar posts por palavra-chave..." />
       </div>
 
       <!-- Banner novos posts -->

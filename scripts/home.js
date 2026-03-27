@@ -9,6 +9,7 @@ const feedList   = document.getElementById('feedList');
 
 let usuarioAtual  = null;
 let feedTab       = 'fyp';      // 'fyp' | 'following'
+let feedTermoBusca = ''
 let seguindoIds   = new Set();
 let latestPostAt  = null;       // timestamp do post mais novo carregado
 let novosCount    = 0;
@@ -99,11 +100,13 @@ humorDropdown?.querySelectorAll('.humor-opt').forEach(btn => {
   });
 });
 
-// Mini-avatar na caixa de criar post
+// Mini-avatar na caixa de criar post e na barra do topo
 ;(function () {
   const u = getPerfilAtual();
   const mini = document.querySelector('.create-top .mini-avatar');
   if (mini) { mini.textContent = u.iniciais; mini.className = `mini-avatar ${u.corAvatar}`; }
+  const barAvatar = document.getElementById('composerAvatar');
+  if (barAvatar) { barAvatar.textContent = u.iniciais; barAvatar.className = `mini-avatar topbar-composer-avatar ${u.corAvatar}`; }
 })();
 
 // Auto-resize do textarea
@@ -145,6 +148,11 @@ function criarPostHTML(post) {
   const featClass = isPro ? ' post-featured' : '';
   const featLabel = isPro ? `<div class="post-featured-label"><i data-lucide="zap"></i> Post em Destaque</div>` : '';
 
+  const TITULOS_CORES = { turing:'#7c5cff', einstein:'#f5c542', genio_local:'#ff6ec7', nerd:'#26d0a8', cientista:'#6d8bff', pesquisador:'#ffb144', monitor:'#bcaeff', dedicado:'#d7d7de', curioso:'#d7d7de', pro:'#f5c542' };
+  const TITULOS_LABELS = { turing:'Turing', einstein:'Einstein', genio_local:'Gênio Local', nerd:'Nerd', cientista:'Cientista', pesquisador:'Pesquisador', monitor:'Monitor', dedicado:'Dedicado', curioso:'Curioso', pro:'👑 Pro' };
+  const tituloId = perfil.titulo_ativo;
+  const tituloBadge = tituloId ? `<span class="titulo-post-badge" style="color:${TITULOS_CORES[tituloId]};background:${TITULOS_CORES[tituloId]}18;border-color:${TITULOS_CORES[tituloId]}30">${TITULOS_LABELS[tituloId]}</span>` : '';
+
   return `
     <article class="post-card card${featClass}" data-id="${post.id}">
       ${featLabel}
@@ -154,7 +162,7 @@ function criarPostHTML(post) {
             <div class="mini-avatar ${cor}">${iniciais}</div>
           </a>
           <div>
-            <h4><a href="usuario.html?id=${post.user_id}" class="author-link">${nome}</a>${verified}${proBadge}</h4>
+            <h4><a href="usuario.html?id=${post.user_id}" class="author-link">${nome}</a>${verified}${proBadge}${tituloBadge}</h4>
             <p>${sub} • ${tempo}</p>
           </div>
         </div>
@@ -314,6 +322,15 @@ function setFeedTab(btn) {
   renderizarPosts();
 }
 
+let feedBuscaTimeout = null;
+document.getElementById('feedBusca')?.addEventListener('input', e => {
+  clearTimeout(feedBuscaTimeout);
+  feedBuscaTimeout = setTimeout(() => {
+    feedTermoBusca = e.target.value.trim();
+    renderizarPosts();
+  }, 350);
+});
+
 // ===== NOVOS POSTS (polling) =====
 function iniciarPolling() {
   if (pollInterval) clearInterval(pollInterval);
@@ -359,13 +376,15 @@ async function renderizarPosts() {
     .from('posts')
     .select(`
       id, user_id, texto, area, tipo, created_at, imagem_url, arquivo_url, arquivo_nome, humor,
-      profiles!posts_user_id_fkey(nome, cor_avatar, curso, faculdade, periodo, is_pro),
+      profiles!posts_user_id_fkey(nome, cor_avatar, curso, faculdade, periodo, is_pro, titulo_ativo),
       likes(user_id),
       comments(id)
     `)
     .is('group_id', null)
     .order('created_at', { ascending: false })
     .limit(30);
+
+  if (feedTermoBusca) query = query.ilike('texto', `%${feedTermoBusca}%`);
 
   if (feedTab === 'following') {
     if (seguindoIds.size === 0) {

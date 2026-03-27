@@ -15,7 +15,15 @@
       "Bash(grep -r \"feed\\\\.html\\\\|href=feed\" /c/BrainHub --include=*.html --include=*.js --include=*.md)",
       "mcp__claude_ai_Supabase__list_tables",
       "Bash(git pull:*)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "Bash(do)",
+      "Bash(sed -i 's|  <div class=\"\"brand\"\">|  <div class=\"\"topbar-left\"\">\\\\n    <div class=\"\"brand\"\">|' \"c:/BrainHub/$f\")",
+      "Bash(sed -i 's|  <\\\\/div>\\\\n\\\\n  <nav class=\"\"main-nav\"\">|    </div>\\\\n  </div>\\\\n\\\\n  <nav class=\"\"main-nav\"\">|' \"c:/BrainHub/$f\")",
+      "Bash(node -e \":*)",
+      "Bash(echo \":*)",
+      "Bash(\"c:/BrainHub/css/onboarding.css\")",
+      "Bash(__NEW_LINE_bd1d7a2b91553603__ echo \":*)",
+      "Bash(\"c:/BrainHub/css/perfil.css\")"
     ]
   }
 }

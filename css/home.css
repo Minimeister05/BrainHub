@@ -34,9 +34,36 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 0 26px;
+  gap: 16px;
   border-bottom: 1px solid var(--border);
   background: rgba(20, 20, 24, 0.95);
   backdrop-filter: blur(12px);
+}
+
+.topbar-composer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  max-width: 340px;
+  padding: 8px 14px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 0.88rem;
+  transition: border-color 0.15s, background 0.15s;
+}
+.topbar-composer:hover {
+  border-color: var(--purple);
+  background: rgba(124,92,255,0.07);
+}
+.topbar-composer-avatar {
+  width: 26px !important;
+  height: 26px !important;
+  font-size: 0.62rem !important;
+  flex-shrink: 0;
 }
 
 .brand {
@@ -88,9 +115,18 @@ body {
   color: #bcaeff;
 }
 
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+}
+
 .top-actions {
   display: flex;
   gap: 12px;
+  flex: 1;
+  justify-content: flex-end;
 }
 
 .icon-btn {
@@ -473,6 +509,22 @@ body {
   border-radius: 999px;
   font-weight: 700;
 }
+
+/* ===== BUSCA FEED ===== */
+.feed-search-wrap {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 10px 16px;
+  margin-bottom: 4px;
+}
+.feed-search-wrap i { width: 16px; height: 16px; color: var(--muted); flex-shrink: 0; }
+.feed-search-wrap input {
+  flex: 1; background: transparent; border: none; outline: none;
+  color: #d7d7de; font-size: 0.9rem;
+}
+.feed-search-wrap input::placeholder { color: var(--muted); }
 
 /* ===== ABAS FEED ===== */
 .feed-tabs {
@@ -1020,6 +1072,20 @@ body {
 .pro-banner-btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 14px rgba(124,92,255,0.4);
+}
+
+/* ===== TÍTULO BADGE NOS POSTS ===== */
+.titulo-post-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid;
+  vertical-align: middle;
+  margin-left: 4px;
+  letter-spacing: 0.03em;
 }
 
 /* ===== PRO: BADGES INLINE NO FEED ===== */

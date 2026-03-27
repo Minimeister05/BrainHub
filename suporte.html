@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BrainHUB | Suporte</title>
     <link rel="stylesheet" href="./css/suporte.css">
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script>emailjs.init('HBX2IWHj4B4btav_M')</script>
 </head>
 
 <body>
@@ -33,20 +35,60 @@
             <form id="suporteForm" class="login-form">
                 <div class="input-group">
                     <label>Nome</label>
-                    <input type="text" placeholder="Seu nome" required />
+                    <input type="text" id="supNome" placeholder="Seu nome" required />
+                </div>
+                <div class="input-group">
+                    <label>Email</label>
+                    <input type="email" id="supEmail" placeholder="Seu email" required />
                 </div>
                 <div class="input-group">
                     <label>Assunto</label>
-                    <input type="text" placeholder="Ex: Problema no Login" required />
+                    <input type="text" id="supAssunto" placeholder="Ex: Problema no Login" required />
                 </div>
                 <div class="input-group">
                     <label>Mensagem</label>
-                    <textarea style="width: 100%; background:#161618; border: 1px solid #2e2e34; border-radius: 14px; color: white; padding: 14px; outline: none; min-height: 100px; resize: vertical; max-width: 100%; box-sizing: border-box;"></textarea>
+                    <textarea id="supMensagem" style="width:100%;background:#161618;border:1px solid #2e2e34;border-radius:14px;color:white;padding:14px;outline:none;min-height:100px;resize:vertical;max-width:100%;box-sizing:border-box;" required></textarea>
                 </div>
-                <button type="submit" class="login-button">Enviar Mensagem</button>
+                <button type="submit" class="login-button" id="supBtn">Enviar Mensagem</button>
+                <p id="supFeedback" style="display:none;text-align:center;margin-top:12px;font-size:0.9rem;"></p>
             </form>
 
-            <script src="./scripts/auth.js"></script>
+            <script>
+              document.getElementById('suporteForm').addEventListener('submit', async function(e) {
+                e.preventDefault()
+                const btn = document.getElementById('supBtn')
+                const feedback = document.getElementById('supFeedback')
+                const nome     = document.getElementById('supNome').value.trim()
+                const email    = document.getElementById('supEmail').value.trim()
+                const assunto  = document.getElementById('supAssunto').value.trim()
+                const mensagem = document.getElementById('supMensagem').value.trim()
+
+                if (!nome || !email || !assunto || !mensagem) return
+
+                btn.disabled = true
+                btn.textContent = 'Enviando...'
+
+                try {
+                  await emailjs.send('service_9u04ixa', 'template_7ziq0rg', {
+                    to_email: 'brainhubsuporte@gmail.com',
+                    subject: `[Suporte] ${assunto}`,
+                    message: `De: ${nome} <${email}>\n\n${mensagem}`
+                  })
+                  feedback.style.color = '#26d0a8'
+                  feedback.textContent = 'Mensagem enviada! Retornaremos em breve.'
+                  feedback.style.display = 'block'
+                  this.reset()
+                } catch(err) {
+                  feedback.style.color = '#ff4b6e'
+                  feedback.textContent = 'Erro ao enviar. Tente novamente ou fale pelo email brainhubsuporte@gmail.com'
+                  feedback.style.display = 'block'
+                  console.error(err)
+                }
+
+                btn.disabled = false
+                btn.textContent = 'Enviar Mensagem'
+              })
+            </script>
         </section>
     </main>
 

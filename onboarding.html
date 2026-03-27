@@ -7,6 +7,8 @@
   <title>BrainHUB | Bem-vindo!</title>
   <link rel="stylesheet" href="./css/onboarding.css" />
   <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script>emailjs.init('HBX2IWHj4B4btav_M')</script>
 </head>
 
 <body>
@@ -48,11 +50,21 @@
         <div class="field-group">
           <label for="onbCurso">Curso</label>
           <input type="text" id="onbCurso" placeholder="Ex: Ciência da Computação" maxlength="60" />
+          <div class="sugestao-check-row">
+            <input type="checkbox" id="chkCursoSugestao" />
+            <label for="chkCursoSugestao">Não achou o seu curso? Escreva ele aqui que nós iremos colocar.</label>
+          </div>
+          <input type="text" id="onbCursoSugestao" class="sugestao-input hidden" placeholder="Digite o nome do seu curso..." maxlength="100" />
         </div>
 
         <div class="field-group">
           <label for="onbFaculdade">Faculdade</label>
           <input type="text" id="onbFaculdade" placeholder="Ex: PUCPR, USP, UFPR..." maxlength="80" />
+          <div class="sugestao-check-row">
+            <input type="checkbox" id="chkFaculdadeSugestao" />
+            <label for="chkFaculdadeSugestao">Não achou a sua faculdade? Escreva ela aqui que nós iremos colocar.</label>
+          </div>
+          <input type="text" id="onbFaculdadeSugestao" class="sugestao-input hidden" placeholder="Digite o nome da sua faculdade..." maxlength="100" />
         </div>
 
         <div class="field-group">
@@ -115,7 +127,14 @@
 
   <!-- ANTES do onboarding.js -->
   <script type="module" src="./scripts/supabaseClient.js"></script>
+  <script src="./scripts/br-dados.js"></script>
   <script defer src="./scripts/onboarding.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      initAutocomplete('onbCurso', CURSOS_BR)
+      initAutocomplete('onbFaculdade', FACULDADES_BR)
+    })
+  </script>
 </body>
 
 </html>

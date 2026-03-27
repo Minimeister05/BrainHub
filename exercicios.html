@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BrainHUB | Exercícios</title>
+  <link rel="stylesheet" href="./css/home.css" />
+  <link rel="stylesheet" href="./css/exercicios.css" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="brand">
+        <div class="brand-icon">B</div>
+        <h1>Brain<span>HUB</span></h1>
+      </div>
+    </div>
+
+    <nav class="main-nav">
+      <a href="home.html"><i data-lucide="house"></i> Feed</a>
+      <a href="grupos.html"><i data-lucide="users"></i> Grupos</a>
+      <a href="chat.html"><i data-lucide="message-circle"></i> Mensagens</a>
+      <a href="exercicios.html"><i data-lucide="zap"></i> Exercícios</a>
+      <a href="perfil.html"><i data-lucide="user"></i> Perfil</a>
+    </nav>
+
+    <div class="top-actions">
+      <button class="icon-btn notification-btn" onclick="window.location.href='notificacoes.html'">
+        <i data-lucide="bell"></i>
+        <span class="badge" style="display:none">0</span>
+      </button>
+      <button class="icon-btn"><i data-lucide="search"></i></button>
+    </div>
+  </header>
+
+  <main class="ex-layout">
+
+    <!-- Sidebar esquerda -->
+    <aside class="ex-sidebar">
+      <div class="ex-user-card card">
+        <div class="ex-avatar" id="exAvatar">?</div>
+        <div class="ex-user-info">
+          <strong id="exNome">—</strong>
+          <span class="ex-titulo" id="exTituloAtivo"></span>
+        </div>
+        <div class="ex-pontos-wrap">
+          <i data-lucide="zap"></i>
+          <span id="exPontos">0</span> pts
+        </div>
+      </div>
+
+      <div class="ex-rank-card card">
+        <h3><i data-lucide="trophy"></i> Próximo título</h3>
+        <div class="ex-progresso-wrap">
+          <div class="ex-progresso-bar">
+            <div class="ex-progresso-fill" id="exProgressoFill"></div>
+          </div>
+          <span id="exProgressoTexto"></span>
+        </div>
+      </div>
+
+      <div class="ex-ranking-card card">
+        <h3><i data-lucide="bar-chart-2"></i> Ranking</h3>
+        <ul id="exRankingList"><li>Carregando...</li></ul>
+      </div>
+    </aside>
+
+    <!-- Coluna central -->
+    <section class="ex-main">
+
+      <div class="ex-header">
+        <h2>Exercícios</h2>
+        <button class="ex-criar-btn" id="exCriarBtn" style="display:none">
+          <i data-lucide="plus"></i> Criar exercício
+        </button>
+      </div>
+
+      <!-- Busca por palavra-chave -->
+      <div class="ex-search-wrap">
+        <i data-lucide="search"></i>
+        <input type="text" id="exBusca" placeholder="Buscar por título ou conteúdo..." />
+      </div>
+
+      <!-- Filtros de matéria (gerados dinamicamente) -->
+      <div class="ex-filtros" id="exFiltros"></div>
+
+      <div class="ex-dificuldade-filtros">
+        <button class="ex-dif active" data-dif="">Todas</button>
+        <button class="ex-dif" data-dif="facil">Fácil</button>
+        <button class="ex-dif" data-dif="media">Média</button>
+        <button class="ex-dif" data-dif="dificil">Difícil</button>
+      </div>
+
+      <div id="exLista" class="ex-lista"></div>
+    </section>
+
+  </main>
+
+  <!-- Modal criar exercício (Pro) -->
+  <div class="ex-modal-overlay hidden" id="exModalOverlay">
+    <div class="ex-modal">
+      <div class="ex-modal-header">
+        <span>Criar exercício</span>
+        <button class="icon-btn" id="exModalFechar"><i data-lucide="x"></i></button>
+      </div>
+      <div class="ex-modal-body">
+        <div class="ex-field">
+          <label>Título</label>
+          <input type="text" id="exTitulo" placeholder="Título do exercício" maxlength="100" />
+        </div>
+        <div class="ex-field">
+          <label>Enunciado</label>
+          <textarea id="exEnunciado" placeholder="Descreva o exercício..." rows="4"></textarea>
+        </div>
+        <div class="ex-field">
+          <label>Matéria</label>
+          <select id="exMateria">
+            <option value="Computação">Computação</option>
+            <option value="Medicina">Medicina</option>
+            <option value="Direito">Direito</option>
+            <option value="Administração">Administração</option>
+            <option value="Engenharia">Engenharia</option>
+            <option value="Matemática">Matemática</option>
+            <option value="Física">Física</option>
+            <option value="Química">Química</option>
+            <option value="Biologia">Biologia</option>
+            <option value="História">História</option>
+            <option value="Geografia">Geografia</option>
+            <option value="Letras">Letras</option>
+            <option value="Psicologia">Psicologia</option>
+            <option value="Geral">Geral</option>
+          </select>
+        </div>
+        <div class="ex-field">
+          <label>Dificuldade</label>
+          <select id="exDificuldade">
+            <option value="facil">Fácil</option>
+            <option value="media" selected>Média</option>
+            <option value="dificil">Difícil</option>
+          </select>
+        </div>
+        <div class="ex-field">
+          <label>Alternativas</label>
+          <div class="ex-alts-editor" id="exAltsEditor">
+            <div class="ex-alt-row"><span>A</span><input type="text" placeholder="Alternativa A" id="altA"/><input type="radio" name="gabarito" value="A"/><label>Correta</label></div>
+            <div class="ex-alt-row"><span>B</span><input type="text" placeholder="Alternativa B" id="altB"/><input type="radio" name="gabarito" value="B"/><label>Correta</label></div>
+            <div class="ex-alt-row"><span>C</span><input type="text" placeholder="Alternativa C" id="altC"/><input type="radio" name="gabarito" value="C"/><label>Correta</label></div>
+            <div class="ex-alt-row"><span>D</span><input type="text" placeholder="Alternativa D" id="altD"/><input type="radio" name="gabarito" value="D"/><label>Correta</label></div>
+          </div>
+        </div>
+        <div class="ex-field ex-pro-only-row">
+          <input type="checkbox" id="exProOnly" />
+          <label for="exProOnly">Exclusivo para usuários Pro</label>
+        </div>
+        <button class="ex-submit-btn" id="exSubmitBtn">Publicar exercício</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./scripts/supabaseClient.js"></script>
+  <script defer src="./scripts/exercicios.js"></script>
+</body>
+</html>

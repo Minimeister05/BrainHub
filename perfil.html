@@ -13,9 +13,11 @@
 <body>
 
   <header class="topbar">
-    <div class="brand">
-      <div class="brand-icon">B</div>
-      <h1>Brain<span>HUB</span></h1>
+    <div class="topbar-left">
+      <div class="brand">
+        <div class="brand-icon">B</div>
+        <h1>Brain<span>HUB</span></h1>
+      </div>
     </div>
     <nav class="main-nav">
       <a href="home.html"><i data-lucide="house"></i> Feed</a>
@@ -100,6 +102,9 @@
         </button>
         <button class="perfil-right-tab" data-tab="stats">
           <i data-lucide="bar-chart-3"></i> Estatísticas
+        </button>
+        <button class="perfil-right-tab" data-tab="titulos">
+          <i data-lucide="award"></i> Títulos
         </button>
       </div>
 
@@ -305,6 +310,17 @@
         </div>
       </div>
 
+      <!-- TAB: Títulos -->
+      <div id="tabTitulos" style="display:none">
+        <div class="titulos-pontos-header">
+          <i data-lucide="zap"></i>
+          <span>Você tem <strong id="titulosPontos">0</strong> pontos</span>
+          <a href="exercicios.html" class="titulos-link-ex">Ganhar pontos →</a>
+        </div>
+        <p class="titulos-instrucao">Escolha qual título aparece no seu perfil e nos seus posts:</p>
+        <div id="titulosGrid" class="titulos-grid"></div>
+      </div>
+
     </section>
 
   </main>
@@ -332,7 +348,14 @@
   </div>
 
   <script type="module" src="./scripts/supabaseClient.js"></script>
+  <script src="./scripts/br-dados.js"></script>
   <script defer src="./scripts/perfil.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      initAutocomplete('inputCurso', CURSOS_BR)
+      initAutocomplete('inputFaculdade', FACULDADES_BR)
+    })
+  </script>
 
   <nav class="mobile-bottom-nav">
     <a href="home.html" class="mob-nav-item"><i data-lucide="house"></i><span>Feed</span></a>
