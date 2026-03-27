@@ -886,7 +886,30 @@ body {
 
   /* Esconde composer da topbar no mobile */
   .topbar-composer { display: none; }
+
+  /* FAB criar post */
+  .mob-fab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    bottom: 72px;
+    right: 20px;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #7c5cff, #4e2edf);
+    border: none;
+    color: #fff;
+    box-shadow: 0 4px 18px rgba(124,92,255,0.5);
+    cursor: pointer;
+    z-index: 200;
+  }
+  .mob-fab i { width: 24px; height: 24px; }
 }
+
+/* Desktop: FAB nunca aparece */
+.mob-fab { display: none; }
 
 /* ===== ÁREA DE COMENTÁRIOS ===== */
 .hidden {
