@@ -134,15 +134,15 @@ async function carregarDados() {
     : 'Gratuito'
 
   // Stats reais
-  const [{ count: posts }, { count: seguidores }, { count: seguindo }] = await Promise.all([
-    window.supabase.from('posts').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
-    window.supabase.from('follows').select('*', { count: 'exact', head: true }).eq('following_id', user.id),
-    window.supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', user.id)
+  const [{ data: postsData }, { data: seguidoresData }, { data: seguindoData }] = await Promise.all([
+    window.supabase.from('posts').select('id').eq('user_id', user.id),
+    window.supabase.from('follows').select('follower_id').eq('following_id', user.id),
+    window.supabase.from('follows').select('following_id').eq('follower_id', user.id)
   ])
   const el = id => document.getElementById(id)
-  if (el('perfilStatPosts'))      el('perfilStatPosts').textContent      = posts      || 0
-  if (el('perfilStatSeguidores')) el('perfilStatSeguidores').textContent = seguidores || 0
-  if (el('perfilStatSeguindo'))   el('perfilStatSeguindo').textContent   = seguindo   || 0
+  if (el('perfilStatPosts'))      el('perfilStatPosts').textContent      = postsData?.length      ?? 0
+  if (el('perfilStatSeguidores')) el('perfilStatSeguidores').textContent = seguidoresData?.length ?? 0
+  if (el('perfilStatSeguindo'))   el('perfilStatSeguindo').textContent   = seguindoData?.length   ?? 0
 
   atualizarPreview({ nome, curso, faculdade, periodo, bio, corAvatar })
   lucide.createIcons()
