@@ -21,7 +21,7 @@
     <nav class="main-nav">
       <a href="home.html"><i data-lucide="house"></i> Feed</a>
       <a href="grupos.html"><i data-lucide="users"></i> Grupos</a>
-      <a href="chat.html"><i data-lucide="message-circle"></i> Mensagens</a>
+      <a href="chat.html"><i data-lucide="message-circle"></i> Chat</a>
       <a href="exercicios.html"><i data-lucide="zap"></i> Exercícios</a>
       <a href="perfil.html"><i data-lucide="user"></i> Perfil</a>
     </nav>
@@ -73,7 +73,7 @@
       <div class="ex-header">
         <h2>Exercícios</h2>
         <button class="ex-criar-btn" id="exCriarBtn" style="display:none">
-          <i data-lucide="plus"></i> Criar exercício
+          <i data-lucide="plus"></i><span class="ex-criar-label"> Criar exercício</span>
         </button>
       </div>
 
@@ -159,6 +159,7 @@
     </div>
   </div>
 
+  <script src="./scripts/brainhub-shared.js"></script>
   <script type="module" src="./scripts/supabaseClient.js"></script>
   <script defer src="./scripts/exercicios.js"></script>
 

@@ -468,6 +468,17 @@
 
 @media (max-width: 660px) {
   .grupos-grid { grid-template-columns: 1fr; }
+
+  /* Filtros de categoria com scroll horizontal no mobile */
+  .categoria-pills {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+  }
+  .categoria-pills::-webkit-scrollbar { display: none; }
+  .categoria-pill { flex-shrink: 0; }
 }
 
 /* ===== MODAL DE PESQUISA ===== */

@@ -926,7 +926,7 @@
     padding: 16px;
   }
 
-  .perfil-sidebar { overflow: visible; }
+  .perfil-sidebar { display: none; }
   .perfil-main { overflow: visible; }
 }
 

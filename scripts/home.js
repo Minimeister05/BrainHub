@@ -700,7 +700,8 @@ async function carregarGruposSugeridos(userId, curso, faculdade) {
 
   // Fallback: grupos populares se não encontrou suficiente
   if (grupos.length < 3) {
-    const jaIds = [...jaEntrou, ...grupos.map(g => g.id)];
+    const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const jaIds = [...jaEntrou, ...grupos.map(g => g.id)].filter(id => uuidRe.test(id));
     let q = window.supabase.from('grupos').select('id, nome, emoji, categoria').limit(6);
     if (jaIds.length > 0) q = q.not('id', 'in', `(${jaIds.join(',')})`)
     const { data: populares } = await q;

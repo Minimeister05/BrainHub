@@ -23,7 +23,10 @@
       "Bash(echo \":*)",
       "Bash(\"c:/BrainHub/css/onboarding.css\")",
       "Bash(__NEW_LINE_bd1d7a2b91553603__ echo \":*)",
-      "Bash(\"c:/BrainHub/css/perfil.css\")"
+      "Bash(\"c:/BrainHub/css/perfil.css\")",
+      "Bash(grep -l \"mob-nav-item\" *.html)",
+      "Bash(sed -i 's|data-lucide=\"\"message-circle\"\"></i> Mensagens</a>|data-lucide=\"\"message-circle\"\"></i> Chat</a>|g' home.html configuracoes.html grupo-detalhe.html notificacoes.html grupos.html meus-posts.html salvos.html perfil.html exercicios.html usuario.html chat.html planos.html)",
+      "Bash(sed -i 's|<title>BrainHUB | Mensagens</title>|<title>BrainHUB | Chat</title>|' chat.html)"
     ]
   }
 }

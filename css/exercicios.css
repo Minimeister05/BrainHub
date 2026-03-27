@@ -289,4 +289,19 @@
   .ex-layout { grid-template-columns: 1fr; }
   .ex-sidebar { flex-direction: row; flex-wrap: wrap; }
   .ex-sidebar .card { flex: 1; min-width: 220px; }
+
+  /* Filtros de matéria com scroll horizontal no mobile */
+  .ex-filtros {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+  }
+  .ex-filtros::-webkit-scrollbar { display: none; }
+  .ex-filtro { flex-shrink: 0; }
+
+  /* Botão criar: só ícone no mobile */
+  .ex-criar-btn .ex-criar-label { display: none; }
+  .ex-criar-btn { padding: 10px 14px; }
 }

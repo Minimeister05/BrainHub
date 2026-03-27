@@ -324,27 +324,27 @@ async function atualizarBadgeNotifSupabase() {
     let totalNovas = 0;
 
     if (myPostIds.length > 0) {
-      const [{ count: newLikes }, { count: newComments }] = await Promise.all([
+      const [{ data: newLikesData }, { data: newCommentsData }] = await Promise.all([
         window.supabase.from('likes')
-          .select('*', { count: 'exact', head: true })
+          .select('post_id')
           .in('post_id', myPostIds)
           .neq('user_id', user.id)
           .gt('created_at', lastRead),
         window.supabase.from('comments')
-          .select('*', { count: 'exact', head: true })
+          .select('id')
           .in('post_id', myPostIds)
           .neq('user_id', user.id)
           .gt('created_at', lastRead),
       ]);
-      totalNovas += (newLikes || 0) + (newComments || 0);
+      totalNovas += (newLikesData?.length || 0) + (newCommentsData?.length || 0);
     }
 
-    const { count: newFollows } = await window.supabase
+    const { data: newFollowsData } = await window.supabase
       .from('follows')
-      .select('*', { count: 'exact', head: true })
+      .select('follower_id')
       .eq('following_id', user.id)
       .gt('created_at', lastRead);
-    totalNovas += (newFollows || 0);
+    totalNovas += (newFollowsData?.length || 0);
 
     localStorage.setItem('brainhub_notif_count', totalNovas);
     aplicarBadgeNotif();
@@ -359,16 +359,16 @@ async function carregarEstatisticasSidebar() {
   const { data: { user } } = await window.supabase.auth.getUser();
   if (!user) return;
 
-  const [{ count: posts }, { count: seguidores }, { count: seguindo }] = await Promise.all([
-    window.supabase.from('posts').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
-    window.supabase.from('follows').select('*', { count: 'exact', head: true }).eq('following_id', user.id),
-    window.supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', user.id)
+  const [{ data: postsData }, { data: seguidoresData }, { data: seguindoData }] = await Promise.all([
+    window.supabase.from('posts').select('id').eq('user_id', user.id),
+    window.supabase.from('follows').select('follower_id').eq('following_id', user.id),
+    window.supabase.from('follows').select('following_id').eq('follower_id', user.id)
   ]);
 
   const el = (id) => document.getElementById(id);
-  if (el('statMeusPosts'))      el('statMeusPosts').textContent      = posts      || 0;
-  if (el('statMeusSeguidores')) el('statMeusSeguidores').textContent = seguidores || 0;
-  if (el('statMeusSeguindo'))   el('statMeusSeguindo').textContent   = seguindo   || 0;
+  if (el('statMeusPosts'))      el('statMeusPosts').textContent      = postsData?.length      || 0;
+  if (el('statMeusSeguidores')) el('statMeusSeguidores').textContent = seguidoresData?.length || 0;
+  if (el('statMeusSeguindo'))   el('statMeusSeguindo').textContent   = seguindoData?.length   || 0;
 }
 
 // Sempre consulta Supabase para ter o número real (não usa cache do localStorage)
