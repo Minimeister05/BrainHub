@@ -93,11 +93,15 @@
     <section class="perfil-main">
 
       <!-- Abas -->
+      <!-- Ações rápidas: visíveis só no mobile (sidebar oculta) -->
+      <div class="perfil-mobile-actions">
+        <a href="salvos.html" class="perfil-mob-btn"><i data-lucide="bookmark"></i> Salvos</a>
+        <a href="configuracoes.html" class="perfil-mob-btn"><i data-lucide="settings"></i> Config</a>
+        <button class="perfil-mob-btn perfil-mob-sair" id="btnSairMob"><i data-lucide="log-out"></i> Sair</button>
+      </div>
+
       <div class="perfil-right-tabs">
-        <button class="perfil-right-tab active" data-tab="editar">
-          <i data-lucide="pencil"></i> Editar Perfil
-        </button>
-        <button class="perfil-right-tab" data-tab="posts">
+        <button class="perfil-right-tab active" data-tab="posts">
           <i data-lucide="file-text"></i> Meus Posts
         </button>
         <button class="perfil-right-tab" data-tab="stats">
@@ -108,7 +112,7 @@
         </button>
       </div>
 
-      <!-- TAB: Editar -->
+      <!-- Formulário de edição (sempre visível, não controlado por tab) -->
       <div id="tabEditar">
 
       <!-- Formulário -->
@@ -297,7 +301,7 @@
       </div><!-- fim tabEditar -->
 
       <!-- TAB: Meus Posts -->
-      <div id="tabPosts" style="display:none">
+      <div id="tabPosts">
         <div id="perfilPostsList">
           <p style="text-align:center;padding:32px;color:var(--muted)">Carregando posts...</p>
         </div>

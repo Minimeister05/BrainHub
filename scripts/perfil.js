@@ -258,13 +258,16 @@ document.getElementById('btnEditarPerfil').addEventListener('click', () => {
   document.querySelector('.perfil-main').scrollTo({ top: 0, behavior: 'smooth' })
 })
 
-document.getElementById('btnSair').addEventListener('click', async () => {
+async function fazerLogout() {
   await window.supabase.auth.signOut()
   localStorage.removeItem('brainhub_usuario_logado')
   localStorage.removeItem('brainhub_remember')
   sessionStorage.removeItem('brainhub_remember')
   window.location.href = 'login.html'
-})
+}
+
+document.getElementById('btnSair').addEventListener('click', fazerLogout)
+document.getElementById('btnSairMob')?.addEventListener('click', fazerLogout)
 
 // ===== MEUS POSTS =====
 async function carregarMeusPosts() {
@@ -490,13 +493,12 @@ async function carregarEstatisticas() {
 }
 
 // ===== ABAS =====
-let postsCarregados = false
+let postsCarregados = true  // Posts é a aba padrão, carrega junto com init()
 document.querySelectorAll('.perfil-right-tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.perfil-right-tab').forEach(t => t.classList.remove('active'))
     tab.classList.add('active')
     const nome = tab.dataset.tab
-    document.getElementById('tabEditar').style.display  = nome === 'editar'  ? '' : 'none'
     document.getElementById('tabPosts').style.display   = nome === 'posts'   ? '' : 'none'
     document.getElementById('tabStats').style.display   = nome === 'stats'   ? '' : 'none'
     document.getElementById('tabTitulos').style.display = nome === 'titulos' ? '' : 'none'
@@ -572,3 +574,4 @@ async function carregarTitulos() {
 }
 
 carregarDados()
+carregarMeusPosts()

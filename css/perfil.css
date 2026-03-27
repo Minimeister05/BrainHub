@@ -929,10 +929,39 @@
   .perfil-sidebar { display: none; }
   .perfil-main { overflow: visible; }
 
-  /* Tabs do perfil: esconde texto, mostra só ícone no mobile */
-  .perfil-right-tab { font-size: 0; gap: 0; padding: 10px 12px; }
-  .perfil-right-tab i { width: 18px; height: 18px; }
+  /* Barra de ações rápidas mobile (Salvos, Config, Sair) */
+  .perfil-mobile-actions { display: flex; }
 }
+
+/* Barra mobile: oculta no desktop */
+.perfil-mobile-actions {
+  display: none;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.perfil-mob-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  font-family: inherit;
+  transition: 0.15s;
+}
+.perfil-mob-btn:hover { color: var(--text); border-color: rgba(124,92,255,0.4); }
+.perfil-mob-btn i { width: 14px; height: 14px; }
+.perfil-mob-sair { color: #f87171; border-color: rgba(248,113,113,0.3); }
+.perfil-mob-sair:hover { background: rgba(248,113,113,0.08); }
 
 /* ===== MODAL DE PESQUISA ===== */
 .search-overlay {
