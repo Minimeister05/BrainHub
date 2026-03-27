@@ -420,6 +420,9 @@ async function renderizarPosts() {
 
   // Aplica algoritmo de recomendação no FYP
   if (feedTab === 'fyp' && posts?.length > 0) {
+    // Salva o timestamp mais recente ANTES de reordenar por score
+    const maxAt = posts.reduce((max, p) => p.created_at > max ? p.created_at : max, posts[0].created_at);
+    latestPostAt = maxAt;
     posts = posts
       .map(p => ({ ...p, _score: scorePost(p) }))
       .sort((a, b) => b._score - a._score)
@@ -444,8 +447,8 @@ async function renderizarPosts() {
     salvoSet = new Set((saves || []).map(s => s.post_id));
   }
 
-  // Salva timestamp do post mais recente pra polling
-  if (posts.length > 0) latestPostAt = posts[0].created_at;
+  // Salva timestamp do post mais recente pra polling (FYP já definiu acima antes de reordenar)
+  if (posts.length > 0 && feedTab !== 'fyp') latestPostAt = posts[0].created_at;
 
   feedList.innerHTML = posts.map(criarPostHTML).join('');
 

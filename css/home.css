@@ -868,7 +868,6 @@ body {
 
 @media (max-width: 860px) {
   body {
-    overflow: auto;
     padding-bottom: 72px;
   }
 
