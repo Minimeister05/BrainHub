@@ -928,6 +928,10 @@
 
   .perfil-sidebar { display: none; }
   .perfil-main { overflow: visible; }
+
+  /* Tabs do perfil: esconde texto, mostra só ícone no mobile */
+  .perfil-right-tab { font-size: 0; gap: 0; padding: 10px 12px; }
+  .perfil-right-tab i { width: 18px; height: 18px; }
 }
 
 /* ===== MODAL DE PESQUISA ===== */
