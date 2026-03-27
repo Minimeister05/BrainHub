@@ -910,9 +910,27 @@ body {
   /* FAB criar post */
   .mob-fab { display: flex !important; }
 
-  /* Padding pra o conteúdo não ficar escondido atrás do nav */
-  .feed-scroll { padding-bottom: 80px; }
-  .center-column { padding-bottom: 0; }
+  /* Feed scroll vira scroll natural do body no mobile */
+  .feed-scroll {
+    overflow-y: visible;
+    flex: none;
+    height: auto;
+    padding-bottom: 80px;
+  }
+
+  /* Tabs e busca ficam grudadas abaixo da topbar */
+  .feed-tabs {
+    position: sticky;
+    top: 58px;
+    z-index: 100;
+    background: var(--bg);
+  }
+  .feed-search-wrap {
+    position: sticky;
+    top: 106px; /* 58px topbar + 48px tabs */
+    z-index: 99;
+    background: var(--bg);
+  }
 }
 
 /* ===== ÁREA DE COMENTÁRIOS ===== */
