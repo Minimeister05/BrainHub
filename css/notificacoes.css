@@ -47,11 +47,11 @@
 .btn-notif-ghost:hover { border-color: rgba(124,92,255,0.4); color: #c4b7ff; }
 
 .notif-summary {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  display: flex;
   gap: 10px;
   margin-bottom: 20px;
 }
+.notif-summary-box { flex: 1; }
 
 .notif-summary-box {
   background: rgba(31, 31, 39, 0.92);
@@ -234,10 +234,11 @@
 }
 
 @media (max-width: 600px) {
-  .notif-summary { grid-template-columns: repeat(3, 1fr); }
   .notif-header  { flex-direction: column; }
   .notif-header-btns { width: 100%; }
   .btn-notif-ghost { flex: 1; text-align: center; }
   .notif-tabs { overflow-x: auto; }
   .notif-container { padding: 16px; }
+  .notif-summary-box { padding: 10px 6px; }
+  .notif-summary-box strong { font-size: 1.1rem; }
 }
