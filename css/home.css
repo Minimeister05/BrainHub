@@ -898,6 +898,8 @@ body {
     overflow: visible;
     height: auto;
     min-height: 0;
+    /* gap quebraria o sticky, vira padding nos filhos */
+    gap: 0;
   }
 
   .post-composer textarea { font-size: 0.95rem; }
@@ -918,19 +920,30 @@ body {
     padding-bottom: 80px;
   }
 
-  /* Tabs e busca ficam grudadas abaixo da topbar */
+  /* Tabs e busca ficam grudadas abaixo da topbar (prefixo webkit pro Safari iOS) */
   .feed-tabs {
+    position: -webkit-sticky;
     position: sticky;
     top: 58px;
     z-index: 100;
     background: var(--bg);
+    margin-left: -12px;
+    margin-right: -12px;
+    padding-left: 12px;
+    padding-right: 12px;
   }
   .feed-search-wrap {
+    position: -webkit-sticky;
     position: sticky;
-    top: 106px; /* 58px topbar + 48px tabs */
+    top: 106px;
     z-index: 99;
     background: var(--bg);
+    margin-top: 8px;
   }
+
+  /* Espaçamento entre elementos do feed sem usar gap (que quebra sticky) */
+  .new-posts-banner { margin-top: 8px; }
+  #feedList { margin-top: 8px; }
 }
 
 /* ===== ÁREA DE COMENTÁRIOS ===== */
