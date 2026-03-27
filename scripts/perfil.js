@@ -493,12 +493,13 @@ async function carregarEstatisticas() {
 }
 
 // ===== ABAS =====
-let postsCarregados = true  // Posts é a aba padrão, carrega junto com init()
+let postsCarregados = false
 document.querySelectorAll('.perfil-right-tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.perfil-right-tab').forEach(t => t.classList.remove('active'))
     tab.classList.add('active')
     const nome = tab.dataset.tab
+    document.getElementById('tabEditar').style.display  = nome === 'editar'  ? '' : 'none'
     document.getElementById('tabPosts').style.display   = nome === 'posts'   ? '' : 'none'
     document.getElementById('tabStats').style.display   = nome === 'stats'   ? '' : 'none'
     document.getElementById('tabTitulos').style.display = nome === 'titulos' ? '' : 'none'
@@ -574,4 +575,3 @@ async function carregarTitulos() {
 }
 
 carregarDados()
-carregarMeusPosts()

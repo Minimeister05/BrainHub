@@ -92,7 +92,30 @@
     <!-- COLUNA DIREITA -->
     <section class="perfil-main">
 
-      <!-- Formulário de edição (sempre visível, acima das abas) -->
+      <!-- Ações rápidas mobile (Salvos, Config, Sair) — oculto no desktop -->
+      <div class="perfil-mobile-actions">
+        <a href="salvos.html" class="perfil-mob-btn"><i data-lucide="bookmark"></i> Salvos</a>
+        <a href="configuracoes.html" class="perfil-mob-btn"><i data-lucide="settings"></i> Config</a>
+        <button class="perfil-mob-btn perfil-mob-sair" id="btnSairMob"><i data-lucide="log-out"></i> Sair</button>
+      </div>
+
+      <!-- Abas -->
+      <div class="perfil-right-tabs">
+        <button class="perfil-right-tab active" data-tab="editar">
+          <i data-lucide="pencil"></i> Editar Perfil
+        </button>
+        <button class="perfil-right-tab" data-tab="posts">
+          <i data-lucide="file-text"></i> Meus Posts
+        </button>
+        <button class="perfil-right-tab" data-tab="stats">
+          <i data-lucide="bar-chart-3"></i> Estatísticas
+        </button>
+        <button class="perfil-right-tab" data-tab="titulos">
+          <i data-lucide="award"></i> Títulos
+        </button>
+      </div>
+
+      <!-- TAB: Editar -->
       <div id="tabEditar">
 
       <!-- Formulário -->
@@ -280,28 +303,8 @@
 
       </div><!-- fim tabEditar -->
 
-      <!-- Ações rápidas mobile (Salvos, Config, Sair) — oculto no desktop -->
-      <div class="perfil-mobile-actions">
-        <a href="salvos.html" class="perfil-mob-btn"><i data-lucide="bookmark"></i> Salvos</a>
-        <a href="configuracoes.html" class="perfil-mob-btn"><i data-lucide="settings"></i> Config</a>
-        <button class="perfil-mob-btn perfil-mob-sair" id="btnSairMob"><i data-lucide="log-out"></i> Sair</button>
-      </div>
-
-      <!-- Abas: Meus Posts | Estatísticas | Títulos -->
-      <div class="perfil-right-tabs">
-        <button class="perfil-right-tab active" data-tab="posts">
-          <i data-lucide="file-text"></i> Meus Posts
-        </button>
-        <button class="perfil-right-tab" data-tab="stats">
-          <i data-lucide="bar-chart-3"></i> Estatísticas
-        </button>
-        <button class="perfil-right-tab" data-tab="titulos">
-          <i data-lucide="award"></i> Títulos
-        </button>
-      </div>
-
       <!-- TAB: Meus Posts -->
-      <div id="tabPosts">
+      <div id="tabPosts" style="display:none">
         <div id="perfilPostsList">
           <p style="text-align:center;padding:32px;color:var(--muted)">Carregando posts...</p>
         </div>

@@ -917,6 +917,13 @@
 .perfil-banner.bn-sunset  { background: linear-gradient(135deg, #2e1500, #1e0e00, #0d0d14); }
 .perfil-banner.bn-sunset::after  { background: radial-gradient(circle at 30% 60%, rgba(255,107,53,0.25) 0%, transparent 60%); }
 
+/* Barra de ações mobile: oculta no desktop, aparece em tela pequena */
+.perfil-mobile-actions {
+  display: none;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
 /* ===== RESPONSIVIDADE ===== */
 @media (max-width: 900px) {
   .perfil-layout {
@@ -931,13 +938,6 @@
 
   /* Barra de ações rápidas mobile (Salvos, Config, Sair) */
   .perfil-mobile-actions { display: flex; }
-}
-
-/* Barra mobile: oculta no desktop */
-.perfil-mobile-actions {
-  display: none;
-  gap: 8px;
-  margin-bottom: 12px;
 }
 
 .perfil-mob-btn {
