@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
@@ -147,42 +147,18 @@
         </div>
       </section>
 
-      <!-- Grupos sugeridos (original) -->
+      <!-- Grupos sugeridos (dinâmico) -->
       <section class="groups-card card">
         <h3><i data-lucide="users-round"></i> Grupos Sugeridos</h3>
-        <div class="group-item">
-          <div class="group-icon purple-bg"><i data-lucide="cpu"></i></div>
-          <div class="group-info"><strong>Programação & Dev</strong><small>2.4k membros</small></div>
-          <button>Entrar</button>
-        </div>
-        <div class="group-item">
-          <div class="group-icon green-bg"><i data-lucide="badge-dollar-sign"></i></div>
-          <div class="group-info"><strong>Economia & Finanças</strong><small>1.8k membros</small></div>
-          <button>Entrar</button>
-        </div>
-        <div class="group-item">
-          <div class="group-icon orange-bg"><i data-lucide="book-open-text"></i></div>
-          <div class="group-info"><strong>Direito & Legislação</strong><small>1.3k membros</small></div>
-          <button>Entrar</button>
-        </div>
-        <div class="group-item">
-          <div class="group-icon pink-bg"><i data-lucide="activity"></i></div>
-          <div class="group-info"><strong>Medicina & Saúde</strong><small>3.1k membros</small></div>
-          <button>Entrar</button>
-        </div>
-        <div class="group-item">
-          <div class="group-icon blue-bg"><i data-lucide="star"></i></div>
-          <div class="group-info"><strong>Engenharias</strong><small>2.7k membros</small></div>
-          <button>Entrar</button>
+        <div id="gruposSugeridosContainer">
+          <p style="color:var(--muted);font-size:0.85rem;padding:8px 0">Carregando...</p>
         </div>
       </section>
 
       <section class="subjects-card card">
         <h3><i data-lucide="book-open"></i> Matérias Populares</h3>
-        <div class="chips">
-          <span>Cálculo</span><span>Física</span><span>Algoritmos</span>
-          <span>Estatística</span><span>Redes</span><span>IA</span>
-          <span>Química</span><span>Biologia</span><span>Filosofia</span><span>Sociologia</span>
+        <div class="chips" id="materiasPopularesChips">
+          <span style="color:var(--muted);font-size:0.82rem">Carregando...</span>
         </div>
       </section>
     </aside>
@@ -215,7 +191,7 @@
     <a href="home.html" class="mob-nav-item active"><i data-lucide="house"></i><span>Feed</span></a>
     <a href="grupos.html" class="mob-nav-item"><i data-lucide="users"></i><span>Grupos</span></a>
     <a href="chat.html" class="mob-nav-item"><i data-lucide="message-circle"></i><span>Chat</span></a>
-    <a href="notificacoes.html" class="mob-nav-item"><span class="mob-notif-wrap"><i data-lucide="bell"></i><span class="mob-notif-dot" id="mobNotifDot"></span></span><span>Notifs</span></a>
+    <a href="exercicios.html" class="mob-nav-item"><i data-lucide="zap"></i><span>Exercícios</span></a>
     <a href="perfil.html" class="mob-nav-item"><i data-lucide="user"></i><span>Perfil</span></a>
   </nav>
 </body>

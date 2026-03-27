@@ -234,6 +234,10 @@
 }
 
 @media (max-width: 600px) {
-  .notif-summary { grid-template-columns: repeat(2, 1fr); }
+  .notif-summary { grid-template-columns: repeat(3, 1fr); }
   .notif-header  { flex-direction: column; }
+  .notif-header-btns { width: 100%; }
+  .btn-notif-ghost { flex: 1; text-align: center; }
+  .notif-tabs { overflow-x: auto; }
+  .notif-container { padding: 16px; }
 }

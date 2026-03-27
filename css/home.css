@@ -883,6 +883,9 @@ body {
   .post-composer textarea { font-size: 0.95rem; }
 
   .mobile-bottom-nav { display: flex; }
+
+  /* Esconde composer da topbar no mobile */
+  .topbar-composer { display: none; }
 }
 
 /* ===== ÁREA DE COMENTÁRIOS ===== */

@@ -76,6 +76,23 @@ async function renderizar(perfil) {
       <h4><i data-lucide="log-out"></i> Sessão</h4>
       <button class="config-sair-btn" id="btnSair"><i data-lucide="log-out"></i> Sair da conta</button>
     </div>
+
+    <div class="config-grupo">
+      <h4><i data-lucide="life-buoy"></i> Suporte</h4>
+      <p class="config-suporte-desc">Teve algum problema ou quer mandar um feedback? Fala com a gente.</p>
+      <div class="config-field">
+        <label>Assunto</label>
+        <input type="text" id="supAssunto" placeholder="Ex: Problema no login" maxlength="100" />
+      </div>
+      <div class="config-field">
+        <label>Mensagem</label>
+        <textarea id="supMensagem" rows="4" placeholder="Descreva o que aconteceu..."></textarea>
+      </div>
+      <button class="config-salvar-senha-btn" id="btnSuporteEnviar">
+        <i data-lucide="send"></i> Enviar mensagem
+      </button>
+      <p class="config-senha-msg hidden" id="msgSuporte"></p>
+    </div>
   `;
 
   lucide.createIcons();
@@ -138,6 +155,48 @@ async function renderizar(perfil) {
     localStorage.removeItem('brainhub_remember');
     sessionStorage.removeItem('brainhub_remember');
     window.location.href = 'login.html';
+  });
+
+  // ===== SUPORTE =====
+  document.getElementById('btnSuporteEnviar').addEventListener('click', async () => {
+    const assunto  = document.getElementById('supAssunto').value.trim();
+    const mensagem = document.getElementById('supMensagem').value.trim();
+    const msg      = document.getElementById('msgSuporte');
+    msg.className  = 'config-senha-msg';
+
+    if (!assunto || !mensagem) {
+      msg.textContent = 'Preencha o assunto e a mensagem.';
+      msg.classList.add('erro');
+      return;
+    }
+
+    const btn = document.getElementById('btnSuporteEnviar');
+    btn.disabled = true;
+    btn.innerHTML = '<i data-lucide="loader"></i> Enviando...';
+    lucide.createIcons();
+
+    const nome  = perfil?.nome  || 'Usuário';
+    const email = usuarioAtual?.email || '';
+
+    try {
+      await emailjs.send('service_9u04ixa', 'template_7ziq0rg', {
+        to_email: 'brainhubsuporte@gmail.com',
+        subject:  `[Suporte] ${assunto}`,
+        message:  `De: ${nome} <${email}>\n\n${mensagem}`,
+      });
+      msg.textContent = 'Mensagem enviada! Retornaremos em breve.';
+      msg.classList.add('sucesso');
+      document.getElementById('supAssunto').value  = '';
+      document.getElementById('supMensagem').value = '';
+    } catch (err) {
+      msg.textContent = 'Erro ao enviar. Tente novamente ou use brainhubsuporte@gmail.com';
+      msg.classList.add('erro');
+      console.error(err);
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = '<i data-lucide="send"></i> Enviar mensagem';
+    lucide.createIcons();
   });
 }
 
