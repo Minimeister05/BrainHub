@@ -292,6 +292,11 @@ async function init() {
     atualizarContagens();
     renderizarNotifs('todas');
 
+    // Marca automaticamente como lidas ao abrir a página
+    ultimaLeitura = new Date().toISOString();
+    localStorage.setItem(LAST_READ_KEY, ultimaLeitura);
+    localStorage.setItem('brainhub_notif_count', '0');
+
   } catch (err) {
     console.error('Erro ao carregar notificações:', err);
     document.getElementById('notifList').innerHTML = `

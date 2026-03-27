@@ -371,12 +371,10 @@ async function carregarEstatisticasSidebar() {
   if (el('statMeusSeguindo'))   el('statMeusSeguindo').textContent   = seguindo   || 0;
 }
 
-// Aplica badge imediato do localStorage, depois atualiza via Supabase
-aplicarBadgeNotif();
-// Aguarda supabase carregar e atualiza com dados reais
+// Sempre consulta Supabase para ter o número real (não usa cache do localStorage)
 function _waitAndUpdateBadge() {
   if (window.supabase) { atualizarBadgeNotifSupabase(); }
-  else { setTimeout(_waitAndUpdateBadge, 500); }
+  else { setTimeout(_waitAndUpdateBadge, 300); }
 }
 _waitAndUpdateBadge();
 
