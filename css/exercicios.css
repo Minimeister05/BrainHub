@@ -124,7 +124,7 @@
   color: #bcaeff;
 }
 
-.ex-dificuldade-filtros { display: flex; gap: 8px; }
+.ex-dificuldade-filtros { display: flex; gap: 8px; flex-wrap: wrap; }
 .ex-dif {
   padding: 5px 14px;
   border-radius: 999px; border: 1px solid var(--border);
@@ -288,7 +288,7 @@
 @media (max-width: 900px) {
   .ex-layout { grid-template-columns: 1fr; }
   .ex-sidebar { flex-direction: row; flex-wrap: wrap; }
-  .ex-sidebar .card { flex: 1; min-width: 220px; }
+  .ex-sidebar .card { flex: 1; min-width: 0; }
 
   /* Filtros de matéria com scroll horizontal no mobile */
   .ex-filtros {
