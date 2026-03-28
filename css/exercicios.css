@@ -286,7 +286,7 @@
 
 /* ===== RESPONSIVO ===== */
 @media (max-width: 900px) {
-  .ex-layout { grid-template-columns: 1fr; }
+  .ex-layout { grid-template-columns: 1fr; overflow-x: hidden; }
   .ex-sidebar { flex-direction: row; flex-wrap: wrap; }
   .ex-sidebar .card { flex: 1; min-width: 0; }
 

@@ -868,6 +868,8 @@
   .stat-value { font-size: 1.4rem; }
   .perfil-form-card { padding: 18px 16px; }
   .pro-plan-features { grid-template-columns: 1fr; }
+  .stats-averages { flex-wrap: wrap; gap: 12px; }
+  .stats-chart { gap: 6px; }
 }
 
 .perfil-posts-empty {
@@ -931,12 +933,18 @@
   .perfil-layout {
     grid-template-columns: 1fr;
     height: auto;
-    overflow: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
     padding: 16px;
   }
 
   .perfil-sidebar { display: none; }
-  .perfil-main { overflow: visible; }
+  .perfil-main { overflow-x: hidden; overflow-y: visible; }
+
+  /* Abas: padding reduzido e texto escondido — só ícone no mobile */
+  .perfil-right-tabs { gap: 4px; padding: 4px; }
+  .perfil-right-tab { padding: 10px 8px; font-size: 0; gap: 0; }
+  .perfil-right-tab i { width: 18px; height: 18px; }
 
   /* Barra de ações rápidas mobile (Salvos, Config, Sair) */
   .perfil-mobile-actions { display: flex; }
