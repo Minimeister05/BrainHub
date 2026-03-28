@@ -1,0 +1,24 @@
+{
+  "name": "BrainHUB",
+  "short_name": "BrainHUB",
+  "description": "Rede social acadêmica",
+  "start_url": "/login.html",
+  "display": "standalone",
+  "background_color": "#141418",
+  "theme_color": "#7c5cff",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/imagens/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/imagens/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
