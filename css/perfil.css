@@ -1345,8 +1345,9 @@
   cursor: pointer;
 }
 
-/* Avatar clicável */
+/* Avatar e banner clicáveis */
 .av-foto-clicavel { cursor: zoom-in; }
+.banner-clicavel  { cursor: zoom-in; }
 
 /* ===== LIGHTBOX ===== */
 .lightbox-overlay {

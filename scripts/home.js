@@ -829,6 +829,22 @@ async function init() {
   const { data: { user } } = await window.supabase.auth.getUser();
   usuarioAtual = user;
   if (usuarioAtual) {
+    // Aplica banner do perfil no sidebar
+    window.supabase.from('profiles')
+      .select('banner_url, banner_position, is_pro')
+      .eq('id', usuarioAtual.id).single()
+      .then(({ data: p }) => {
+        if (p?.is_pro && p?.banner_url) {
+          const bannerEl = document.querySelector('.profile-banner');
+          if (bannerEl) {
+            bannerEl.style.backgroundImage = `url(${p.banner_url})`;
+            bannerEl.style.backgroundSize = 'cover';
+            bannerEl.style.backgroundPositionX = 'center';
+            bannerEl.style.backgroundPositionY = p.banner_position || '50%';
+          }
+        }
+      });
+
     carregarEstatisticas(usuarioAtual.id);
     carregarSugestoes(usuarioAtual.id);
 

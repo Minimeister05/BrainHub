@@ -238,7 +238,9 @@ async function init() {
     if (isPro && bannerUrl) {
       banner.style.backgroundImage = `url(${bannerUrl})`;
       banner.style.backgroundPositionY = bannerPos;
-      banner.className = 'profile-banner bn-custom';
+      banner.className = 'profile-banner bn-custom banner-clicavel';
+      banner.title = 'Ver banner';
+      banner.addEventListener('click', () => abrirLightbox(bannerUrl, `Banner de ${nome}`));
     } else {
       const bnClass = isPro ? 'bn-pro' : (bannerMap[cor] || '');
       banner.className = 'profile-banner' + (bnClass ? ` ${bnClass}` : '');

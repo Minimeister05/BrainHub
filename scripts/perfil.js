@@ -114,8 +114,10 @@ function atualizarPreview({ nome, curso, faculdade, periodo, bio, corAvatar, fot
   if (_isPro && urlBanner) {
     banner.style.backgroundImage = `url(${urlBanner})`
     banner.style.backgroundPositionY = _bannerPos
-    banner.className = 'perfil-banner bn-custom'
+    banner.className = 'perfil-banner bn-custom banner-clicavel'
+    banner.onclick = () => abrirLightbox(urlBanner, 'Banner')
   } else {
+    banner.onclick = null
     banner.style.backgroundImage = ''
     banner.style.backgroundPositionY = ''
     const bnClass = _isPro ? 'bn-pro' : (bannerMap[corAvatar] || '')
@@ -747,7 +749,7 @@ document.querySelectorAll('.perfil-right-tab').forEach(tab => {
     document.getElementById('tabPosts').style.display      = nome === 'posts'      ? '' : 'none'
     document.getElementById('tabStats').style.display      = nome === 'stats'      ? '' : 'none'
     document.getElementById('tabTitulos').style.display    = nome === 'titulos'    ? '' : 'none'
-    document.getElementById('tabExercicios').style.display = nome === 'exercicios' ? '' : 'none'
+
     if (nome === 'posts' && !postsCarregados) {
       postsCarregados = true
       carregarMeusPosts()
@@ -757,10 +759,6 @@ document.querySelectorAll('.perfil-right-tab').forEach(tab => {
       carregarEstatisticas()
     }
     if (nome === 'titulos') carregarTitulos()
-    if (nome === 'exercicios' && !exCarregado) {
-      exCarregado = true
-      carregarStatsExercicios()
-    }
   })
 })
 
