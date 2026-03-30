@@ -1718,15 +1718,13 @@ body {
 
 /* ===== LIGHTBOX (compartilhado) ===== */
 .lightbox-dialog {
-  border: none; background: transparent; padding: 0;
-  max-width: 100vw; max-height: 100vh; width: 100vw; height: 100vh;
-  display: flex; align-items: center; justify-content: center;
+  border: none; background: transparent; padding: 0; overflow: visible;
   animation: lb-fade 0.15s ease;
 }
-.lightbox-dialog::backdrop { background: rgba(0,0,0,0.88); backdrop-filter: blur(6px); }
+.lightbox-dialog::backdrop { background: rgba(0,0,0,0.82); backdrop-filter: blur(8px); }
 @keyframes lb-fade { from { opacity: 0 } to { opacity: 1 } }
-.lightbox-dialog .lightbox-box { position: relative; max-width: 90vw; max-height: 90vh; }
-.lightbox-dialog .lightbox-box img { display: block; max-width: 90vw; max-height: 85vh; border-radius: 16px; object-fit: contain; box-shadow: 0 8px 48px rgba(0,0,0,0.6); }
+.lightbox-dialog .lightbox-box { position: relative; }
+.lightbox-dialog .lightbox-box img { display: block; max-width: min(420px, 88vw); max-height: 70vh; border-radius: 18px; object-fit: contain; box-shadow: 0 12px 56px rgba(0,0,0,0.7); }
 .lightbox-dialog .lightbox-close { position: absolute; top: -14px; right: -14px; width: 36px; height: 36px; border-radius: 50%; background: rgba(30,30,36,0.95); border: 1px solid rgba(255,255,255,0.12); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.15s; }
 .lightbox-dialog .lightbox-close:hover { background: rgba(60,60,70,0.95); }
 .lightbox-dialog .lightbox-close i { width: 16px; height: 16px; }
