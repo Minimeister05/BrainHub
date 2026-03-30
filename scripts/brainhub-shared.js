@@ -27,9 +27,10 @@ function getPerfilAtual() {
   const faculdade = perfil?.faculdade || '';
   const periodo = perfil?.periodo || '';
   const corAvatar = perfil?.corAvatar || '';
+  const fotoUrl = perfil?.fotoUrl || null;
   const isPro = localStorage.getItem('brainhub_pro') === 'true';
   const iniciais = nome.split(' ').map(p => p[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
-  return { nome, curso, faculdade, periodo, corAvatar, iniciais, isPro, email: sessao?.email || '' };
+  return { nome, curso, faculdade, periodo, corAvatar, fotoUrl, iniciais, isPro, email: sessao?.email || '' };
 }
 
 // Aplica dados do perfil nos elementos comuns do sidebar
@@ -38,7 +39,15 @@ function aplicarPerfilNoSidebar() {
   const avatarEl = document.querySelector('.profile-avatar');
   const nomeEl   = document.querySelector('.profile-card h2');
   const subEl    = document.querySelector('.profile-card > p');
-  if (avatarEl) { avatarEl.textContent = u.iniciais; avatarEl.className = `profile-avatar ${u.corAvatar}`; }
+  if (avatarEl) {
+    if (u.fotoUrl) {
+      avatarEl.innerHTML = `<img src="${u.fotoUrl}" alt="foto" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
+      avatarEl.className = `profile-avatar av-foto`;
+    } else {
+      avatarEl.textContent = u.iniciais;
+      avatarEl.className = `profile-avatar ${u.corAvatar}`;
+    }
+  }
   if (nomeEl) {
     nomeEl.innerHTML = u.nome + (u.isPro
       ? ' <span class="pro-badge-inline"><i data-lucide="crown"></i> PRO</span><span class="verified-inline" title="Verificado"><i data-lucide="badge-check"></i></span>'
@@ -46,7 +55,15 @@ function aplicarPerfilNoSidebar() {
   }
   if (subEl) subEl.textContent = [u.curso, u.faculdade, u.periodo].filter(Boolean).join(' • ');
   const miniAvatar = document.querySelector('.create-top .mini-avatar');
-  if (miniAvatar) { miniAvatar.textContent = u.iniciais; miniAvatar.className = `mini-avatar ${u.corAvatar}`; }
+  if (miniAvatar) {
+    if (u.fotoUrl) {
+      miniAvatar.innerHTML = `<img src="${u.fotoUrl}" alt="foto" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
+      miniAvatar.className = `mini-avatar av-foto`;
+    } else {
+      miniAvatar.textContent = u.iniciais;
+      miniAvatar.className = `mini-avatar ${u.corAvatar}`;
+    }
+  }
   lucide.createIcons();
 }
 

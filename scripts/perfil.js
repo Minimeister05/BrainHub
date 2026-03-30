@@ -1,6 +1,10 @@
 lucide.createIcons()
 
 let _isPro = false
+let _fotoUrl    = null  // URL salva no DB
+let _bannerUrl  = null  // URL salva no DB
+let _fotoFile   = null  // arquivo pendente de upload
+let _bannerFile = null  // arquivo pendente de upload
 
 function confirmarExclusao(mensagem = 'Esta ação não pode ser desfeita.') {
   return new Promise((resolve) => {
@@ -69,19 +73,67 @@ const bannerMap = {
   'av-pro-mint':     'bn-teal',
 }
 
-function atualizarPreview({ nome, curso, faculdade, periodo, bio, corAvatar }) {
-  const iniciais = gerarIniciais(nome || '?')
+function atualizarPreview({ nome, curso, faculdade, periodo, bio, corAvatar, fotoUrl, bannerUrl }) {
   const avatarEl = document.getElementById('perfilAvatar')
-  avatarEl.textContent = iniciais
-  avatarEl.className = 'perfil-avatar' + (corAvatar ? ` ${corAvatar}` : '')
+  const urlFoto = fotoUrl !== undefined ? fotoUrl : _fotoUrl
+  if (urlFoto) {
+    avatarEl.innerHTML = `<img src="${urlFoto}" alt="foto" />`
+    avatarEl.className = 'perfil-avatar av-foto'
+  } else {
+    avatarEl.textContent = gerarIniciais(nome || '?')
+    avatarEl.className = 'perfil-avatar' + (corAvatar ? ` ${corAvatar}` : '')
+  }
+
   document.getElementById('perfilNome').textContent  = nome || '—'
   document.getElementById('perfilCurso').textContent = [curso, faculdade, periodo].filter(Boolean).join(' • ') || '—'
   document.getElementById('perfilBio').textContent   = bio  || ''
 
-  // Banner: Pro sempre gold, outros seguem avatar
+  // Banner: imagem customizada (Pro) ou gradiente por cor
   const banner = document.getElementById('perfilBanner')
-  const bnClass = _isPro ? 'bn-pro' : (bannerMap[corAvatar] || '')
-  banner.className = 'perfil-banner' + (bnClass ? ` ${bnClass}` : '')
+  const urlBanner = bannerUrl !== undefined ? bannerUrl : _bannerUrl
+  if (_isPro && urlBanner) {
+    banner.style.backgroundImage = `url(${urlBanner})`
+    banner.className = 'perfil-banner bn-custom'
+  } else {
+    banner.style.backgroundImage = ''
+    const bnClass = _isPro ? 'bn-pro' : (bannerMap[corAvatar] || '')
+    banner.className = 'perfil-banner' + (bnClass ? ` ${bnClass}` : '')
+  }
+}
+
+function atualizarFotoPreview(url) {
+  const preview = document.getElementById('fotoPreview')
+  const btnRemover = document.getElementById('btnRemoverFoto')
+  if (url) {
+    preview.innerHTML = `<img src="${url}" alt="foto" />`
+    btnRemover.style.display = 'inline-flex'
+  } else {
+    preview.innerHTML = ''
+    btnRemover.style.display = 'none'
+  }
+}
+
+function atualizarBannerPreview(url) {
+  const preview = document.getElementById('bannerPreview')
+  const btnRemover = document.getElementById('btnRemoverBanner')
+  if (url) {
+    preview.style.backgroundImage = `url(${url})`
+    preview.classList.add('has-image')
+    btnRemover.style.display = 'inline-flex'
+  } else {
+    preview.style.backgroundImage = ''
+    preview.classList.remove('has-image')
+    btnRemover.style.display = 'none'
+  }
+}
+
+async function uploadArquivo(bucket, userId, file) {
+  const ext  = file.name.split('.').pop()
+  const path = `${userId}/avatar.${ext}`
+  const { error } = await window.supabase.storage.from(bucket).upload(path, file, { upsert: true })
+  if (error) throw error
+  const { data } = window.supabase.storage.from(bucket).getPublicUrl(path)
+  return data.publicUrl + '?t=' + Date.now()
 }
 
 async function carregarDados() {
@@ -105,10 +157,12 @@ async function carregarDados() {
   const periodo   = perfil?.periodo   || ''
   const bio       = perfil?.bio       || ''
   const corAvatar = perfil?.cor_avatar || ''
+  _fotoUrl   = perfil?.foto_url   || null
+  _bannerUrl = perfil?.banner_url || null
 
   // Sincroniza localStorage com os dados do Supabase
   localStorage.setItem(`brainhub_perfil_${user.email}`, JSON.stringify({
-    nome, curso, faculdade, periodo, bio, corAvatar
+    nome, curso, faculdade, periodo, bio, corAvatar, fotoUrl: _fotoUrl
   }))
 
   document.getElementById('infoEmail').textContent    = user.email || '—'
@@ -127,8 +181,14 @@ async function carregarDados() {
   document.getElementById('verifiedBadge').style.display    = isPro ? 'inline-flex' : 'none'
   document.getElementById('proPlanCard').style.display      = isPro ? 'flex'        : 'none'
   document.getElementById('proCTACard').style.display       = isPro ? 'none'        : 'flex'
-  document.getElementById('proColorsSection').style.display = isPro ? 'block'       : 'none'
-  document.getElementById('proColorsLocked').style.display  = isPro ? 'none'        : 'flex'
+  document.getElementById('proColorsSection').style.display  = isPro ? 'block' : 'none'
+  document.getElementById('proColorsLocked').style.display   = isPro ? 'none'  : 'flex'
+  document.getElementById('proBannerSection').style.display  = isPro ? 'block' : 'none'
+  document.getElementById('proBannerLocked').style.display   = isPro ? 'none'  : 'flex'
+
+  // Preview foto e banner atuais
+  atualizarFotoPreview(_fotoUrl)
+  atualizarBannerPreview(_bannerUrl)
   document.getElementById('infoPlanoBadge').innerHTML       = isPro
     ? '<span class="info-pro-badge"><i data-lucide="crown"></i> Pro</span>'
     : 'Gratuito'
@@ -165,9 +225,34 @@ async function salvarPerfil() {
   const { data: { user } } = await window.supabase.auth.getUser()
   if (!user) return
 
+  // Upload de foto se houver arquivo novo
+  if (_fotoFile) {
+    try {
+      _fotoUrl = await uploadArquivo('avatars', user.id, _fotoFile)
+      _fotoFile = null
+    } catch (e) {
+      mostrarToast('Erro ao enviar foto.', 'error')
+      console.error(e)
+      return
+    }
+  }
+
+  // Upload de banner se houver arquivo novo (só Pro)
+  if (_bannerFile && _isPro) {
+    try {
+      _bannerUrl = await uploadArquivo('banners', user.id, _bannerFile)
+      _bannerFile = null
+    } catch (e) {
+      mostrarToast('Erro ao enviar banner.', 'error')
+      console.error(e)
+      return
+    }
+  }
+
   const { error } = await window.supabase
     .from('profiles')
-    .upsert({ id: user.id, nome, curso, faculdade, periodo, bio, cor_avatar: corAvatar })
+    .upsert({ id: user.id, nome, curso, faculdade, periodo, bio, cor_avatar: corAvatar,
+              foto_url: _fotoUrl, banner_url: _bannerUrl })
 
   if (error) {
     mostrarToast('Erro ao salvar perfil.', 'error')
@@ -177,7 +262,7 @@ async function salvarPerfil() {
 
   // Mantém localStorage como cache
   localStorage.setItem(`brainhub_perfil_${user.email}`, JSON.stringify({
-    nome, curso, faculdade, periodo, bio, corAvatar
+    nome, curso, faculdade, periodo, bio, corAvatar, fotoUrl: _fotoUrl
   }))
 
   atualizarPreview({ nome, curso, faculdade, periodo, bio, corAvatar })
@@ -252,6 +337,94 @@ document.getElementById('colorPickerPro')?.addEventListener('click', (e) => {
 })
 
 document.getElementById('btnSalvar').addEventListener('click', salvarPerfil)
+
+// ===== UPLOAD DE FOTO =====
+document.getElementById('btnUploadFoto').addEventListener('click', () => {
+  document.getElementById('inputFoto').click()
+})
+
+document.getElementById('inputFoto').addEventListener('change', (e) => {
+  const file = e.target.files[0]
+  if (!file) return
+  if (file.size > 2 * 1024 * 1024) {
+    mostrarToast('Foto muito grande. Máximo 2MB.', 'error')
+    e.target.value = ''
+    return
+  }
+  _fotoFile = file
+  const url = URL.createObjectURL(file)
+  _fotoUrl = url
+  atualizarFotoPreview(url)
+  atualizarPreview({
+    nome: document.getElementById('inputNome').value,
+    curso: document.getElementById('inputCurso').value,
+    faculdade: document.getElementById('inputFaculdade').value,
+    periodo: document.getElementById('inputPeriodo').value,
+    bio: document.getElementById('inputBio').value,
+    corAvatar: document.querySelector('.color-opt.selected')?.dataset.cor || '',
+    fotoUrl: url
+  })
+})
+
+document.getElementById('btnRemoverFoto').addEventListener('click', () => {
+  _fotoFile = null
+  _fotoUrl  = null
+  document.getElementById('inputFoto').value = ''
+  atualizarFotoPreview(null)
+  atualizarPreview({
+    nome: document.getElementById('inputNome').value,
+    curso: document.getElementById('inputCurso').value,
+    faculdade: document.getElementById('inputFaculdade').value,
+    periodo: document.getElementById('inputPeriodo').value,
+    bio: document.getElementById('inputBio').value,
+    corAvatar: document.querySelector('.color-opt.selected')?.dataset.cor || '',
+    fotoUrl: null
+  })
+})
+
+// ===== UPLOAD DE BANNER (Pro) =====
+document.getElementById('btnUploadBanner').addEventListener('click', () => {
+  document.getElementById('inputBanner').click()
+})
+
+document.getElementById('inputBanner').addEventListener('change', (e) => {
+  const file = e.target.files[0]
+  if (!file) return
+  if (file.size > 5 * 1024 * 1024) {
+    mostrarToast('Imagem muito grande. Máximo 5MB.', 'error')
+    e.target.value = ''
+    return
+  }
+  _bannerFile = file
+  const url = URL.createObjectURL(file)
+  _bannerUrl = url
+  atualizarBannerPreview(url)
+  atualizarPreview({
+    nome: document.getElementById('inputNome').value,
+    curso: document.getElementById('inputCurso').value,
+    faculdade: document.getElementById('inputFaculdade').value,
+    periodo: document.getElementById('inputPeriodo').value,
+    bio: document.getElementById('inputBio').value,
+    corAvatar: document.querySelector('.color-opt.selected')?.dataset.cor || '',
+    bannerUrl: url
+  })
+})
+
+document.getElementById('btnRemoverBanner').addEventListener('click', () => {
+  _bannerFile = null
+  _bannerUrl  = null
+  document.getElementById('inputBanner').value = ''
+  atualizarBannerPreview(null)
+  atualizarPreview({
+    nome: document.getElementById('inputNome').value,
+    curso: document.getElementById('inputCurso').value,
+    faculdade: document.getElementById('inputFaculdade').value,
+    periodo: document.getElementById('inputPeriodo').value,
+    bio: document.getElementById('inputBio').value,
+    corAvatar: document.querySelector('.color-opt.selected')?.dataset.cor || '',
+    bannerUrl: null
+  })
+})
 
 document.getElementById('btnEditarPerfil').addEventListener('click', () => {
   document.getElementById('inputNome').focus()

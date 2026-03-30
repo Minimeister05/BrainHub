@@ -110,9 +110,25 @@ humorDropdown?.querySelectorAll('.humor-opt').forEach(btn => {
 ;(function () {
   const u = getPerfilAtual();
   const mini = document.querySelector('.create-top .mini-avatar');
-  if (mini) { mini.textContent = u.iniciais; mini.className = `mini-avatar ${u.corAvatar}`; }
+  if (mini) {
+    if (u.fotoUrl) {
+      mini.innerHTML = `<img src="${u.fotoUrl}" alt="foto" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
+      mini.className = `mini-avatar av-foto`;
+    } else {
+      mini.textContent = u.iniciais;
+      mini.className = `mini-avatar ${u.corAvatar}`;
+    }
+  }
   const barAvatar = document.getElementById('composerAvatar');
-  if (barAvatar) { barAvatar.textContent = u.iniciais; barAvatar.className = `mini-avatar topbar-composer-avatar ${u.corAvatar}`; }
+  if (barAvatar) {
+    if (u.fotoUrl) {
+      barAvatar.innerHTML = `<img src="${u.fotoUrl}" alt="foto" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
+      barAvatar.className = `mini-avatar topbar-composer-avatar av-foto`;
+    } else {
+      barAvatar.textContent = u.iniciais;
+      barAvatar.className = `mini-avatar topbar-composer-avatar ${u.corAvatar}`;
+    }
+  }
 })();
 
 // Auto-resize do textarea
@@ -141,7 +157,11 @@ function criarPostHTML(post) {
   const perfil = post.profiles || {};
   const nome = perfil.nome || 'Usuário';
   const cor = perfil.cor_avatar || '';
+  const fotoUrl = perfil.foto_url || null;
   const iniciais = gerarIniciais(nome);
+  const avatarHTML = fotoUrl
+    ? `<div class="mini-avatar av-foto"><img src="${fotoUrl}" alt="foto" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" /></div>`
+    : `<div class="mini-avatar ${cor}">${iniciais}</div>`;
   const likesCount = post.likes?.length || 0;
   const commentsCount = post.comments?.length || 0;
   const curtido = post.likes?.some(l => l.user_id === usuarioAtual?.id) || false;
@@ -165,7 +185,7 @@ function criarPostHTML(post) {
       <div class="post-header">
         <div class="post-user">
           <a href="usuario.html?id=${post.user_id}" class="avatar-link">
-            <div class="mini-avatar ${cor}">${iniciais}</div>
+            ${avatarHTML}
           </a>
           <div>
             <h4><a href="usuario.html?id=${post.user_id}" class="author-link">${nome}</a>${verified}${proBadge}${tituloBadge}</h4>
@@ -210,7 +230,7 @@ async function carregarComentarios(postId, lista) {
   lista.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;padding:4px 0">Carregando...</p>';
   const { data } = await window.supabase
     .from('comments')
-    .select('id, user_id, texto, created_at, profiles(nome, cor_avatar)')
+    .select('id, user_id, texto, created_at, profiles(nome, cor_avatar, foto_url)')
     .eq('post_id', postId)
     .order('created_at', { ascending: true });
 
@@ -385,7 +405,7 @@ async function renderizarPosts() {
     .from('posts')
     .select(`
       id, user_id, texto, area, tipo, created_at, imagem_url, arquivo_url, arquivo_nome, humor,
-      profiles!posts_user_id_fkey(nome, cor_avatar, curso, faculdade, periodo, is_pro, titulo_ativo),
+      profiles!posts_user_id_fkey(nome, cor_avatar, foto_url, curso, faculdade, periodo, is_pro, titulo_ativo),
       likes(user_id),
       comments(id)
     `)

@@ -179,6 +179,24 @@
           <textarea id="inputBio" placeholder="Conte um pouco sobre você..." maxlength="160" rows="3"></textarea>
         </div>
 
+        <!-- Foto de perfil -->
+        <div class="form-field">
+          <label><i data-lucide="camera"></i> Foto de perfil</label>
+          <div class="foto-upload-area">
+            <div class="foto-preview" id="fotoPreview"></div>
+            <div class="foto-upload-actions">
+              <button type="button" class="btn-upload-foto" id="btnUploadFoto">
+                <i data-lucide="upload"></i> Escolher foto
+              </button>
+              <button type="button" class="btn-remove-foto" id="btnRemoverFoto" style="display:none">
+                <i data-lucide="x"></i> Remover
+              </button>
+              <input type="file" id="inputFoto" accept="image/jpeg,image/png,image/webp" style="display:none" />
+              <span class="foto-hint">JPG, PNG ou WebP · máx 2MB</span>
+            </div>
+          </div>
+        </div>
+
         <!-- Cor do avatar -->
         <div class="form-field">
           <label><i data-lucide="palette"></i> Cor do avatar</label>
@@ -230,6 +248,29 @@
           <div class="pro-colors-locked" id="proColorsLocked">
             <i data-lucide="lock"></i>
             <span>Cores exclusivas disponíveis no <a href="planos.html">BrainHUB Pro</a></span>
+          </div>
+
+          <!-- Banner customizado Pro -->
+          <div class="pro-banner-upload" id="proBannerSection" style="display:none">
+            <div class="pro-colors-label" style="margin-top:16px"><i data-lucide="image"></i> Banner do perfil</div>
+            <div class="banner-upload-area">
+              <div class="banner-preview" id="bannerPreview"></div>
+              <div class="foto-upload-actions">
+                <button type="button" class="btn-upload-foto" id="btnUploadBanner">
+                  <i data-lucide="upload"></i> Escolher imagem
+                </button>
+                <button type="button" class="btn-remove-foto" id="btnRemoverBanner" style="display:none">
+                  <i data-lucide="x"></i> Remover
+                </button>
+                <input type="file" id="inputBanner" accept="image/jpeg,image/png,image/webp" style="display:none" />
+                <span class="foto-hint">JPG, PNG ou WebP · máx 5MB</span>
+              </div>
+            </div>
+          </div>
+          <!-- Banner bloqueado para não-Pro -->
+          <div class="pro-colors-locked" id="proBannerLocked">
+            <i data-lucide="lock"></i>
+            <span>Banner customizado disponível no <a href="planos.html">BrainHUB Pro</a></span>
           </div>
         </div>
 

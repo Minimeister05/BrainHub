@@ -64,6 +64,10 @@
   transition: 0.3s;
 }
 
+/* Avatar com foto */
+.perfil-avatar.av-foto { background: none; overflow: hidden; }
+.perfil-avatar.av-foto img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
+
 /* Classes de cor do avatar */
 .perfil-avatar.av-green  { background: linear-gradient(135deg, #26d0a8, #119f7f); }
 .perfil-avatar.av-pink   { background: linear-gradient(135deg, #ff6ec7, #b63cff); }
@@ -1218,3 +1222,103 @@
 .titulo-usar-btn:hover {
   background: color-mix(in srgb, var(--titulo-cor, #7c5cff) 15%, transparent);
 }
+
+/* ===== BANNER CUSTOMIZADO (Pro) ===== */
+.perfil-banner.bn-custom {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* ===== UPLOAD DE FOTO / BANNER ===== */
+.foto-upload-area {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.foto-preview {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+  border: 2px dashed var(--border);
+  flex-shrink: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.foto-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+}
+
+.foto-upload-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-upload-foto {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(124,92,255,0.4);
+  background: rgba(124,92,255,0.1);
+  color: #c4b7ff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.15s;
+}
+.btn-upload-foto:hover { background: rgba(124,92,255,0.2); }
+.btn-upload-foto i { width: 13px; height: 13px; }
+
+.btn-remove-foto {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(248,113,113,0.3);
+  background: transparent;
+  color: #f87171;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.15s;
+}
+.btn-remove-foto:hover { background: rgba(248,113,113,0.08); }
+.btn-remove-foto i { width: 13px; height: 13px; }
+
+.foto-hint {
+  width: 100%;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.banner-upload-area {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.banner-preview {
+  width: 100%;
+  height: 64px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.04);
+  border: 2px dashed var(--border);
+  background-size: cover;
+  background-position: center;
+  transition: 0.2s;
+}
+.banner-preview.has-image { border-style: solid; border-color: rgba(124,92,255,0.3); }
