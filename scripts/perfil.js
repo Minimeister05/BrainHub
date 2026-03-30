@@ -1,20 +1,21 @@
 lucide.createIcons()
 
-// Lightbox local (brainhub-shared não é carregado nesta página)
+// Lightbox local (usa <dialog> para garantir top-layer independente de backdrop-filter/overflow)
 function abrirLightbox(url, alt) {
-  const overlay = document.createElement('div')
-  overlay.className = 'lightbox-overlay'
-  overlay.innerHTML = `
+  const dialog = document.createElement('dialog')
+  dialog.className = 'lightbox-dialog'
+  dialog.innerHTML = `
     <div class="lightbox-box">
       <img src="${url}" alt="${alt || 'foto'}" />
       <button class="lightbox-close" aria-label="Fechar"><i data-lucide="x"></i></button>
     </div>`
-  document.body.appendChild(overlay)
+  document.body.appendChild(dialog)
+  dialog.showModal()
   lucide.createIcons()
-  const fechar = () => overlay.remove()
-  overlay.querySelector('.lightbox-close').addEventListener('click', fechar)
-  overlay.addEventListener('click', (e) => { if (e.target === overlay) fechar() })
-  document.addEventListener('keydown', function esc(e) { if (e.key === 'Escape') { fechar(); document.removeEventListener('keydown', esc) } })
+  const fechar = () => { dialog.close(); dialog.remove() }
+  dialog.querySelector('.lightbox-close').addEventListener('click', fechar)
+  dialog.addEventListener('click', (e) => { if (e.target === dialog) fechar() })
+  dialog.addEventListener('cancel', fechar)
 }
 
 let _isPro = false
