@@ -202,6 +202,7 @@ function configurarCompositor() {
     input.style.height = 'auto';
     input.style.height = input.scrollHeight + 'px';
   });
+  if (input) ativarMencoes(input, document.getElementById('gdPostInputDrop'));
 
   // Botões de mídia
   const preview    = document.getElementById('gdComposerPreview');
@@ -655,7 +656,7 @@ async function carregarComentarios(postId, lista) {
       repliesDiv.appendChild(rf);
       const rInput = rf.querySelector('.reply-input');
       const rDrop  = rf.querySelector('.mention-dropdown');
-      rInput.value = parentUid ? `@[${parentNome}|${parentUid}] ` : `@${parentNome} `;
+      rInput.value = `@${parentNome} `;
       rInput.focus();
       rInput.setSelectionRange(rInput.value.length, rInput.value.length);
       ativarMencoes(rInput, rDrop);

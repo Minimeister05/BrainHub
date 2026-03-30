@@ -136,6 +136,7 @@ postInput?.addEventListener('input', () => {
   postInput.style.height = 'auto';
   postInput.style.height = postInput.scrollHeight + 'px';
 });
+if (postInput) ativarMencoes(postInput, document.getElementById('postInputDrop'));
 
 function gerarIniciais(nome) {
   return (nome || '?').split(' ').map(p => p[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
@@ -336,7 +337,7 @@ async function carregarComentarios(postId, lista) {
   lista.querySelectorAll('.comment-reply-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const parentId   = btn.dataset.id;
-      const parentUid  = btn.dataset.uid;
+
       const parentNome = btn.dataset.nome;
       lista.querySelectorAll('.reply-form').forEach(f => f.remove());
       const parentEl  = lista.querySelector(`[data-id="${parentId}"]`);
@@ -354,7 +355,7 @@ async function carregarComentarios(postId, lista) {
       repliesDiv.appendChild(rf);
       const rInput = rf.querySelector('.reply-input');
       const rDrop  = rf.querySelector('.mention-dropdown');
-      rInput.value = parentUid ? `@[${parentNome}|${parentUid}] ` : `@${parentNome} `;
+      rInput.value = `@${parentNome} `;
       rInput.focus();
       rInput.setSelectionRange(rInput.value.length, rInput.value.length);
       ativarMencoes(rInput, rDrop);

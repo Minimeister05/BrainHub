@@ -87,7 +87,10 @@
           <div class="composer-body">
             <div class="create-top" style="padding:0;border:none">
               <div class="mini-avatar" id="composerAvatarModal">?</div>
-              <textarea id="postInput" placeholder="No que você está pensando?" rows="3" style="resize:none"></textarea>
+              <div style="position:relative;flex:1">
+                <textarea id="postInput" placeholder="No que você está pensando? Use @ para mencionar" rows="3" style="resize:none;width:100%"></textarea>
+                <div class="mention-dropdown" id="postInputDrop"></div>
+              </div>
             </div>
 
             <div id="composerPreview" style="display:none;padding:8px 0;gap:10px;align-items:center">

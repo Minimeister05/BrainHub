@@ -98,7 +98,10 @@
           <button class="icon-btn attach-btn" id="attachBtn" title="Enviar arquivo">
             <i data-lucide="paperclip"></i>
           </button>
-          <input type="text" id="msgInput" placeholder="Escreva uma mensagem..." />
+          <div style="position:relative;flex:1">
+            <input type="text" id="msgInput" placeholder="Escreva uma mensagem… use @ para mencionar" style="width:100%;box-sizing:border-box" />
+            <div class="mention-dropdown" id="msgInputDrop"></div>
+          </div>
           <button class="send-btn" id="sendBtn">
             <i data-lucide="send"></i>
           </button>

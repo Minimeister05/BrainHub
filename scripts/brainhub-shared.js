@@ -471,3 +471,59 @@ function confirmarExclusao(mensagem = 'Esta ação não pode ser desfeita.') {
     })
   })
 }
+
+// ===== @MENÇÕES — utilitários compartilhados =====
+function _escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function _gerarIniciais(nome) {
+  return (nome || '?').split(' ').map(p => p[0]).filter(Boolean).slice(0,2).join('').toUpperCase();
+}
+// Regex para nomes com acentos, espaços não inclusos
+const MENTION_AT_RE = /@([\wÀ-ÿ]{1,30})$/;
+
+function ativarMencoes(input, dropdown) {
+  if (!input || !dropdown) return;
+  let timer = null;
+  input.addEventListener('input', () => {
+    clearTimeout(timer);
+    const val    = input.value;
+    const pos    = input.selectionStart ?? val.length;
+    const before = val.slice(0, pos);
+    const match  = before.match(MENTION_AT_RE);
+    if (!match) { dropdown.style.display = 'none'; return; }
+    const q = match[1];
+    timer = setTimeout(async () => {
+      if (!window.supabase) return;
+      const { data } = await window.supabase
+        .from('profiles').select('id, nome, cor_avatar, foto_url')
+        .ilike('nome', `%${q}%`).limit(5);
+      if (!data?.length) { dropdown.style.display = 'none'; return; }
+      dropdown.innerHTML = data.map(p => {
+        const ini  = _gerarIniciais(p.nome || 'U');
+        const avEl = p.foto_url
+          ? `<div class="mention-item-av"><img src="${p.foto_url}" /></div>`
+          : `<div class="mention-item-av ${p.cor_avatar || ''}">${ini}</div>`;
+        return `<div class="mention-item" data-id="${p.id}" data-nome="${_escapeHtml(p.nome||'Usuário')}">${avEl}<span class="mention-item-nome">${_escapeHtml(p.nome||'Usuário')}</span></div>`;
+      }).join('');
+      dropdown.style.display = 'block';
+      dropdown.querySelectorAll('.mention-item').forEach(item => {
+        item.addEventListener('mousedown', e => {
+          e.preventDefault();
+          const id   = item.dataset.id;
+          const nome = item.dataset.nome;
+          const cur  = input.selectionStart ?? input.value.length;
+          const newVal = input.value.slice(0, cur).replace(MENTION_AT_RE, `@[${nome}|${id}] `) + input.value.slice(cur);
+          input.value = newVal;
+          const np = newVal.indexOf(`@[${nome}|${id}] `) + `@[${nome}|${id}] `.length;
+          input.setSelectionRange(np, np);
+          input.focus();
+          dropdown.style.display = 'none';
+        });
+      });
+    }, 200);
+  });
+  input.addEventListener('blur',    () => setTimeout(() => { dropdown.style.display = 'none'; }, 150));
+  input.addEventListener('keydown', e => { if (e.key === 'Escape') dropdown.style.display = 'none'; });
+}

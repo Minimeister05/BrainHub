@@ -894,6 +894,7 @@ document.getElementById('sendBtn').addEventListener('click', enviarMensagem);
 document.getElementById('msgInput').addEventListener('keydown', e => {
   if (e.key === 'Enter') { e.preventDefault(); enviarMensagem(); }
 });
+ativarMencoes(document.getElementById('msgInput'), document.getElementById('msgInputDrop'));
 document.querySelectorAll('.chat-tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.chat-tab').forEach(t => t.classList.remove('active'));

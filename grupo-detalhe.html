@@ -73,12 +73,16 @@
         <div class="gd-composer hidden" id="gdComposer">
           <div class="create-top" style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
             <div class="mini-avatar" id="composerAvatar">?</div>
-            <textarea
-              id="gdPostInput"
-              class="post-composer"
-              placeholder="Compartilhe algo com o grupo..."
-              rows="1"
-            ></textarea>
+            <div style="position:relative;flex:1">
+              <textarea
+                id="gdPostInput"
+                class="post-composer"
+                placeholder="Compartilhe algo com o grupo… use @ para mencionar"
+                rows="1"
+                style="width:100%"
+              ></textarea>
+              <div class="mention-dropdown" id="gdPostInputDrop"></div>
+            </div>
           </div>
 
           <!-- Preview de mídia selecionada -->
