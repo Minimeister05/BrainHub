@@ -948,6 +948,11 @@
 
   /* Barra de ações rápidas mobile (Salvos, Config, Sair) */
   .perfil-mobile-actions { display: flex; }
+
+  /* Abas: só ícone no mobile pra não vazar pros lados */
+  .perfil-right-tabs { gap: 4px; padding: 4px; }
+  .perfil-right-tab { padding: 10px; gap: 0; }
+  .perfil-right-tab .tab-label { display: none; }
 }
 
 .perfil-mob-btn {
