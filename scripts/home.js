@@ -141,6 +141,71 @@ function gerarIniciais(nome) {
   return (nome || '?').split(' ').map(p => p[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
 }
 
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function renderMencoes(textoEscapado) {
+  return textoEscapado.replace(/@\[([^\]|]+)\|([a-f0-9-]{36})\]/g, (_, nome, id) =>
+    `<a href="usuario.html?id=${id}" class="mention">@${nome}</a>`
+  );
+}
+
+function miniAvHTML(profile, size = 30) {
+  const ini  = gerarIniciais(profile?.nome || 'U');
+  const cor  = profile?.cor_avatar || '';
+  const foto = profile?.foto_url;
+  const fs   = size < 28 ? '0.62rem' : '0.7rem';
+  const s    = size !== 30 ? `style="width:${size}px;height:${size}px;font-size:${fs}"` : '';
+  return foto
+    ? `<div class="comment-mini-av" ${s}><img src="${foto}" alt="" /></div>`
+    : `<div class="comment-mini-av ${cor}" ${s}>${ini}</div>`;
+}
+
+function ativarMencoes(input, dropdown) {
+  let timer = null;
+  input.addEventListener('input', () => {
+    clearTimeout(timer);
+    const val    = input.value;
+    const pos    = input.selectionStart ?? val.length;
+    const before = val.slice(0, pos);
+    const match  = before.match(/@(\w{1,20})$/);
+    if (!match) { dropdown.style.display = 'none'; return; }
+    const q = match[1];
+    timer = setTimeout(async () => {
+      const { data } = await window.supabase
+        .from('profiles').select('id, nome, cor_avatar, foto_url')
+        .ilike('nome', `%${q}%`).limit(5);
+      if (!data?.length) { dropdown.style.display = 'none'; return; }
+      dropdown.innerHTML = data.map(p => {
+        const ini   = gerarIniciais(p.nome || 'U');
+        const avEl  = p.foto_url
+          ? `<div class="mention-item-av"><img src="${p.foto_url}" /></div>`
+          : `<div class="mention-item-av ${p.cor_avatar || ''}">${ini}</div>`;
+        return `<div class="mention-item" data-id="${p.id}" data-nome="${escapeHtml(p.nome||'Usuário')}">${avEl}<span class="mention-item-nome">${escapeHtml(p.nome||'Usuário')}</span></div>`;
+      }).join('');
+      dropdown.style.display = 'block';
+      dropdown.querySelectorAll('.mention-item').forEach(item => {
+        item.addEventListener('mousedown', e => {
+          e.preventDefault();
+          const id   = item.dataset.id;
+          const nome = item.dataset.nome;
+          const cur  = input.selectionStart ?? input.value.length;
+          const newVal = input.value.slice(0, cur).replace(/@\w{0,20}$/, `@[${nome}|${id}] `) + input.value.slice(cur);
+          input.value = newVal;
+          const np = newVal.indexOf(`@[${nome}|${id}] `) + `@[${nome}|${id}] `.length;
+          input.setSelectionRange(np, np);
+          input.focus();
+          dropdown.style.display = 'none';
+        });
+      });
+    }, 200);
+  });
+  input.addEventListener('blur',    () => setTimeout(() => { dropdown.style.display = 'none'; }, 150));
+  input.addEventListener('keydown', e => { if (e.key === 'Escape') dropdown.style.display = 'none'; });
+}
+
 function tempoRelativo(dataStr) {
   const diff = Date.now() - new Date(dataStr).getTime();
   const min = Math.floor(diff / 60000);
@@ -214,41 +279,100 @@ function criarPostHTML(post) {
       </div>
       <div class="comments-section hidden">
         <div class="comments-list"></div>
-        <div class="comment-form" style="display:flex;align-items:center;gap:8px;margin-top:8px">
-          <input type="text" class="comment-input" placeholder="Escreva um comentário..."
-            style="background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,0.2);color:white;outline:none;flex:1"/>
-          <button class="comment-send"
-            style="background:#23232b;border:1px solid rgba(255,255,255,0.16);color:white;padding:8px 16px;border-radius:12px;cursor:pointer;font-weight:500;">
-            Enviar
-          </button>
+        <div class="comment-form">
+          <div class="comment-input-wrap">
+            <input type="text" class="comment-input" placeholder="Comentar… use @ para mencionar" />
+            <div class="mention-dropdown"></div>
+          </div>
+          <button class="comment-send">Enviar</button>
         </div>
       </div>
     </article>`;
 }
 
 async function carregarComentarios(postId, lista) {
-  lista.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;padding:4px 0">Carregando...</p>';
+  lista.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;padding:8px 0">Carregando…</p>';
   const { data } = await window.supabase
     .from('comments')
-    .select('id, user_id, texto, created_at, profiles(nome, cor_avatar, foto_url)')
+    .select('id, user_id, texto, created_at, parent_id, profiles(nome, cor_avatar, foto_url)')
     .eq('post_id', postId)
     .order('created_at', { ascending: true });
 
   if (!data || data.length === 0) {
-    lista.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;padding:4px 0">Nenhum comentário ainda.</p>';
+    lista.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;padding:8px 0">Nenhum comentário ainda.</p>';
     return;
   }
 
-  lista.innerHTML = data.map(c => {
-    const nome = c.profiles?.nome || 'Usuário';
-    const uid  = c.user_id;
-    return `<div class="comment-item">
-      <a href="usuario.html?id=${uid}" class="comment-author-link">
-        <strong class="comment-author">${nome}</strong>
-      </a>
-      <p class="comment-text">${c.texto}</p>
+  const topLevel = data.filter(c => !c.parent_id);
+  const replies  = data.filter(c => c.parent_id);
+
+  function renderItem(c, isReply) {
+    const nome  = escapeHtml(c.profiles?.nome || 'Usuário');
+    const texto = renderMencoes(escapeHtml(c.texto));
+    const tempo = tempoRelativo(c.created_at);
+    const av    = miniAvHTML(c.profiles, isReply ? 26 : 30);
+    const cls   = isReply ? 'comment-reply-item' : 'comment-item';
+    const parentId = isReply ? c.parent_id : c.id;
+    const childHTML = isReply ? '' :
+      replies.filter(r => r.parent_id === c.id).map(r => renderItem(r, true)).join('');
+    return `<div class="${cls}" data-id="${c.id}">
+      ${av}
+      <div class="comment-body">
+        <div class="comment-meta">
+          <a href="usuario.html?id=${c.user_id}" class="comment-nome">${nome}</a>
+          <span class="comment-time">${tempo}</span>
+        </div>
+        <p class="comment-text">${texto}</p>
+        <div class="comment-footer">
+          <button class="comment-reply-btn" data-id="${parentId}" data-uid="${c.user_id}" data-nome="${nome}">Responder</button>
+        </div>
+        ${isReply ? '' : `<div class="comment-replies">${childHTML}</div>`}
+      </div>
     </div>`;
-  }).join('');
+  }
+
+  lista.innerHTML = topLevel.map(c => renderItem(c, false)).join('');
+
+  lista.querySelectorAll('.comment-reply-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const parentId   = btn.dataset.id;
+      const parentUid  = btn.dataset.uid;
+      const parentNome = btn.dataset.nome;
+      lista.querySelectorAll('.reply-form').forEach(f => f.remove());
+      const parentEl  = lista.querySelector(`[data-id="${parentId}"]`);
+      const repliesDiv = parentEl?.querySelector('.comment-replies');
+      if (!repliesDiv) return;
+      const rf = document.createElement('div');
+      rf.className = 'reply-form';
+      rf.innerHTML = `
+        <div class="reply-input-wrap">
+          <input class="reply-input" type="text" />
+          <div class="mention-dropdown"></div>
+        </div>
+        <button class="reply-send">Enviar</button>
+        <button class="reply-cancel">✕</button>`;
+      repliesDiv.appendChild(rf);
+      const rInput = rf.querySelector('.reply-input');
+      const rDrop  = rf.querySelector('.mention-dropdown');
+      rInput.value = parentUid ? `@[${parentNome}|${parentUid}] ` : `@${parentNome} `;
+      rInput.focus();
+      rInput.setSelectionRange(rInput.value.length, rInput.value.length);
+      ativarMencoes(rInput, rDrop);
+      rf.querySelector('.reply-cancel').addEventListener('click', () => rf.remove());
+      const enviarReply = async () => {
+        if (!usuarioAtual) return;
+        const texto = rInput.value.trim();
+        if (!texto) return;
+        rf.remove();
+        await window.supabase.from('comments').insert({
+          user_id: usuarioAtual.id, post_id: postId, parent_id: parentId, texto
+        });
+        await carregarComentarios(postId, lista);
+      };
+      rf.querySelector('.reply-send').addEventListener('click', enviarReply);
+      rInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); enviarReply(); } });
+    });
+  });
 }
 
 function ativarEventosPosts() {
@@ -289,8 +413,11 @@ function ativarEventosPosts() {
     });
 
     // Enviar comentário
-    const input   = card.querySelector('.comment-input');
-    const sendBtn = card.querySelector('.comment-send');
+    const input    = card.querySelector('.comment-input');
+    const dropdown = card.querySelector('.mention-dropdown');
+    const sendBtn  = card.querySelector('.comment-send');
+
+    ativarMencoes(input, dropdown);
 
     const enviar = async () => {
       if (!usuarioAtual) return;
