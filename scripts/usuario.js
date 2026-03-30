@@ -237,7 +237,9 @@ async function init() {
   if (banner) {
     if (isPro && bannerUrl) {
       banner.style.backgroundImage = `url(${bannerUrl})`;
-      banner.style.backgroundPositionY = bannerPos;
+      banner.style.backgroundSize = 'cover';
+      banner.style.backgroundPosition = `center ${bannerPos}`;
+      banner.style.backgroundRepeat = 'no-repeat';
       banner.className = 'profile-banner bn-custom banner-clicavel';
       banner.title = 'Ver banner';
       banner.addEventListener('click', () => abrirLightbox(bannerUrl, `Banner de ${nome}`));
