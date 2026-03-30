@@ -957,6 +957,12 @@
   .perfil-right-tabs { gap: 4px; padding: 4px; }
   .perfil-right-tab { padding: 10px; gap: 0; }
   .perfil-right-tab .tab-label { display: none; }
+
+  /* Foto upload: mantém o círculo pequeno, não deixa crescer */
+  .foto-upload-area { align-items: flex-start; }
+  .foto-preview { width: 52px; height: 52px; min-width: 52px; min-height: 52px; }
+  .foto-preview img { max-width: 52px; max-height: 52px; }
+  .foto-upload-actions { flex-direction: column; align-items: flex-start; }
 }
 
 .perfil-mob-btn {
@@ -1229,6 +1235,8 @@
   background-position: center;
   background-repeat: no-repeat;
 }
+/* Remove o overlay ::after que cobriria a imagem */
+.perfil-banner.bn-custom::after { content: none; }
 
 /* ===== UPLOAD DE FOTO / BANNER ===== */
 .foto-upload-area {
@@ -1385,3 +1393,54 @@
 }
 .lightbox-close:hover { background: rgba(60,60,70,0.95); }
 .lightbox-close i { width: 16px; height: 16px; }
+
+/* ===== ABA EXERCÍCIOS ===== */
+.ex-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.ex-stat-card {
+  background: rgba(31,31,39,0.92);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 18px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.ex-stat-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #c4b7ff;
+}
+
+.ex-stat-label {
+  font-size: 0.72rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.btn-ir-exercicios {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 13px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(124,92,255,0.2), rgba(124,92,255,0.1));
+  border: 1px solid rgba(124,92,255,0.35);
+  color: #c4b7ff;
+  font-size: 0.92rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: 0.2s;
+}
+.btn-ir-exercicios:hover { background: linear-gradient(135deg, rgba(124,92,255,0.3), rgba(124,92,255,0.15)); }
+.btn-ir-exercicios i { width: 16px; height: 16px; }

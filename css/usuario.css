@@ -27,6 +27,11 @@
   margin-bottom: 0;
   background: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 100%);
 }
+.usuario-profile-card .profile-banner.bn-custom {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
 
 .usuario-profile-card .perfil-avatar {
   margin-top: -30px;

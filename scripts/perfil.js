@@ -1,5 +1,22 @@
 lucide.createIcons()
 
+// Lightbox local (brainhub-shared não é carregado nesta página)
+function abrirLightbox(url, alt) {
+  const overlay = document.createElement('div')
+  overlay.className = 'lightbox-overlay'
+  overlay.innerHTML = `
+    <div class="lightbox-box">
+      <img src="${url}" alt="${alt || 'foto'}" />
+      <button class="lightbox-close" aria-label="Fechar"><i data-lucide="x"></i></button>
+    </div>`
+  document.body.appendChild(overlay)
+  lucide.createIcons()
+  const fechar = () => overlay.remove()
+  overlay.querySelector('.lightbox-close').addEventListener('click', fechar)
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) fechar() })
+  document.addEventListener('keydown', function esc(e) { if (e.key === 'Escape') { fechar(); document.removeEventListener('keydown', esc) } })
+}
+
 let _isPro = false
 let _fotoUrl       = null  // URL salva no DB
 let _bannerUrl     = null  // URL salva no DB
@@ -96,9 +113,11 @@ function atualizarPreview({ nome, curso, faculdade, periodo, bio, corAvatar, fot
   const urlBanner = bannerUrl !== undefined ? bannerUrl : _bannerUrl
   if (_isPro && urlBanner) {
     banner.style.backgroundImage = `url(${urlBanner})`
+    banner.style.backgroundPositionY = _bannerPos
     banner.className = 'perfil-banner bn-custom'
   } else {
     banner.style.backgroundImage = ''
+    banner.style.backgroundPositionY = ''
     const bnClass = _isPro ? 'bn-pro' : (bannerMap[corAvatar] || '')
     banner.className = 'perfil-banner' + (bnClass ? ` ${bnClass}` : '')
   }
@@ -691,6 +710,32 @@ async function carregarEstatisticas() {
   lucide.createIcons()
 }
 
+// ===== EXERCÍCIOS =====
+let exCarregado = false
+
+async function carregarStatsExercicios() {
+  const { data: { user } } = await window.supabase.auth.getUser()
+  if (!user) return
+
+  const { data: respostas } = await window.supabase
+    .from('respostas_usuario')
+    .select('correto, pontos_ganhos')
+    .eq('user_id', user.id)
+
+  if (!respostas) return
+
+  const total   = respostas.length
+  const acertos = respostas.filter(r => r.correto).length
+  const pontos  = respostas.reduce((s, r) => s + (r.pontos_ganhos || 0), 0)
+  const precisao = total > 0 ? Math.round((acertos / total) * 100) + '%' : '—'
+
+  document.getElementById('exTotal').textContent   = total
+  document.getElementById('exAcertos').textContent = acertos
+  document.getElementById('exPrecisao').textContent = precisao
+  document.getElementById('exPontos').textContent  = pontos
+  lucide.createIcons()
+}
+
 // ===== ABAS =====
 let postsCarregados = false
 document.querySelectorAll('.perfil-right-tab').forEach(tab => {
@@ -699,9 +744,10 @@ document.querySelectorAll('.perfil-right-tab').forEach(tab => {
     tab.classList.add('active')
     const nome = tab.dataset.tab
     document.getElementById('tabEditar').style.display  = nome === 'editar'  ? '' : 'none'
-    document.getElementById('tabPosts').style.display   = nome === 'posts'   ? '' : 'none'
-    document.getElementById('tabStats').style.display   = nome === 'stats'   ? '' : 'none'
-    document.getElementById('tabTitulos').style.display = nome === 'titulos' ? '' : 'none'
+    document.getElementById('tabPosts').style.display      = nome === 'posts'      ? '' : 'none'
+    document.getElementById('tabStats').style.display      = nome === 'stats'      ? '' : 'none'
+    document.getElementById('tabTitulos').style.display    = nome === 'titulos'    ? '' : 'none'
+    document.getElementById('tabExercicios').style.display = nome === 'exercicios' ? '' : 'none'
     if (nome === 'posts' && !postsCarregados) {
       postsCarregados = true
       carregarMeusPosts()
@@ -711,6 +757,10 @@ document.querySelectorAll('.perfil-right-tab').forEach(tab => {
       carregarEstatisticas()
     }
     if (nome === 'titulos') carregarTitulos()
+    if (nome === 'exercicios' && !exCarregado) {
+      exCarregado = true
+      carregarStatsExercicios()
+    }
   })
 })
 
