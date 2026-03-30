@@ -67,6 +67,23 @@ function aplicarPerfilNoSidebar() {
   lucide.createIcons();
 }
 
+// ===== LIGHTBOX DE FOTO =====
+function abrirLightbox(url, alt) {
+  const overlay = document.createElement('div');
+  overlay.className = 'lightbox-overlay';
+  overlay.innerHTML = `
+    <div class="lightbox-box">
+      <img src="${url}" alt="${alt || 'foto'}" />
+      <button class="lightbox-close" aria-label="Fechar"><i data-lucide="x"></i></button>
+    </div>`;
+  document.body.appendChild(overlay);
+  lucide.createIcons();
+  const fechar = () => overlay.remove();
+  overlay.querySelector('.lightbox-close').addEventListener('click', fechar);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) fechar(); });
+  document.addEventListener('keydown', function esc(e) { if (e.key === 'Escape') { fechar(); document.removeEventListener('keydown', esc); } });
+}
+
 // ===== POSTS =====
 const postsPadrao = [
   {

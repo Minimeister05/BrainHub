@@ -43,7 +43,11 @@ function criarPostHTML(post) {
   const perfil = post.profiles || {};
   const nome = perfil.nome || 'Usuário';
   const cor = perfil.cor_avatar || '';
+  const fotoUrl = perfil.foto_url || null;
   const iniciais = gerarIniciais(nome);
+  const avatarHTML = fotoUrl
+    ? `<div class="mini-avatar av-foto"><img src="${fotoUrl}" alt="foto" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" /></div>`
+    : `<div class="mini-avatar ${cor}">${iniciais}</div>`;
   const likesCount = post.likes?.length || 0;
   const commentsCount = post.comments?.length || 0;
   const curtido = post.likes?.some(l => l.user_id === usuarioAtual?.id) || false;
@@ -56,7 +60,7 @@ function criarPostHTML(post) {
       ${pinnedLabel}
       <div class="post-header">
         <div class="post-user">
-          <div class="mini-avatar ${cor}">${iniciais}</div>
+          ${avatarHTML}
           <div>
             <h4>${nome}</h4>
             <p>${tempo}</p>
@@ -209,19 +213,36 @@ async function init() {
   // Preenche header
   const nome = perfil.nome || 'Usuário';
   const cor = perfil.cor_avatar || '';
+  const fotoUrl = perfil.foto_url || null;
+  const bannerUrl = perfil.banner_url || null;
+  const bannerPos = perfil.banner_position || '50%';
   const iniciais = gerarIniciais(nome);
   const sub = [perfil.curso, perfil.faculdade, perfil.periodo].filter(Boolean).join(' • ');
 
   const isPro = perfil.is_pro === true;
 
-  document.getElementById('usuarioAvatar').textContent = iniciais;
-  document.getElementById('usuarioAvatar').className = `perfil-avatar ${cor}`;
+  const avatarEl = document.getElementById('usuarioAvatar');
+  if (fotoUrl) {
+    avatarEl.innerHTML = `<img src="${fotoUrl}" alt="foto" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;" />`;
+    avatarEl.className = 'perfil-avatar av-foto av-foto-clicavel';
+    avatarEl.title = 'Ver foto';
+    avatarEl.addEventListener('click', () => abrirLightbox(fotoUrl, nome));
+  } else {
+    avatarEl.textContent = iniciais;
+    avatarEl.className = `perfil-avatar ${cor}`;
+  }
 
-  // Banner dinâmico por cor de avatar
+  // Banner
   const banner = document.querySelector('.usuario-profile-card .profile-banner');
   if (banner) {
-    const bnClass = isPro ? 'bn-pro' : (bannerMap[cor] || '');
-    banner.className = 'profile-banner' + (bnClass ? ` ${bnClass}` : '');
+    if (isPro && bannerUrl) {
+      banner.style.backgroundImage = `url(${bannerUrl})`;
+      banner.style.backgroundPositionY = bannerPos;
+      banner.className = 'profile-banner bn-custom';
+    } else {
+      const bnClass = isPro ? 'bn-pro' : (bannerMap[cor] || '');
+      banner.className = 'profile-banner' + (bnClass ? ` ${bnClass}` : '');
+    }
   }
   if (isPro) document.querySelector('.usuario-profile-card').classList.add('pro-card');
 
@@ -330,7 +351,7 @@ async function init() {
   // Busca posts do usuário
   const { data: posts } = await window.supabase
     .from('posts')
-    .select('id, user_id, texto, created_at, pinned, imagem_url, arquivo_url, arquivo_nome, profiles!posts_user_id_fkey(nome, cor_avatar, curso, periodo, is_pro), likes(user_id), comments(id)')
+    .select('id, user_id, texto, created_at, pinned, imagem_url, arquivo_url, arquivo_nome, profiles!posts_user_id_fkey(nome, cor_avatar, foto_url, curso, periodo, is_pro), likes(user_id), comments(id)')
     .eq('user_id', targetUserId)
     .order('pinned', { ascending: false })
     .order('created_at', { ascending: false });

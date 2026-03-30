@@ -1,10 +1,11 @@
 lucide.createIcons()
 
 let _isPro = false
-let _fotoUrl    = null  // URL salva no DB
-let _bannerUrl  = null  // URL salva no DB
-let _fotoFile   = null  // arquivo pendente de upload
-let _bannerFile = null  // arquivo pendente de upload
+let _fotoUrl       = null  // URL salva no DB
+let _bannerUrl     = null  // URL salva no DB
+let _bannerPos     = '50%' // posição vertical do banner
+let _fotoFile      = null  // arquivo pendente de upload
+let _bannerFile    = null  // arquivo pendente de upload
 
 function confirmarExclusao(mensagem = 'Esta ação não pode ser desfeita.') {
   return new Promise((resolve) => {
@@ -78,8 +79,10 @@ function atualizarPreview({ nome, curso, faculdade, periodo, bio, corAvatar, fot
   const urlFoto = fotoUrl !== undefined ? fotoUrl : _fotoUrl
   if (urlFoto) {
     avatarEl.innerHTML = `<img src="${urlFoto}" alt="foto" />`
-    avatarEl.className = 'perfil-avatar av-foto'
+    avatarEl.className = 'perfil-avatar av-foto av-foto-clicavel'
+    avatarEl.onclick = () => abrirLightbox(urlFoto, document.getElementById('perfilNome').textContent)
   } else {
+    avatarEl.onclick = null
     avatarEl.textContent = gerarIniciais(nome || '?')
     avatarEl.className = 'perfil-avatar' + (corAvatar ? ` ${corAvatar}` : '')
   }
@@ -113,15 +116,18 @@ function atualizarFotoPreview(url) {
   }
 }
 
-function atualizarBannerPreview(url) {
+function atualizarBannerPreview(url, pos) {
   const preview = document.getElementById('bannerPreview')
   const btnRemover = document.getElementById('btnRemoverBanner')
+  const posicao = pos !== undefined ? pos : _bannerPos
   if (url) {
     preview.style.backgroundImage = `url(${url})`
+    preview.style.backgroundPositionY = posicao
     preview.classList.add('has-image')
     btnRemover.style.display = 'inline-flex'
   } else {
     preview.style.backgroundImage = ''
+    preview.style.backgroundPositionY = ''
     preview.classList.remove('has-image')
     btnRemover.style.display = 'none'
   }
@@ -157,8 +163,9 @@ async function carregarDados() {
   const periodo   = perfil?.periodo   || ''
   const bio       = perfil?.bio       || ''
   const corAvatar = perfil?.cor_avatar || ''
-  _fotoUrl   = perfil?.foto_url   || null
-  _bannerUrl = perfil?.banner_url || null
+  _fotoUrl   = perfil?.foto_url       || null
+  _bannerUrl = perfil?.banner_url     || null
+  _bannerPos = perfil?.banner_position || '50%'
 
   // Sincroniza localStorage com os dados do Supabase
   localStorage.setItem(`brainhub_perfil_${user.email}`, JSON.stringify({
@@ -189,6 +196,11 @@ async function carregarDados() {
   // Preview foto e banner atuais
   atualizarFotoPreview(_fotoUrl)
   atualizarBannerPreview(_bannerUrl)
+  if (_bannerUrl) {
+    const slider = document.getElementById('bannerPosition')
+    slider.value = parseInt(_bannerPos) || 50
+    document.getElementById('bannerPositionRow').style.display = 'flex'
+  }
   document.getElementById('infoPlanoBadge').innerHTML       = isPro
     ? '<span class="info-pro-badge"><i data-lucide="crown"></i> Pro</span>'
     : 'Gratuito'
@@ -252,7 +264,7 @@ async function salvarPerfil() {
   const { error } = await window.supabase
     .from('profiles')
     .upsert({ id: user.id, nome, curso, faculdade, periodo, bio, cor_avatar: corAvatar,
-              foto_url: _fotoUrl, banner_url: _bannerUrl })
+              foto_url: _fotoUrl, banner_url: _bannerUrl, banner_position: _bannerPos })
 
   if (error) {
     mostrarToast('Erro ao salvar perfil.', 'error')
@@ -398,7 +410,10 @@ document.getElementById('inputBanner').addEventListener('change', (e) => {
   _bannerFile = file
   const url = URL.createObjectURL(file)
   _bannerUrl = url
-  atualizarBannerPreview(url)
+  _bannerPos = '50%'
+  document.getElementById('bannerPosition').value = 50
+  document.getElementById('bannerPositionRow').style.display = 'flex'
+  atualizarBannerPreview(url, '50%')
   atualizarPreview({
     nome: document.getElementById('inputNome').value,
     curso: document.getElementById('inputCurso').value,
@@ -410,10 +425,21 @@ document.getElementById('inputBanner').addEventListener('change', (e) => {
   })
 })
 
+document.getElementById('bannerPosition').addEventListener('input', (e) => {
+  _bannerPos = e.target.value + '%'
+  atualizarBannerPreview(_bannerUrl, _bannerPos)
+  // Atualiza preview do banner no card do perfil em tempo real
+  const banner = document.getElementById('perfilBanner')
+  if (banner && _bannerUrl) banner.style.backgroundPositionY = _bannerPos
+})
+
 document.getElementById('btnRemoverBanner').addEventListener('click', () => {
   _bannerFile = null
   _bannerUrl  = null
+  _bannerPos  = '50%'
   document.getElementById('inputBanner').value = ''
+  document.getElementById('bannerPositionRow').style.display = 'none'
+  document.getElementById('bannerPosition').value = 50
   atualizarBannerPreview(null)
   atualizarPreview({
     nome: document.getElementById('inputNome').value,
