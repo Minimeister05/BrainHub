@@ -703,21 +703,47 @@ async function carregarMembros() {
   const perfilMap = {};
   (perfis || []).forEach(p => { perfilMap[p.id] = p; });
 
+  const euSouCriador = grupoAtual?.criador_id === usuarioAtual?.id;
+
   grid.innerHTML = memberships.map(m => {
     const p = perfilMap[m.user_id] || {};
     const iniciais = gerarIniciais(p.nome || '?');
     const sub = [p.curso, p.faculdade].filter(Boolean).join(' · ') || 'BrainHUB';
     const isCriador = grupoAtual?.criador_id === m.user_id;
+    const podeRemover = euSouCriador && !isCriador;
     return `
-      <a href="usuario.html?id=${m.user_id}" class="gd-membro-card">
-        <div class="mini-avatar ${p.cor_avatar || ''}" style="width:44px;height:44px;font-size:0.9rem;flex-shrink:0">${iniciais}</div>
-        <div style="flex:1;min-width:0">
-          <div class="gd-membro-nome">${escapeHtml(p.nome || 'Usuário')}</div>
-          <div class="gd-membro-sub">${escapeHtml(sub)}</div>
-        </div>
-        ${isCriador ? '<span class="gd-criador-badge">Criador</span>' : ''}
-      </a>`;
+      <div class="gd-membro-card">
+        <a href="usuario.html?id=${m.user_id}" class="gd-membro-inner">
+          <div class="mini-avatar ${p.cor_avatar || ''}" style="width:44px;height:44px;font-size:0.9rem;flex-shrink:0">${iniciais}</div>
+          <div style="flex:1;min-width:0">
+            <div class="gd-membro-nome">${escapeHtml(p.nome || 'Usuário')}</div>
+            <div class="gd-membro-sub">${escapeHtml(sub)}</div>
+          </div>
+          ${isCriador ? '<span class="gd-criador-badge">Criador</span>' : ''}
+        </a>
+        ${podeRemover ? `<button class="gd-remove-membro" data-uid="${m.user_id}" title="Remover membro"><i data-lucide="user-minus"></i></button>` : ''}
+      </div>`;
   }).join('');
+
+  if (euSouCriador) {
+    grid.querySelectorAll('.gd-remove-membro').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const uid = btn.dataset.uid;
+        const confirmado = await confirmarExclusao('Remover este membro do grupo?');
+        if (!confirmado) return;
+        btn.disabled = true;
+        const { error } = await window.supabase
+          .from('group_members')
+          .delete()
+          .eq('group_id', GRUPO_ID)
+          .eq('user_id', uid);
+        if (error) { btn.disabled = false; return; }
+        btn.closest('.gd-membro-card').remove();
+      });
+    });
+  }
+
+  lucide.createIcons();
 }
 
 // ===== SOBRE =====
