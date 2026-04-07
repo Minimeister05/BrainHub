@@ -236,16 +236,40 @@
 .gd-membro-card {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
+  gap: 8px;
+  padding: 10px 14px;
   background: rgba(31,31,39,0.92);
   border: 1px solid var(--border);
   border-radius: 14px;
-  text-decoration: none;
   transition: 0.18s;
 }
 
-.gd-membro-card:hover { border-color: rgba(124,92,255,0.3); transform: translateX(2px); }
+.gd-membro-card:hover { border-color: rgba(124,92,255,0.3); }
+
+.gd-membro-inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+  text-decoration: none;
+}
+
+.gd-remove-membro {
+  background: rgba(255,70,70,0.1);
+  border: 1px solid rgba(255,70,70,0.25);
+  color: #ff7070;
+  border-radius: 8px;
+  padding: 6px 8px;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  transition: 0.15s;
+}
+.gd-remove-membro:hover { background: rgba(255,70,70,0.25); color: #ff4444; }
+.gd-remove-membro:disabled { opacity: 0.4; cursor: default; }
+.gd-remove-membro i { width: 15px; height: 15px; }
 
 .gd-membro-nome {
   font-size: 0.9rem;
