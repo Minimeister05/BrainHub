@@ -438,13 +438,10 @@ async function uploadAndSendArquivo(file) {
 
   if (file.size > 25 * 1024 * 1024) { alert('Arquivo muito grande (máx 25MB).'); return; }
 
-  const ext  = file.name.split('.').pop();
-  const path = `${usuarioAtual.id}/${Date.now()}.${ext}`;
-  const { error: upErr } = await window.supabase.storage
-    .from('chat-files').upload(path, file, { cacheControl: '3600', upsert: false });
-  if (upErr) { alert('Erro ao enviar arquivo: ' + upErr.message); return; }
-
-  const { data: { publicUrl } } = window.supabase.storage.from('chat-files').getPublicUrl(path);
+  let publicUrl;
+  try {
+    publicUrl = await uploadParaCloudinary(file, 'chat');
+  } catch (e) { alert('Erro ao enviar arquivo. Tente novamente.'); return; }
 
   const isImage = file.type.startsWith('image/');
   const texto   = isImage ? `__img__:${publicUrl}` : `__file__:${file.name}||${publicUrl}`;

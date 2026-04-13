@@ -633,18 +633,15 @@ async function publicarNovoPost() {
       alert(`Arquivo muito grande! Limite: ${maxMB}MB.${!isPro ? ' Assine o Pro para enviar até 25MB.' : ''}`);
       return;
     }
-    const ext  = mediaArquivo.name.split('.').pop();
-    const path = `${usuarioAtual.id}/${Date.now()}.${ext}`;
-    const pasta = mediaTipo === 'imagem' ? 'images' : 'files';
-    const { error: upErr } = await window.supabase.storage
-      .from('post-media')
-      .upload(`${pasta}/${path}`, mediaArquivo, { upsert: false });
-    if (!upErr) {
-      const { data: { publicUrl } } = window.supabase.storage
-        .from('post-media')
-        .getPublicUrl(`${pasta}/${path}`);
+    try {
+      const publicUrl = await uploadParaCloudinary(mediaArquivo, 'posts');
       if (mediaTipo === 'imagem') imagem_url = publicUrl;
       else { arquivo_url = publicUrl; arquivo_nome = mediaArquivo.name; }
+    } catch (e) {
+      publishBtn.disabled = false;
+      publishBtn.textContent = 'Publicar';
+      alert('Erro ao enviar mídia. Tente novamente.');
+      return;
     }
   }
 

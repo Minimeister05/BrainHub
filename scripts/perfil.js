@@ -155,13 +155,9 @@ function atualizarBannerPreview(url, pos) {
   }
 }
 
-async function uploadArquivo(bucket, userId, file) {
-  const ext  = file.name.split('.').pop()
-  const path = `${userId}/avatar.${ext}`
-  const { error } = await window.supabase.storage.from(bucket).upload(path, file, { upsert: true })
-  if (error) throw error
-  const { data } = window.supabase.storage.from(bucket).getPublicUrl(path)
-  return data.publicUrl + '?t=' + Date.now()
+async function uploadArquivo(bucket, _userId, file) {
+  const folder = bucket === 'banners' ? 'banners' : 'avatars';
+  return await uploadParaCloudinary(file, folder);
 }
 
 async function carregarDados() {

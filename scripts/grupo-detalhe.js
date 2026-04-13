@@ -272,18 +272,13 @@ async function publicarPost() {
   // Upload de mídia (mesmo padrão do home.js)
   let imagem_url = null, arquivo_url = null, arquivo_nome = null;
   if (gdMediaArquivo) {
-    const ext  = gdMediaArquivo.name.split('.').pop();
-    const path = `${usuarioAtual.id}/${Date.now()}.${ext}`;
-    const pasta = gdMediaTipo === 'imagem' ? 'images' : 'files';
-    const { error: upErr } = await window.supabase.storage
-      .from('post-media')
-      .upload(`${pasta}/${path}`, gdMediaArquivo, { upsert: false });
-    if (!upErr) {
-      const { data: { publicUrl } } = window.supabase.storage
-        .from('post-media')
-        .getPublicUrl(`${pasta}/${path}`);
+    try {
+      const publicUrl = await uploadParaCloudinary(gdMediaArquivo, 'posts');
       if (gdMediaTipo === 'imagem') imagem_url = publicUrl;
       else { arquivo_url = publicUrl; arquivo_nome = gdMediaArquivo.name; }
+    } catch (e) {
+      alert('Erro ao enviar mídia. Tente novamente.');
+      return;
     }
   }
 

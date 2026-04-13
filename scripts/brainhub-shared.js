@@ -480,6 +480,23 @@ function _escapeHtml(str) {
 function _gerarIniciais(nome) {
   return (nome || '?').split(' ').map(p => p[0]).filter(Boolean).slice(0,2).join('').toUpperCase();
 }
+// ===== CLOUDINARY UPLOAD =====
+const CLOUDINARY_CLOUD = 'ds2fhtsmv';
+const CLOUDINARY_PRESET = 'brainhub_unsigned';
+
+async function uploadParaCloudinary(file, folder) {
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', CLOUDINARY_PRESET);
+  fd.append('folder', `brainhub/${folder}`);
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/auto/upload`, {
+    method: 'POST', body: fd
+  });
+  if (!res.ok) throw new Error('Erro ao enviar para Cloudinary');
+  const json = await res.json();
+  return json.secure_url;
+}
+
 // Regex para nomes com acentos, espaços não inclusos
 const MENTION_AT_RE = /@([\wÀ-ÿ]{1,30})$/;
 
