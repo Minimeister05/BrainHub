@@ -327,6 +327,41 @@ body {
   padding: 18px;
 }
 
+.pro-banner-card {
+  background: linear-gradient(135deg, rgba(124,92,255,0.15), rgba(124,92,255,0.05));
+  border: 1px solid rgba(124,92,255,0.35);
+  border-radius: 16px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.pro-banner-top {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 1rem;
+  color: #f1f1f5;
+}
+.pro-banner-top i { width: 18px; height: 18px; color: #f5c542; }
+.pro-banner-card p { font-size: 0.82rem; color: var(--muted); margin: 0; }
+.pro-banner-preco { font-size: 1.4rem; font-weight: 700; color: #f1f1f5; }
+.pro-banner-preco span { font-size: 0.82rem; color: var(--muted); font-weight: 400; }
+.pro-banner-btn {
+  display: block;
+  text-align: center;
+  background: linear-gradient(135deg, #7c5cff, #a78bfa);
+  color: #fff;
+  border-radius: 10px;
+  padding: 10px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  margin-top: 4px;
+  transition: opacity 0.15s;
+}
+.pro-banner-btn:hover { opacity: 0.88; }
+
 .trending-card h3,
 .groups-card h3,
 .subjects-card h3 {

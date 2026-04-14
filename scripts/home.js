@@ -968,6 +968,11 @@ async function init() {
             bannerEl.style.backgroundPositionY = p.banner_position || '50%';
           }
         }
+        // Mostra banner de upgrade só para não-Pro
+        if (!p?.is_pro) {
+          const card = document.getElementById('proBannerCard');
+          if (card) card.style.display = 'flex';
+        }
       });
 
     carregarEstatisticas(usuarioAtual.id);
