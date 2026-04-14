@@ -1,7 +1,7 @@
 // scripts/planos.js
 lucide.createIcons();
 
-const PRO_KEY = 'brainhub_pro';
+const SUPABASE_FN_URL = 'https://ilfhsgecffxusgimopmx.supabase.co/functions/v1/mp-criar-checkout';
 
 // ===== TOAST =====
 function mostrarToast(msg, tipo = 'success') {
@@ -14,79 +14,63 @@ function mostrarToast(msg, tipo = 'success') {
 }
 
 // ===== STATUS PRO =====
-function verificarStatus() {
-    const pro = localStorage.getItem(PRO_KEY) === 'true';
-    const statusEl = document.getElementById('planoStatus');
+async function verificarStatus() {
     const btnAssinar = document.getElementById('btnAssinar');
     const btnFree = document.querySelector('.btn-free');
+    const statusEl = document.getElementById('planoStatus');
 
-    if (pro) {
-        statusEl.innerHTML = `<span class="status-pro"><i data-lucide="crown"></i> Você já é Pro! Obrigado pelo apoio 🎉</span>`;
-        btnAssinar.innerHTML = `<i data-lucide="check"></i> Você já é assinante Pro`;
-        btnAssinar.style.background = 'linear-gradient(135deg, #20d3ae, #10a47f)';
-        btnAssinar.disabled = true;
-        btnFree.textContent = 'Plano anterior';
+    const { data: { user } } = await window.supabase.auth.getUser();
+    if (!user) return;
+
+    const { data: perfil } = await window.supabase
+        .from('profiles').select('is_pro').eq('id', user.id).single();
+
+    if (perfil?.is_pro) {
+        if (statusEl) statusEl.innerHTML = `<span class="status-pro"><i data-lucide="crown"></i> Você já é Pro! Obrigado pelo apoio 🎉</span>`;
+        if (btnAssinar) {
+            btnAssinar.innerHTML = `<i data-lucide="check"></i> Você já é assinante Pro`;
+            btnAssinar.style.background = 'linear-gradient(135deg, #20d3ae, #10a47f)';
+            btnAssinar.disabled = true;
+        }
+        if (btnFree) btnFree.textContent = 'Plano anterior';
         lucide.createIcons();
     }
 }
 
-// ===== MODAL =====
-const overlay = document.getElementById('modalOverlay');
-const btnAssinar = document.getElementById('btnAssinar');
-const btnClose = document.getElementById('modalClose');
+// ===== ASSINAR =====
+document.getElementById('btnAssinar')?.addEventListener('click', async () => {
+    const btn = document.getElementById('btnAssinar');
+    if (btn.disabled) return;
 
-btnAssinar?.addEventListener('click', () => {
-    if (localStorage.getItem(PRO_KEY) === 'true') return;
-    overlay.classList.remove('hidden');
-    lucide.createIcons();
-});
-
-btnClose?.addEventListener('click', () => overlay.classList.add('hidden'));
-
-overlay?.addEventListener('click', (e) => {
-    if (e.target === overlay) overlay.classList.add('hidden');
-});
-
-// Máscara do cartão
-document.getElementById('modalCartao')?.addEventListener('input', function () {
-    let v = this.value.replace(/\D/g, '').substring(0, 16);
-    this.value = v.replace(/(.{4})/g, '$1 ').trim();
-});
-
-// Máscara validade
-document.getElementById('modalValidade')?.addEventListener('input', function () {
-    let v = this.value.replace(/\D/g, '').substring(0, 4);
-    if (v.length > 2) v = v.substring(0, 2) + '/' + v.substring(2);
-    this.value = v;
-});
-
-// Confirmar assinatura
-document.getElementById('btnConfirmar')?.addEventListener('click', () => {
-    const nome     = document.getElementById('modalNome').value.trim();
-    const cartao   = document.getElementById('modalCartao').value.trim();
-    const validade = document.getElementById('modalValidade').value.trim();
-    const cvv      = document.getElementById('modalCvv').value.trim();
-
-    if (!nome || cartao.length < 19 || validade.length < 5 || cvv.length < 3) {
-        mostrarToast('Preencha todos os dados do cartão.', 'error');
-        return;
-    }
-
-    // Simula processamento
-    const btn = document.getElementById('btnConfirmar');
-    btn.innerHTML = '<i data-lucide="loader-2"></i> Processando...';
     btn.disabled = true;
+    btn.innerHTML = '<i data-lucide="loader-2"></i> Aguarde...';
     lucide.createIcons();
 
-    setTimeout(() => {
-        localStorage.setItem(PRO_KEY, 'true');
-        overlay.classList.add('hidden');
-        mostrarToast('🎉 Bem-vindo ao BrainHUB Pro! Seu plano está ativo.', 'success');
-        verificarStatus();
-        btn.innerHTML = '<i data-lucide="lock"></i> Confirmar assinatura — R$ 14,90/mês';
+    try {
+        const { data: { session } } = await window.supabase.auth.getSession();
+        if (!session) {
+            window.location.href = 'login.html';
+            return;
+        }
+
+        const res = await fetch(SUPABASE_FN_URL, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${session.access_token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        const json = await res.json();
+        if (!res.ok || !json.url) throw new Error(json.error?.message || 'Erro ao criar checkout');
+
+        window.location.href = json.url;
+    } catch (e) {
+        mostrarToast('Erro ao iniciar checkout. Tente novamente.', 'error');
         btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="zap"></i> Assinar Pro — R$ 14,90/mês';
         lucide.createIcons();
-    }, 1800);
+    }
 });
 
 // ===== FAQ ACCORDION =====

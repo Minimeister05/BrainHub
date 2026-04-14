@@ -273,63 +273,13 @@
 
   </main>
 
-  <!-- MODAL DE ASSINATURA -->
-  <div class="modal-overlay hidden" id="modalOverlay">
-    <div class="modal-box" id="modalBox">
-      <button class="modal-close" id="modalClose"><i data-lucide="x"></i></button>
-
-      <div class="modal-icon"><i data-lucide="crown"></i></div>
-      <h2>Assinar BrainHUB Pro</h2>
-      <p class="modal-sub">R$ 14,90/mês — cancele quando quiser</p>
-
-      <div class="modal-beneficios">
-        <span><i data-lucide="check"></i> Selo Pro</span>
-        <span><i data-lucide="check"></i> Verificado</span>
-        <span><i data-lucide="check"></i> Banner personalizado</span>
-        <span><i data-lucide="check"></i> Destaque no feed</span>
-        <span><i data-lucide="check"></i> Fixar posts</span>
-        <span><i data-lucide="check"></i> Grupos exclusivos</span>
-        <span><i data-lucide="check"></i> Estatísticas</span>
-      </div>
-
-      <div class="modal-form">
-        <div class="modal-field">
-          <label>Nome no cartão</label>
-          <input type="text" id="modalNome" placeholder="Seu nome completo" />
-        </div>
-        <div class="modal-field">
-          <label>Número do cartão</label>
-          <input type="text" id="modalCartao" placeholder="0000 0000 0000 0000" maxlength="19" />
-        </div>
-        <div class="modal-row">
-          <div class="modal-field">
-            <label>Validade</label>
-            <input type="text" id="modalValidade" placeholder="MM/AA" maxlength="5" />
-          </div>
-          <div class="modal-field">
-            <label>CVV</label>
-            <input type="text" id="modalCvv" placeholder="123" maxlength="3" />
-          </div>
-        </div>
-
-        <button class="btn-confirmar" id="btnConfirmar">
-          <i data-lucide="lock"></i>
-          Confirmar assinatura — R$ 14,90/mês
-        </button>
-
-        <p class="modal-seguro">
-          <i data-lucide="shield-check"></i>
-          Pagamento seguro e criptografado
-        </p>
-      </div>
-    </div>
-  </div>
-
   <!-- Toast -->
   <div id="toast-container"></div>
 
   <script src="./scripts/auth.js"></script>
-  <script src="./scripts/planos.js"></script>
+  <script src="./scripts/brainhub-shared.js"></script>
+  <script type="module" src="./scripts/supabaseClient.js"></script>
+  <script defer src="./scripts/planos.js"></script>
   <script src="./scripts/pwa.js"></script>
 </body>
 </html>
