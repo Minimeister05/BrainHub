@@ -1,7 +1,7 @@
 // scripts/planos.js
 lucide.createIcons();
 
-const SUPABASE_FN_URL = 'https://ilfhsgecffxusgimopmx.supabase.co/functions/v1/mp-criar-checkout';
+const SUPABASE_FN_URL = 'https://ilfhsgecffxusgimopmx.supabase.co/functions/v1/stripe-criar-checkout';
 
 // ===== TOAST =====
 function mostrarToast(msg, tipo = 'success') {
