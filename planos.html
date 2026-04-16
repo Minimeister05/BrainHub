@@ -116,9 +116,18 @@
         </div>
 
         <div class="plano-toggle">
-          <button class="toggle-btn active" data-plano="mensal" data-price="price_1TMHRX2I5hrAqSRjOAxxXuBZ" data-modo="subscription">Mensal</button>
-          <button class="toggle-btn" data-plano="anual" data-price="price_1TMHRX2I5hrAqSRjZqlxp4WI" data-modo="subscription">Anual <span class="toggle-badge">-2 meses</span></button>
-          <button class="toggle-btn" data-plano="avulso" data-price="price_1TMHRX2I5hrAqSRjaBMGf8v5" data-modo="payment">Avulso</button>
+          <button class="toggle-btn active" data-plano="mensal" data-price="price_1TMHRX2I5hrAqSRjOAxxXuBZ" data-modo="subscription">
+            <span>Mensal</span>
+            <span>R$ 14,90/mês</span>
+          </button>
+          <button class="toggle-btn" data-plano="anual" data-price="price_1TMHRX2I5hrAqSRjZqlxp4WI" data-modo="subscription">
+            <span>Anual <span class="toggle-badge">economize 2 meses</span></span>
+            <span>R$ 149,00/ano</span>
+          </button>
+          <button class="toggle-btn" data-plano="avulso" data-price="price_1TMHRX2I5hrAqSRjaBMGf8v5" data-modo="payment">
+            <span>Avulso</span>
+            <span>R$ 14,90 único</span>
+          </button>
         </div>
 
         <div class="plano-preco">
@@ -152,6 +161,10 @@
         </button>
 
         <p class="cancel-text" id="cancelText">Cancele a qualquer momento • Sem fidelidade</p>
+
+        <button class="btn-cancelar-plano" id="btnCancelarPlano" style="display:none">
+          <i data-lucide="x-circle"></i> Cancelar minha assinatura
+        </button>
       </div>
 
     </div>

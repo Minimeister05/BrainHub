@@ -62,6 +62,9 @@ async function verificarStatus() {
       btnAssinar.disabled = true;
     }
     if (btnFree) btnFree.textContent = 'Plano anterior';
+    // Mostra botão de cancelar
+    const btnCancelar = document.getElementById('btnCancelarPlano');
+    if (btnCancelar) btnCancelar.style.display = 'flex';
     lucide.createIcons();
   }
 }
@@ -96,6 +99,34 @@ document.getElementById('btnAssinar')?.addEventListener('click', async () => {
     mostrarToast('Erro ao iniciar checkout. Tente novamente.', 'error');
     btn.disabled = false;
     btn.innerHTML = `<i data-lucide="zap"></i> ${PLANOS[planoSelecionado].label}`;
+    lucide.createIcons();
+  }
+});
+
+// ===== CANCELAR =====
+document.getElementById('btnCancelarPlano')?.addEventListener('click', async () => {
+  const confirmado = await confirmarExclusao('Tem certeza que deseja cancelar sua assinatura Pro? Você mantém o acesso até o fim do período pago.');
+  if (!confirmado) return;
+
+  const btn = document.getElementById('btnCancelarPlano');
+  btn.disabled = true;
+  btn.innerHTML = '<i data-lucide="loader-2"></i> Cancelando...';
+  lucide.createIcons();
+
+  try {
+    const { data: { session } } = await window.supabase.auth.getSession();
+    const res = await fetch('https://ilfhsgecffxusgimopmx.supabase.co/functions/v1/stripe-cancelar', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.error || 'Erro ao cancelar');
+    mostrarToast('Assinatura cancelada. Você mantém o Pro até o fim do período pago.', 'success');
+    btn.innerHTML = '<i data-lucide="check"></i> Assinatura cancelada';
+  } catch (e) {
+    mostrarToast('Erro ao cancelar. Tente novamente.', 'error');
+    btn.disabled = false;
+    btn.innerHTML = '<i data-lucide="x-circle"></i> Cancelar minha assinatura';
     lucide.createIcons();
   }
 });

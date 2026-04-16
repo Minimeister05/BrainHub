@@ -206,35 +206,42 @@
 
 .plano-toggle {
   display: flex;
-  gap: 6px;
-  margin-bottom: 16px;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
 }
 .toggle-btn {
-  flex: 1;
-  padding: 8px 4px;
-  border-radius: 10px;
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 12px;
   border: 1px solid var(--border);
-  background: transparent;
+  background: rgba(255,255,255,0.03);
   color: var(--muted);
-  font-size: 0.85rem;
+  font-size: 0.92rem;
   cursor: pointer;
   transition: 0.15s;
-  position: relative;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 .toggle-btn.active {
-  background: rgba(124,92,255,0.15);
+  background: rgba(124,92,255,0.12);
   border-color: rgba(124,92,255,0.5);
   color: #f1f1f5;
   font-weight: 600;
 }
+.toggle-btn:hover:not(.active) {
+  border-color: rgba(124,92,255,0.25);
+  color: #c8c8d8;
+}
 .toggle-badge {
   background: #20d3ae;
   color: #0d0d14;
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   font-weight: 700;
-  padding: 1px 5px;
+  padding: 2px 8px;
   border-radius: 20px;
-  margin-left: 4px;
 }
 
 .plano-preco {
@@ -333,6 +340,26 @@
   color: var(--muted);
   margin-top: 10px;
 }
+
+.btn-cancelar-plano {
+  width: 100%;
+  padding: 11px;
+  border: 1px solid rgba(255,70,70,0.25);
+  border-radius: 12px;
+  background: rgba(255,70,70,0.07);
+  color: #ff7070;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  transition: 0.2s;
+  margin-top: 8px;
+}
+.btn-cancelar-plano:hover { background: rgba(255,70,70,0.18); color: #ff4444; }
+.btn-cancelar-plano i { width: 15px; height: 15px; }
 
 /* ===== FEATURES GRID ===== */
 .features-section {
