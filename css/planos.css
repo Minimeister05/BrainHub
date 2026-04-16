@@ -355,23 +355,23 @@
 
 .btn-cancelar-plano {
   width: 100%;
-  padding: 11px;
-  border: 1px solid rgba(255,70,70,0.25);
-  border-radius: 12px;
-  background: rgba(255,70,70,0.07);
-  color: #ff7070;
-  font-size: 0.85rem;
-  font-weight: 500;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--muted);
+  font-size: 0.78rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
-  transition: 0.2s;
-  margin-top: 8px;
+  gap: 5px;
+  transition: color 0.15s;
+  margin-top: 6px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
-.btn-cancelar-plano:hover { background: rgba(255,70,70,0.18); color: #ff4444; }
-.btn-cancelar-plano i { width: 15px; height: 15px; }
+.btn-cancelar-plano:hover { color: #ff7070; }
+.btn-cancelar-plano i { width: 13px; height: 13px; }
 
 /* ===== FEATURES GRID ===== */
 .features-section {
@@ -683,7 +683,10 @@
 }
 
 /* ===== RESPONSIVIDADE ===== */
-@media (max-width: 860px) {
+@media (max-width: 1000px) {
+  .planos-grid { grid-template-columns: 1fr 1fr; max-width: 700px; }
+}
+@media (max-width: 680px) {
   .planos-grid { grid-template-columns: 1fr; max-width: 420px; }
   .features-grid { grid-template-columns: 1fr 1fr; }
 }
