@@ -204,6 +204,39 @@
   color: var(--muted);
 }
 
+.plano-toggle {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.toggle-btn {
+  flex: 1;
+  padding: 8px 4px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: 0.15s;
+  position: relative;
+}
+.toggle-btn.active {
+  background: rgba(124,92,255,0.15);
+  border-color: rgba(124,92,255,0.5);
+  color: #f1f1f5;
+  font-weight: 600;
+}
+.toggle-badge {
+  background: #20d3ae;
+  color: #0d0d14;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 20px;
+  margin-left: 4px;
+}
+
 .plano-preco {
   display: flex;
   align-items: baseline;

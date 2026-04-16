@@ -818,4 +818,35 @@ async function carregarTitulos() {
   })
 }
 
+// ===== CANCELAR ASSINATURA =====
+document.getElementById('btnCancelarPro')?.addEventListener('click', async () => {
+  const confirmado = await confirmarExclusao('Tem certeza que deseja cancelar sua assinatura Pro? Você perderá o acesso ao final do período pago.');
+  if (!confirmado) return;
+
+  const btn = document.getElementById('btnCancelarPro');
+  btn.disabled = true;
+  btn.innerHTML = '<i data-lucide="loader-2"></i> Cancelando...';
+  lucide.createIcons();
+
+  try {
+    const { data: { session } } = await window.supabase.auth.getSession();
+    const res = await fetch('https://ilfhsgecffxusgimopmx.supabase.co/functions/v1/stripe-cancelar', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.error || 'Erro ao cancelar');
+    mostrarToast('Assinatura cancelada. Você mantém o Pro até o fim do período pago.', 'success');
+    btn.innerHTML = '<i data-lucide="x-circle"></i> Assinatura cancelada';
+  } catch (e) {
+    mostrarToast('Erro ao cancelar. Entre em contato pelo suporte.', 'error');
+    btn.disabled = false;
+    btn.innerHTML = '<i data-lucide="x-circle"></i> Cancelar assinatura';
+    lucide.createIcons();
+  }
+});
+
 carregarDados()

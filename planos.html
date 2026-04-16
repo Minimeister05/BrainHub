@@ -115,13 +115,19 @@
           </div>
         </div>
 
-        <div class="plano-preco">
-          <span class="preco-valor">R$ 14,90</span>
-          <span class="preco-periodo">/ mês</span>
+        <div class="plano-toggle">
+          <button class="toggle-btn active" data-plano="mensal" data-price="price_1TMHRX2I5hrAqSRjOAxxXuBZ" data-modo="subscription">Mensal</button>
+          <button class="toggle-btn" data-plano="anual" data-price="price_1TMHRX2I5hrAqSRjZqlxp4WI" data-modo="subscription">Anual <span class="toggle-badge">-2 meses</span></button>
+          <button class="toggle-btn" data-plano="avulso" data-price="price_1TMHRX2I5hrAqSRjaBMGf8v5" data-modo="payment">Avulso</button>
         </div>
 
-        <div class="preco-anual">
-          ou <strong>R$ 149,00/ano</strong> — economize 2 meses
+        <div class="plano-preco">
+          <span class="preco-valor" id="precoValor">R$ 14,90</span>
+          <span class="preco-periodo" id="precoPeriodo">/ mês</span>
+        </div>
+
+        <div class="preco-anual" id="precoAnualDesc" style="display:none">
+          Equivale a <strong>R$ 12,42/mês</strong> — economize 2 meses
         </div>
 
         <ul class="plano-features">
@@ -145,7 +151,7 @@
           Assinar Pro — R$ 14,90/mês
         </button>
 
-        <p class="cancel-text">Cancele a qualquer momento • Sem fidelidade</p>
+        <p class="cancel-text" id="cancelText">Cancele a qualquer momento • Sem fidelidade</p>
       </div>
 
     </div>

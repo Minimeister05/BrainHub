@@ -584,6 +584,26 @@
 
 .btn-gerenciar-pro i { width: 15px; height: 15px; }
 
+.btn-cancelar-pro {
+  padding: 10px;
+  border: 1px solid rgba(255,70,70,0.25);
+  border-radius: 12px;
+  background: rgba(255,70,70,0.07);
+  color: #ff7070;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  transition: 0.2s;
+  width: 100%;
+  margin-top: 4px;
+}
+.btn-cancelar-pro:hover { background: rgba(255,70,70,0.18); color: #ff4444; }
+.btn-cancelar-pro i { width: 15px; height: 15px; }
+
 /* ===== CTA PRO PARA NÃO ASSINANTES ===== */
 .pro-cta-card {
   flex-direction: column;
