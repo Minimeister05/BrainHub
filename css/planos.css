@@ -103,9 +103,9 @@
 /* ===== GRID DE PLANOS ===== */
 .planos-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  max-width: 820px;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 20px;
+  max-width: 1100px;
   margin: 0 auto 70px;
   padding: 0 24px;
 }
@@ -125,11 +125,23 @@
 
 .plano-card:hover { transform: translateY(-4px); }
 
-/* Card Pro com destaque */
+/* Card Pro mensal com destaque */
 .plano-pro {
   border-color: rgba(124,92,255,0.5);
   background: rgba(28,24,46,0.95);
   box-shadow: 0 0 0 1px rgba(124,92,255,0.3), 0 24px 60px rgba(124,92,255,0.15);
+}
+
+/* Card Pro anual */
+.plano-anual {
+  border-color: rgba(32,211,174,0.4);
+  background: rgba(20,36,34,0.95);
+  box-shadow: 0 0 0 1px rgba(32,211,174,0.2), 0 24px 60px rgba(32,211,174,0.1);
+}
+
+.btn-anual {
+  background: linear-gradient(135deg, #20d3ae, #10a47f) !important;
+  box-shadow: 0 8px 28px rgba(32,211,174,0.35) !important;
 }
 
 .pro-glow {
@@ -672,7 +684,7 @@
 
 /* ===== RESPONSIVIDADE ===== */
 @media (max-width: 860px) {
-  .planos-grid { grid-template-columns: 1fr; }
+  .planos-grid { grid-template-columns: 1fr; max-width: 420px; }
   .features-grid { grid-template-columns: 1fr 1fr; }
 }
 

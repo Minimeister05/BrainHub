@@ -3,14 +3,6 @@ lucide.createIcons();
 
 const SUPABASE_FN = 'https://ilfhsgecffxusgimopmx.supabase.co/functions/v1';
 
-const PLANOS = {
-  mensal:  { price: 'price_1TMHRX2I5hrAqSRjOAxxXuBZ', modo: 'subscription', label: 'Assinar Pro — R$ 14,90/mês',    valor: 'R$ 14,90', periodo: '/ mês',   desc: null,                                cancelText: 'Cancele a qualquer momento • Sem fidelidade' },
-  anual:   { price: 'price_1TMHRX2I5hrAqSRjZqlxp4WI', modo: 'subscription', label: 'Assinar Pro — R$ 149,00/ano',   valor: 'R$ 149,00', periodo: '/ ano',  desc: 'Equivale a <strong>R$ 12,42/mês</strong> — economize 2 meses', cancelText: 'Cancele a qualquer momento • Sem fidelidade' },
-  avulso:  { price: 'price_1TMHRX2I5hrAqSRjaBMGf8v5', modo: 'payment',      label: 'Comprar Pro — R$ 14,90 único',  valor: 'R$ 14,90', periodo: 'único',   desc: null,                                cancelText: 'Pagamento único • Acesso permanente ao Pro' },
-};
-
-let planoSelecionado = 'mensal';
-
 // ===== TOAST =====
 function mostrarToast(msg, tipo = 'success') {
   let c = document.getElementById('toast-container');
@@ -21,58 +13,12 @@ function mostrarToast(msg, tipo = 'success') {
   setTimeout(() => t.remove(), 4000);
 }
 
-// ===== TOGGLE PLANOS =====
-document.querySelectorAll('.toggle-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    planoSelecionado = btn.dataset.plano;
-    const p = PLANOS[planoSelecionado];
-    document.getElementById('precoValor').textContent = p.valor;
-    document.getElementById('precoPeriodo').textContent = p.periodo;
-    const descEl = document.getElementById('precoAnualDesc');
-    if (p.desc) { descEl.innerHTML = p.desc; descEl.style.display = ''; }
-    else descEl.style.display = 'none';
-    const btnAssinar = document.getElementById('btnAssinar');
-    if (btnAssinar && !btnAssinar.disabled) {
-      btnAssinar.innerHTML = `<i data-lucide="zap"></i> ${p.label}`;
-    }
-    document.getElementById('cancelText').textContent = p.cancelText;
-    lucide.createIcons();
-  });
-});
-
-// ===== STATUS PRO =====
-async function verificarStatus() {
-  const btnAssinar = document.getElementById('btnAssinar');
-  const btnFree = document.querySelector('.btn-free');
-  const statusEl = document.getElementById('planoStatus');
-
-  const { data: { user } } = await window.supabase.auth.getUser();
-  if (!user) return;
-
-  const { data: perfil } = await window.supabase
-    .from('profiles').select('is_pro').eq('id', user.id).single();
-
-  if (perfil?.is_pro) {
-    if (statusEl) statusEl.innerHTML = `<span class="status-pro"><i data-lucide="crown"></i> Você já é Pro! Obrigado pelo apoio 🎉</span>`;
-    if (btnAssinar) {
-      btnAssinar.innerHTML = `<i data-lucide="check"></i> Você já é assinante Pro`;
-      btnAssinar.style.background = 'linear-gradient(135deg, #20d3ae, #10a47f)';
-      btnAssinar.disabled = true;
-    }
-    if (btnFree) btnFree.textContent = 'Plano anterior';
-    // Mostra botão de cancelar
-    const btnCancelar = document.getElementById('btnCancelarPlano');
-    if (btnCancelar) btnCancelar.style.display = 'flex';
-    lucide.createIcons();
-  }
-}
-
-// ===== ASSINAR =====
-document.getElementById('btnAssinar')?.addEventListener('click', async () => {
-  const btn = document.getElementById('btnAssinar');
+// ===== ASSINAR (genérico pra qualquer botão) =====
+async function iniciarCheckout(btn) {
   if (btn.disabled) return;
+  const priceId = btn.dataset.price;
+  const modo    = btn.dataset.modo || 'subscription';
+  const labelOriginal = btn.innerHTML;
 
   btn.disabled = true;
   btn.innerHTML = '<i data-lucide="loader-2"></i> Aguarde...';
@@ -82,14 +28,13 @@ document.getElementById('btnAssinar')?.addEventListener('click', async () => {
     const { data: { session } } = await window.supabase.auth.getSession();
     if (!session) { window.location.href = 'login.html'; return; }
 
-    const p = PLANOS[planoSelecionado];
     const res = await fetch(`${SUPABASE_FN}/stripe-criar-checkout`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${session.access_token}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ price_id: p.price, modo: p.modo }),
+      body: JSON.stringify({ price_id: priceId, modo }),
     });
 
     const json = await res.json();
@@ -98,14 +43,52 @@ document.getElementById('btnAssinar')?.addEventListener('click', async () => {
   } catch (e) {
     mostrarToast('Erro ao iniciar checkout. Tente novamente.', 'error');
     btn.disabled = false;
-    btn.innerHTML = `<i data-lucide="zap"></i> ${PLANOS[planoSelecionado].label}`;
+    btn.innerHTML = labelOriginal;
     lucide.createIcons();
   }
-});
+}
+
+document.getElementById('btnAssinarMensal')?.addEventListener('click', (e) => iniciarCheckout(e.currentTarget));
+document.getElementById('btnAssinarAnual')?.addEventListener('click',  (e) => iniciarCheckout(e.currentTarget));
+
+// ===== STATUS PRO =====
+async function verificarStatus() {
+  const statusEl = document.getElementById('planoStatus');
+  const { data: { user } } = await window.supabase.auth.getUser();
+  if (!user) return;
+
+  const { data: perfil } = await window.supabase
+    .from('profiles').select('is_pro').eq('id', user.id).single();
+
+  if (perfil?.is_pro) {
+    if (statusEl) statusEl.innerHTML = `<span class="status-pro"><i data-lucide="crown"></i> Você já é Pro! Obrigado pelo apoio 🎉</span>`;
+
+    ['btnAssinarMensal', 'btnAssinarAnual'].forEach(id => {
+      const btn = document.getElementById(id);
+      if (btn) {
+        btn.innerHTML = `<i data-lucide="check"></i> Você já é assinante Pro`;
+        btn.style.background = 'linear-gradient(135deg, #20d3ae, #10a47f)';
+        btn.disabled = true;
+      }
+    });
+
+    const btnCancelar = document.getElementById('btnCancelarPlano');
+    if (btnCancelar) btnCancelar.style.display = 'flex';
+
+    lucide.createIcons();
+  }
+}
 
 // ===== CANCELAR =====
 document.getElementById('btnCancelarPlano')?.addEventListener('click', async () => {
-  const confirmado = await confirmarExclusao('Tem certeza que deseja cancelar sua assinatura Pro? Você mantém o acesso até o fim do período pago.');
+  const confirmado = await confirmar({
+    icone: '⚠️',
+    titulo: 'Cancelar assinatura',
+    mensagem: 'Tem certeza? Você mantém o acesso Pro até o fim do período pago.',
+    btnConfirmar: 'Sim, cancelar',
+    btnCancelar: 'Voltar',
+    danger: true,
+  });
   if (!confirmado) return;
 
   const btn = document.getElementById('btnCancelarPlano');
@@ -115,7 +98,7 @@ document.getElementById('btnCancelarPlano')?.addEventListener('click', async () 
 
   try {
     const { data: { session } } = await window.supabase.auth.getSession();
-    const res = await fetch('https://ilfhsgecffxusgimopmx.supabase.co/functions/v1/stripe-cancelar', {
+    const res = await fetch(`${SUPABASE_FN}/stripe-cancelar`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
     });

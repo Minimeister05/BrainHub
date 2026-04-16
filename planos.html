@@ -97,46 +97,22 @@
         <button class="btn-plano btn-free" disabled>Plano atual</button>
       </div>
 
-      <!-- PLANO PRO (destaque) -->
+      <!-- PLANO PRO MENSAL -->
       <div class="plano-card plano-pro">
         <div class="pro-glow"></div>
-
-        <div class="pro-label">
-          <i data-lucide="crown"></i> Mais popular
-        </div>
+        <div class="pro-label"><i data-lucide="crown"></i> Mais popular</div>
 
         <div class="plano-header">
-          <div class="plano-icon pro-icon">
-            <i data-lucide="crown"></i>
-          </div>
+          <div class="plano-icon pro-icon"><i data-lucide="crown"></i></div>
           <div>
             <h2>BrainHUB <span class="pro-text">Pro</span></h2>
             <p>Para quem quer se destacar</p>
           </div>
         </div>
 
-        <div class="plano-toggle">
-          <button class="toggle-btn active" data-plano="mensal" data-price="price_1TMHRX2I5hrAqSRjOAxxXuBZ" data-modo="subscription">
-            <span>Mensal</span>
-            <span>R$ 14,90/mês</span>
-          </button>
-          <button class="toggle-btn" data-plano="anual" data-price="price_1TMHRX2I5hrAqSRjZqlxp4WI" data-modo="subscription">
-            <span>Anual <span class="toggle-badge">economize 2 meses</span></span>
-            <span>R$ 149,00/ano</span>
-          </button>
-          <button class="toggle-btn" data-plano="avulso" data-price="price_1TMHRX2I5hrAqSRjaBMGf8v5" data-modo="payment">
-            <span>Avulso</span>
-            <span>R$ 14,90 único</span>
-          </button>
-        </div>
-
         <div class="plano-preco">
-          <span class="preco-valor" id="precoValor">R$ 14,90</span>
-          <span class="preco-periodo" id="precoPeriodo">/ mês</span>
-        </div>
-
-        <div class="preco-anual" id="precoAnualDesc" style="display:none">
-          Equivale a <strong>R$ 12,42/mês</strong> — economize 2 meses
+          <span class="preco-valor">R$ 14,90</span>
+          <span class="preco-periodo">/ mês</span>
         </div>
 
         <ul class="plano-features">
@@ -145,26 +121,66 @@
           <li class="feat-ok pro-feat"><i data-lucide="badge-check"></i> Perfil verificado com checkmark</li>
           <li class="feat-ok pro-feat"><i data-lucide="palette"></i> 12 cores exclusivas de avatar</li>
           <li class="feat-ok pro-feat"><i data-lucide="image"></i> Banner personalizado no perfil</li>
-          <li class="feat-ok pro-feat"><i data-lucide="trending-up"></i> Destaque extra para posts importantes</li>
+          <li class="feat-ok pro-feat"><i data-lucide="trending-up"></i> Destaque extra nos posts</li>
           <li class="feat-ok pro-feat"><i data-lucide="pin"></i> Fixe posts no seu perfil</li>
           <li class="feat-ok pro-feat"><i data-lucide="lock-open"></i> Grupos e canais exclusivos</li>
           <li class="feat-ok pro-feat"><i data-lucide="upload"></i> Upload de arquivos maiores</li>
-          <li class="feat-ok pro-feat"><i data-lucide="search"></i> Filtros avançados de busca</li>
-          <li class="feat-ok pro-feat"><i data-lucide="bar-chart-3"></i> Estatísticas do perfil e desempenho</li>
+          <li class="feat-ok pro-feat"><i data-lucide="bar-chart-3"></i> Estatísticas de desempenho</li>
           <li class="feat-ok pro-feat"><i data-lucide="headphones"></i> Suporte prioritário</li>
-          <li class="feat-ok pro-feat"><i data-lucide="gift"></i> Acesso antecipado a novidades</li>
         </ul>
 
-        <button class="btn-plano btn-pro" id="btnAssinar">
-          <i data-lucide="zap"></i>
-          Assinar Pro — R$ 14,90/mês
+        <button class="btn-plano btn-pro" id="btnAssinarMensal"
+          data-price="price_1TMHRX2I5hrAqSRjOAxxXuBZ" data-modo="subscription">
+          <i data-lucide="zap"></i> Assinar — R$ 14,90/mês
         </button>
-
-        <p class="cancel-text" id="cancelText">Cancele a qualquer momento • Sem fidelidade</p>
-
+        <p class="cancel-text">Cancele a qualquer momento</p>
         <button class="btn-cancelar-plano" id="btnCancelarPlano" style="display:none">
           <i data-lucide="x-circle"></i> Cancelar minha assinatura
         </button>
+      </div>
+
+      <!-- PLANO PRO ANUAL -->
+      <div class="plano-card plano-anual">
+        <div class="pro-glow" style="background:radial-gradient(ellipse at 50% 0%,rgba(32,211,174,0.18),transparent 70%)"></div>
+        <div class="pro-label" style="background:linear-gradient(135deg,#20d3ae,#10a47f);color:#0d0d14">
+          <i data-lucide="zap"></i> Melhor valor
+        </div>
+
+        <div class="plano-header">
+          <div class="plano-icon" style="background:linear-gradient(135deg,#20d3ae,#10a47f)"><i data-lucide="calendar"></i></div>
+          <div>
+            <h2>BrainHUB <span style="color:#20d3ae">Anual</span></h2>
+            <p>Pro pelo ano inteiro</p>
+          </div>
+        </div>
+
+        <div class="plano-preco">
+          <span class="preco-valor">R$ 60,00</span>
+          <span class="preco-periodo">/ ano</span>
+        </div>
+        <div class="preco-anual" style="display:block">
+          Equivale a <strong style="color:#20d3ae">R$ 5,00/mês</strong> — economize 66%
+        </div>
+
+        <ul class="plano-features">
+          <li class="feat-ok"><i data-lucide="check"></i> Tudo do plano gratuito</li>
+          <li class="feat-ok pro-feat"><i data-lucide="crown"></i> Selo Pro no perfil e nos posts</li>
+          <li class="feat-ok pro-feat"><i data-lucide="badge-check"></i> Perfil verificado com checkmark</li>
+          <li class="feat-ok pro-feat"><i data-lucide="palette"></i> 12 cores exclusivas de avatar</li>
+          <li class="feat-ok pro-feat"><i data-lucide="image"></i> Banner personalizado no perfil</li>
+          <li class="feat-ok pro-feat"><i data-lucide="trending-up"></i> Destaque extra nos posts</li>
+          <li class="feat-ok pro-feat"><i data-lucide="pin"></i> Fixe posts no seu perfil</li>
+          <li class="feat-ok pro-feat"><i data-lucide="lock-open"></i> Grupos e canais exclusivos</li>
+          <li class="feat-ok pro-feat"><i data-lucide="upload"></i> Upload de arquivos maiores</li>
+          <li class="feat-ok pro-feat"><i data-lucide="bar-chart-3"></i> Estatísticas de desempenho</li>
+          <li class="feat-ok pro-feat"><i data-lucide="headphones"></i> Suporte prioritário</li>
+        </ul>
+
+        <button class="btn-plano btn-anual" id="btnAssinarAnual"
+          data-price="PRICE_ANUAL_60" data-modo="subscription">
+          <i data-lucide="zap"></i> Assinar — R$ 60,00/ano
+        </button>
+        <p class="cancel-text">Cancele a qualquer momento</p>
       </div>
 
     </div>
