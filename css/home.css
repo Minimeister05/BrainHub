@@ -862,9 +862,23 @@ body {
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-top: 1px solid var(--border);
-  padding: 8px 4px;
+  padding: 8px 4px 8px;
+  /* Empurra o conteúdo acima do home indicator (notch inferior do iPhone) */
   padding-bottom: max(env(safe-area-inset-bottom), 8px);
   justify-content: space-around;
+  /* Garante que o fundo cobre até o fim físico da tela no Safari */
+  box-sizing: border-box;
+}
+
+/* Fundo "prolongado" para cobrir o gap do Safari ao rolar */
+.mobile-bottom-nav::after {
+  content: '';
+  position: absolute;
+  bottom: calc(-1 * env(safe-area-inset-bottom) - 50px);
+  left: 0; right: 0;
+  height: calc(env(safe-area-inset-bottom) + 50px);
+  background: rgba(18,18,24,0.97);
+  pointer-events: none;
 }
 
 .mob-nav-item {
@@ -946,8 +960,8 @@ body {
 
   .mobile-bottom-nav { display: flex; }
 
-  /* Espaço para a nav bar não cobrir o conteúdo */
-  body { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
+  /* Espaço suficiente para a nav bar + safe area do iPhone */
+  body { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
 
   /* Esconde composer da topbar no mobile */
   .topbar-composer { display: none; }
