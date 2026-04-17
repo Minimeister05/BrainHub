@@ -951,7 +951,7 @@ body {
   .mobile-bottom-nav { display: flex; }
 
   /* Espaço suficiente para a nav bar + safe area do iPhone */
-  body { padding-bottom: calc(72px + env(safe-area-inset-bottom) + var(--browser-bottom-offset, 0px)); }
+  body { padding-bottom: 72px; }
 
   /* Esconde composer da topbar no mobile */
   .topbar-composer { display: none; }
@@ -964,7 +964,7 @@ body {
     overflow-y: visible;
     flex: none;
     height: auto;
-    padding-bottom: 80px;
+    padding-bottom: 24px;
   }
 
   /* Tabs e busca ficam grudadas abaixo da topbar (prefixo webkit pro Safari iOS) */
