@@ -8,6 +8,7 @@ const postInput  = document.getElementById('postInput');
 const feedList   = document.getElementById('feedList');
 
 let usuarioAtual  = null;
+let isAdmin       = false;
 let feedTab       = 'fyp';      // 'fyp' | 'following'
 let feedTermoBusca = ''
 let seguindoIds   = new Set();
@@ -260,7 +261,9 @@ function criarPostHTML(post) {
         </div>
         <div style="display:flex;gap:4px">
           <button class="icon-btn small save-post-btn" title="Salvar post" data-saved="false"><i data-lucide="bookmark"></i></button>
-          ${isOwn ? `<button class="icon-btn small delete-post-btn" title="Excluir post"><i data-lucide="trash-2"></i></button>` : `<button class="icon-btn small report-post-btn" title="Denunciar post"><i data-lucide="flag"></i></button>`}
+          ${(isOwn || isAdmin)
+            ? `<button class="icon-btn small delete-post-btn" title="Excluir post"><i data-lucide="trash-2"></i></button>`
+            : `<button class="icon-btn small report-post-btn" title="Denunciar post"><i data-lucide="flag"></i></button>`}
         </div>
       </div>
       ${post.humor ? `<div class="post-humor">${post.humor}</div>` : ''}
@@ -959,9 +962,9 @@ async function init() {
   const { data: { user } } = await window.supabase.auth.getUser();
   usuarioAtual = user;
   if (usuarioAtual) {
-    // Aplica banner do perfil no sidebar
+    // Aplica banner do perfil no sidebar + verifica is_admin
     window.supabase.from('profiles')
-      .select('banner_url, banner_position, is_pro')
+      .select('banner_url, banner_position, is_pro, is_admin')
       .eq('id', usuarioAtual.id).single()
       .then(({ data: p }) => {
         if (p?.is_pro && p?.banner_url) {
@@ -978,6 +981,8 @@ async function init() {
           const card = document.getElementById('proBannerCard');
           if (card) card.style.display = 'flex';
         }
+        // Habilita modo admin
+        if (p?.is_admin) isAdmin = true;
       });
 
     carregarEstatisticas(usuarioAtual.id);

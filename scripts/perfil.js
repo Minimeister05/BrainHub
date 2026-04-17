@@ -171,9 +171,16 @@ async function carregarDados() {
     .single()
 
   const isPro = perfil?.is_pro === true
+  const isAdmin = perfil?.is_admin === true
   _isPro = isPro
   if (isPro) localStorage.setItem('brainhub_pro', 'true')
   else localStorage.removeItem('brainhub_pro')
+
+  // Mostra aba admin apenas para admins
+  if (isAdmin) {
+    const adminBtn = document.getElementById('adminTabBtn')
+    if (adminBtn) adminBtn.style.display = ''
+  }
 
   const nome      = perfil?.nome      || user.user_metadata?.nome || ''
   const curso     = perfil?.curso     || ''
@@ -746,6 +753,7 @@ document.querySelectorAll('.perfil-right-tab').forEach(tab => {
     document.getElementById('tabPosts').style.display      = nome === 'posts'      ? '' : 'none'
     document.getElementById('tabStats').style.display      = nome === 'stats'      ? '' : 'none'
     document.getElementById('tabTitulos').style.display    = nome === 'titulos'    ? '' : 'none'
+    document.getElementById('tabAdmin').style.display      = nome === 'admin'      ? '' : 'none'
 
     if (nome === 'posts' && !postsCarregados) {
       postsCarregados = true
@@ -756,6 +764,7 @@ document.querySelectorAll('.perfil-right-tab').forEach(tab => {
       carregarEstatisticas()
     }
     if (nome === 'titulos') carregarTitulos()
+    if (nome === 'admin') carregarAdmin()
   })
 })
 
@@ -817,6 +826,132 @@ async function carregarTitulos() {
     })
   })
 }
+
+// ===== PAINEL ADMIN =====
+const TIPO_ICONE = { post: 'file-text', user: 'user', comment: 'message-square' }
+const TIPO_LABEL = { post: 'Post', user: 'Usuário', comment: 'Comentário' }
+
+let adminFiltro = 'all'
+
+function escapeAdm(str) {
+  if (!str) return ''
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+}
+
+async function carregarAdmin() {
+  const container = document.getElementById('adminReportsList')
+  if (!container) return
+
+  let query = window.supabase
+    .from('reports')
+    .select('*, reporter:reporter_id(nome, cor_avatar)')
+    .order('created_at', { ascending: false })
+
+  if (adminFiltro === 'pending')  query = query.eq('resolved', false)
+  if (adminFiltro === 'resolved') query = query.eq('resolved', true)
+
+  const { data: reports, error } = await query
+
+  if (error) {
+    container.innerHTML = '<p style="color:var(--muted);text-align:center;padding:32px">Erro ao carregar denúncias.</p>'
+    console.error(error)
+    return
+  }
+
+  if (!reports || reports.length === 0) {
+    container.innerHTML = '<p style="color:var(--muted);text-align:center;padding:32px">Nenhuma denúncia encontrada.</p>'
+    return
+  }
+
+  container.innerHTML = reports.map(r => {
+    const icone = TIPO_ICONE[r.content_type] || 'alert-circle'
+    const tipo  = TIPO_LABEL[r.content_type] || r.content_type
+    const nome  = escapeAdm(r.reporter?.nome || 'Usuário desconhecido')
+    const data  = new Date(r.created_at).toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'2-digit', hour:'2-digit', minute:'2-digit' })
+    const conteudoLink = r.content_type === 'post'
+      ? `<a href="home.html?postId=${r.content_id}" target="_blank" class="admin-content-link">Ver post</a>`
+      : r.content_type === 'user'
+        ? `<a href="usuario.html?id=${r.content_id}" target="_blank" class="admin-content-link">Ver perfil</a>`
+        : `<span class="admin-content-id">ID: ${escapeAdm(r.content_id)}</span>`
+    return `
+      <div class="admin-report-card ${r.resolved ? 'resolved' : ''}" data-id="${r.id}" data-type="${r.content_type}" data-cid="${escapeAdm(r.content_id)}">
+        <div class="admin-report-left">
+          <div class="admin-report-type-icon">
+            <i data-lucide="${icone}"></i>
+          </div>
+          <div class="admin-report-info">
+            <div class="admin-report-title">
+              <strong>${tipo}</strong>
+              ${r.resolved ? '<span class="admin-badge-resolved">Resolvido</span>' : '<span class="admin-badge-pending">Pendente</span>'}
+            </div>
+            <div class="admin-report-reason">${escapeAdm(r.reason || '—')}</div>
+            <div class="admin-report-meta">
+              Denunciado por <strong>${nome}</strong> · ${data}
+            </div>
+            <div class="admin-report-actions-top">${conteudoLink}</div>
+          </div>
+        </div>
+        <div class="admin-report-actions">
+          ${!r.resolved ? `
+            <button class="admin-btn admin-btn-resolve" data-id="${r.id}"><i data-lucide="check"></i> Resolver</button>
+            ${r.content_type === 'post' ? `<button class="admin-btn admin-btn-delete-content danger" data-id="${r.id}" data-cid="${escapeAdm(r.content_id)}"><i data-lucide="trash-2"></i> Excluir post</button>` : ''}
+          ` : ''}
+          <button class="admin-btn admin-btn-dismiss" data-id="${r.id}"><i data-lucide="x"></i> Dispensar</button>
+        </div>
+      </div>`
+  }).join('')
+
+  lucide.createIcons()
+
+  // Resolver (marca como resolvido)
+  container.querySelectorAll('.admin-btn-resolve').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.id
+      await window.supabase.from('reports').update({ resolved: true }).eq('id', id)
+      carregarAdmin()
+    })
+  })
+
+  // Excluir conteúdo do post e marcar como resolvido
+  container.querySelectorAll('.admin-btn-delete-content').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const confirmado = await confirmar({
+        icone: '🗑️',
+        titulo: 'Excluir post denunciado',
+        mensagem: 'O post será removido permanentemente e a denúncia marcada como resolvida.',
+        btnConfirmar: 'Excluir post',
+        danger: true
+      })
+      if (!confirmado) return
+      const id  = btn.dataset.id
+      const cid = btn.dataset.cid
+      await Promise.all([
+        window.supabase.from('posts').delete().eq('id', cid),
+        window.supabase.from('reports').update({ resolved: true }).eq('id', id)
+      ])
+      mostrarToast('Post excluído e denúncia resolvida.', 'success')
+      carregarAdmin()
+    })
+  })
+
+  // Dispensar (exclui a denúncia sem ação)
+  container.querySelectorAll('.admin-btn-dismiss').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      await window.supabase.from('reports').delete().eq('id', btn.dataset.id)
+      carregarAdmin()
+    })
+  })
+}
+
+// Filtros da aba admin
+document.querySelectorAll('.admin-filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.admin-filter-btn').forEach(b => b.classList.remove('active'))
+    btn.classList.add('active')
+    adminFiltro = btn.dataset.filter
+    carregarAdmin()
+  })
+})
 
 // ===== CANCELAR ASSINATURA =====
 document.getElementById('btnCancelarPro')?.addEventListener('click', async () => {

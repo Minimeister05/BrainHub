@@ -12,7 +12,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BrainHUB | Meu Perfil</title>
   <link rel="stylesheet" href="./css/home.css?v=2" />
-  <link rel="stylesheet" href="./css/perfil.css?v=2" />
+  <link rel="stylesheet" href="./css/perfil.css?v=3" />
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
@@ -122,6 +122,9 @@
         </button>
         <button class="perfil-right-tab" data-tab="titulos">
           <i data-lucide="award"></i><span class="tab-label"> Títulos</span>
+        </button>
+        <button class="perfil-right-tab" id="adminTabBtn" data-tab="admin" style="display:none">
+          <i data-lucide="shield"></i><span class="tab-label"> Admin</span>
         </button>
       </div>
 
@@ -376,6 +379,23 @@
         </div>
       </div>
 
+      <!-- TAB: Admin -->
+      <div id="tabAdmin" style="display:none">
+        <div class="admin-panel">
+          <div class="admin-panel-header">
+            <h3><i data-lucide="shield"></i> Painel de Administração</h3>
+            <div class="admin-filter-btns">
+              <button class="admin-filter-btn active" data-filter="all">Todas</button>
+              <button class="admin-filter-btn" data-filter="pending">Pendentes</button>
+              <button class="admin-filter-btn" data-filter="resolved">Resolvidas</button>
+            </div>
+          </div>
+          <div id="adminReportsList">
+            <p style="color:var(--muted);text-align:center;padding:32px">Carregando denúncias...</p>
+          </div>
+        </div>
+      </div>
+
       <!-- TAB: Títulos -->
       <div id="tabTitulos" style="display:none">
         <div class="titulos-pontos-header">
@@ -415,6 +435,7 @@
   </div>
 
   <script type="module" src="./scripts/supabaseClient.js"></script>
+  <script src="./scripts/brainhub-shared.js"></script>
   <script src="./scripts/br-dados.js"></script>
   <script defer src="./scripts/perfil.js"></script>
   <script>

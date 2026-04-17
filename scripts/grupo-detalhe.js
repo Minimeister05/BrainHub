@@ -7,6 +7,7 @@ const GRUPO_ID   = params.get('id');
 let usuarioAtual  = null;
 let grupoAtual    = null;
 let ehMembro      = false;
+let gdIsAdmin     = false;
 let gdMediaArquivo = null;
 let gdMediaTipo    = null;
 
@@ -28,6 +29,10 @@ async function init() {
   const { data: { user } } = await window.supabase.auth.getUser();
   usuarioAtual = user;
   if (!user) { window.location.href = 'index.html'; return; }
+
+  // Verifica is_admin
+  window.supabase.from('profiles').select('is_admin').eq('id', user.id).single()
+    .then(({ data: p }) => { if (p?.is_admin) gdIsAdmin = true; });
 
   await carregarGrupo();
 }
@@ -401,7 +406,9 @@ function criarPostHTML(post) {
         </div>
         <div style="display:flex;gap:4px">
           <button class="icon-btn small save-post-btn" title="Salvar post" data-saved="false"><i data-lucide="bookmark"></i></button>
-          ${isOwn ? `<button class="icon-btn small delete-post-btn" title="Excluir post"><i data-lucide="trash-2"></i></button>` : `<button class="icon-btn small report-post-btn" title="Denunciar post"><i data-lucide="flag"></i></button>`}
+          ${(isOwn || gdIsAdmin)
+            ? `<button class="icon-btn small delete-post-btn" title="Excluir post"><i data-lucide="trash-2"></i></button>`
+            : `<button class="icon-btn small report-post-btn" title="Denunciar post"><i data-lucide="flag"></i></button>`}
         </div>
       </div>
       ${post.humor ? `<div class="post-humor">${post.humor}</div>` : ''}
