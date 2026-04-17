@@ -967,13 +967,6 @@ body {
     padding-bottom: 80px;
   }
 
-  /* No Safari iOS, sticky reduz o efeito de "barra flutuando" quando a UI do browser some */
-  .mobile-bottom-nav {
-    position: -webkit-sticky;
-    position: sticky;
-    bottom: 0;
-  }
-
   /* Tabs e busca ficam grudadas abaixo da topbar (prefixo webkit pro Safari iOS) */
   .feed-tabs {
     position: -webkit-sticky;
