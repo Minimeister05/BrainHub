@@ -841,7 +841,7 @@ body {
   align-items: center;
   justify-content: center;
   position: fixed;
-  bottom: 72px;
+  bottom: calc(72px + var(--browser-bottom-offset, 0px));
   right: 20px;
   width: 52px;
   height: 52px;
@@ -859,7 +859,7 @@ body {
 .mobile-bottom-nav {
   display: none;
   position: fixed;
-  bottom: 0; left: 0; right: 0;
+  bottom: var(--browser-bottom-offset, 0px); left: 0; right: 0;
   z-index: 999;
   background: rgba(18,18,24,0.97);
   backdrop-filter: blur(16px);
@@ -951,7 +951,7 @@ body {
   .mobile-bottom-nav { display: flex; }
 
   /* Espaço suficiente para a nav bar + safe area do iPhone */
-  body { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
+  body { padding-bottom: calc(72px + env(safe-area-inset-bottom) + var(--browser-bottom-offset, 0px)); }
 
   /* Esconde composer da topbar no mobile */
   .topbar-composer { display: none; }

@@ -5,6 +5,34 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+// Mantém a bottom nav colada na viewport visível no Safari iOS quando a barra do browser recolhe.
+(function () {
+  if (!window.visualViewport) return;
+
+  const root = document.documentElement;
+  let rafId = null;
+
+  function updateBrowserBottomOffset() {
+    const vv = window.visualViewport;
+    const offset = Math.max(0, window.innerHeight - (vv.height + vv.offsetTop));
+    root.style.setProperty('--browser-bottom-offset', `${Math.round(offset)}px`);
+  }
+
+  function scheduleUpdate() {
+    if (rafId !== null) cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(() => {
+      rafId = null;
+      updateBrowserBottomOffset();
+    });
+  }
+
+  updateBrowserBottomOffset();
+  window.visualViewport.addEventListener('resize', scheduleUpdate);
+  window.visualViewport.addEventListener('scroll', scheduleUpdate);
+  window.addEventListener('orientationchange', scheduleUpdate);
+  window.addEventListener('pageshow', scheduleUpdate);
+})();
+
 // Banner de instalação — só aparece em dispositivos móveis
 (function () {
   // Detecta se é mobile (touch device ou tela pequena)
