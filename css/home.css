@@ -7,6 +7,7 @@
 
 html {
   overflow-x: hidden;
+  height: -webkit-fill-available;
 }
 
 ::-webkit-scrollbar { width: 5px; height: 5px; }
@@ -29,6 +30,8 @@ body {
   background: radial-gradient(circle at top, #1b1b24 0%, #111116 60%);
   color: var(--text);
   min-height: 100vh;
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
   overflow-x: hidden;
 }
 
@@ -962,6 +965,13 @@ body {
     flex: none;
     height: auto;
     padding-bottom: 80px;
+  }
+
+  /* No Safari iOS, sticky reduz o efeito de "barra flutuando" quando a UI do browser some */
+  .mobile-bottom-nav {
+    position: -webkit-sticky;
+    position: sticky;
+    bottom: 0;
   }
 
   /* Tabs e busca ficam grudadas abaixo da topbar (prefixo webkit pro Safari iOS) */
