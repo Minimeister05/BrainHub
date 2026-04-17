@@ -946,6 +946,9 @@ body {
 
   .mobile-bottom-nav { display: flex; }
 
+  /* Espaço para a nav bar não cobrir o conteúdo */
+  body { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
+
   /* Esconde composer da topbar no mobile */
   .topbar-composer { display: none; }
 

@@ -566,7 +566,7 @@
 @media (max-width: 860px) {
   .chat-layout {
     grid-template-columns: 1fr;
-    height: calc(100dvh - 58px);
+    height: calc(100dvh - 58px - 64px - env(safe-area-inset-bottom));
   }
 
   /* Padrão: mostra sidebar, esconde painel de chat */
