@@ -260,7 +260,7 @@ function criarPostHTML(post) {
         </div>
         <div style="display:flex;gap:4px">
           <button class="icon-btn small save-post-btn" title="Salvar post" data-saved="false"><i data-lucide="bookmark"></i></button>
-          ${isOwn ? `<button class="icon-btn small delete-post-btn" title="Excluir post"><i data-lucide="trash-2"></i></button>` : ''}
+          ${isOwn ? `<button class="icon-btn small delete-post-btn" title="Excluir post"><i data-lucide="trash-2"></i></button>` : `<button class="icon-btn small report-post-btn" title="Denunciar post"><i data-lucide="flag"></i></button>`}
         </div>
       </div>
       ${post.humor ? `<div class="post-humor">${post.humor}</div>` : ''}
@@ -464,6 +464,11 @@ function ativarEventosPosts() {
       if (!confirmado) return;
       await window.supabase.from('posts').delete().eq('id', postId);
       card.remove();
+    });
+
+    // Denunciar post
+    card.querySelector('.report-post-btn')?.addEventListener('click', () => {
+      denunciarConteudo('post', postId);
     });
   });
 }

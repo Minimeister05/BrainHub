@@ -489,12 +489,71 @@ async function uploadParaCloudinary(file, folder) {
   fd.append('file', file);
   fd.append('upload_preset', CLOUDINARY_PRESET);
   fd.append('folder', `brainhub/${folder}`);
+  fd.append('moderation', 'aws_rek');
   const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/auto/upload`, {
     method: 'POST', body: fd
   });
   if (!res.ok) throw new Error('Erro ao enviar para Cloudinary');
   const json = await res.json();
+  if (json.moderation && json.moderation[0]?.status === 'rejected') {
+    throw new Error('Conteúdo impróprio detectado. Upload não permitido.');
+  }
   return json.secure_url;
+}
+
+// ===== DENÚNCIA =====
+const MOTIVOS_DENUNCIA = [
+  'Conteúdo sexual ou pornográfico',
+  'Discurso de ódio / nazismo / extremismo',
+  'Violência ou ameaças',
+  'Spam ou conteúdo enganoso',
+  'Outro',
+];
+
+function denunciarConteudo(contentType, contentId) {
+  return new Promise((resolve) => {
+    const overlay = document.createElement('div');
+    overlay.className = 'confirm-overlay';
+    overlay.innerHTML = `
+      <div class="confirm-box" style="max-width:380px">
+        <div class="confirm-icon">🚩</div>
+        <h3>Denunciar conteúdo</h3>
+        <p style="margin-bottom:12px">Selecione o motivo da denúncia:</p>
+        <div class="report-motivos">
+          ${MOTIVOS_DENUNCIA.map((m, i) => `
+            <label class="report-motivo-item">
+              <input type="radio" name="motivo" value="${m}" ${i === 0 ? 'checked' : ''} />
+              <span>${m}</span>
+            </label>`).join('')}
+        </div>
+        <div class="confirm-actions" style="margin-top:16px">
+          <button class="confirm-btn-cancel">Cancelar</button>
+          <button class="confirm-btn-delete">Enviar denúncia</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    overlay.querySelector('.confirm-btn-cancel').addEventListener('click', () => { overlay.remove(); resolve(false); });
+    overlay.querySelector('.confirm-btn-delete').addEventListener('click', async () => {
+      const motivo = overlay.querySelector('input[name="motivo"]:checked')?.value;
+      if (!motivo) return;
+      overlay.remove();
+      try {
+        const { data: { user } } = await window.supabase.auth.getUser();
+        if (!user) return;
+        await window.supabase.from('reports').insert({
+          reporter_id: user.id,
+          content_type: contentType,
+          content_id: String(contentId),
+          reason: motivo,
+        });
+        if (typeof mostrarToast === 'function') mostrarToast('Denúncia enviada. Obrigado!', 'success');
+      } catch (e) {
+        if (typeof mostrarToast === 'function') mostrarToast('Erro ao enviar denúncia.', 'error');
+      }
+      resolve(true);
+    });
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) { overlay.remove(); resolve(false); } });
+  });
 }
 
 // Regex para nomes com acentos, espaços não inclusos

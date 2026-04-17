@@ -330,6 +330,11 @@ async function init() {
     await atualizarBotaoFollow();
   }
 
+  // Botão de denunciar perfil
+  document.getElementById('btnReportUser')?.addEventListener('click', () => {
+    denunciarConteudo('user', targetUserId);
+  });
+
   // Botão de seguir
   document.getElementById('btnFollow').addEventListener('click', async () => {
     if (!usuarioAtual) { window.location.href = 'login.html'; return; }
