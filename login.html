@@ -74,16 +74,33 @@
   <div id="modalRecuperarSenha" class="modal-overlay" style="display:none;">
     <div class="modal-box">
       <button class="modal-close" id="btnFecharModal">&times;</button>
-      <div class="modal-icon">&#128274;</div>
-      <h3>Recuperar senha</h3>
-      <p>Digite seu e-mail cadastrado e enviaremos um link para redefinir sua senha.</p>
-      <form id="formRecuperarSenha">
-        <div class="input-group">
-          <label for="emailRecuperar">Email</label>
-          <input type="email" id="emailRecuperar" placeholder="Digite seu e-mail" required />
+
+      <!-- Step 1: inserir email -->
+      <div id="stepEnviarEmail">
+        <div class="modal-icon">&#128274;</div>
+        <h3>Recuperar senha</h3>
+        <p>Digite seu e-mail cadastrado e enviaremos um link para redefinir sua senha.</p>
+        <form id="formRecuperarSenha">
+          <div class="input-group">
+            <label for="emailRecuperar">Email</label>
+            <input type="email" id="emailRecuperar" placeholder="Digite seu e-mail" required />
+          </div>
+          <button type="submit" class="login-button" id="btnEnviarRecuperar">Enviar link</button>
+        </form>
+      </div>
+
+      <!-- Step 2: confirmação de envio -->
+      <div id="stepConfirmacao" style="display:none;">
+        <div class="modal-icon">&#9993;&#65039;</div>
+        <h3>Email enviado!</h3>
+        <p>Enviamos um link de recuperação para<br><strong id="emailEnviado" class="email-highlight"></strong></p>
+        <div class="spam-notice">
+          <span class="spam-icon">&#9888;</span>
+          <p>Não encontrou? Verifique também sua pasta de <strong>spam</strong> ou lixo eletrônico.</p>
         </div>
-        <button type="submit" class="login-button" id="btnEnviarRecuperar">Enviar link</button>
-      </form>
+        <button type="button" class="login-button" id="btnReenviar">Reenviar email</button>
+        <button type="button" class="btn-link-secondary" id="btnVoltarModal">Usar outro e-mail</button>
+      </div>
     </div>
   </div>
 

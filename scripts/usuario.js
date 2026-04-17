@@ -67,7 +67,7 @@ function criarPostHTML(post) {
           </div>
         </div>
       </div>
-      <p class="post-text">${post.texto}</p>
+      <p class="post-text">${_escapeHtml(post.texto)}</p>
       ${post.imagem_url ? `<img src="${post.imagem_url}" class="post-img" loading="lazy" />` : ''}
       ${post.arquivo_url ? `<a href="${post.arquivo_url}" target="_blank" class="post-file-link" download="${post.arquivo_nome || 'arquivo'}">📎 ${post.arquivo_nome || 'Baixar arquivo'}</a>` : ''}
       <div class="post-actions">
@@ -131,7 +131,7 @@ function ativarEventosPosts(container) {
           .order('created_at', { ascending: true });
 
         lista.innerHTML = (data && data.length > 0)
-          ? data.map(c => `<div class="comment-item"><strong class="comment-author">${c.profiles?.nome || 'Usuário'}</strong><p class="comment-text">${c.texto}</p></div>`).join('')
+          ? data.map(c => `<div class="comment-item"><strong class="comment-author">${_escapeHtml(c.profiles?.nome || 'Usuário')}</strong><p class="comment-text">${_escapeHtml(c.texto)}</p></div>`).join('')
           : '<p style="color:var(--muted);font-size:0.85rem">Nenhum comentário ainda.</p>';
       }
     });

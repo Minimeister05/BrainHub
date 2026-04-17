@@ -129,17 +129,53 @@ const btnFecharModal = document.getElementById('btnFecharModal')
 const formRecuperar  = document.getElementById('formRecuperarSenha')
 
 if (btnEsqueceu && modalRecuperar) {
+  let emailParaRecuperar = ''
+  let cooldownTimer = null
+
+  function mostrarStep(n) {
+    document.getElementById('stepEnviarEmail').style.display = n === 1 ? '' : 'none'
+    document.getElementById('stepConfirmacao').style.display = n === 2 ? '' : 'none'
+  }
+
+  function fecharModal() {
+    modalRecuperar.style.display = 'none'
+    mostrarStep(1)
+    formRecuperar.reset()
+    clearInterval(cooldownTimer)
+  }
+
+  function iniciarCooldown(btn) {
+    let s = 60
+    btn.disabled = true
+    btn.textContent = `Reenviar (${s}s)`
+    cooldownTimer = setInterval(() => {
+      s--
+      if (s <= 0) {
+        clearInterval(cooldownTimer)
+        btn.disabled = false
+        btn.textContent = 'Reenviar email'
+      } else {
+        btn.textContent = `Reenviar (${s}s)`
+      }
+    }, 1000)
+  }
+
+  async function enviarLinkRecuperacao(email) {
+    const redirectTo = `${window.location.origin}${window.location.pathname.replace('login.html', '')}redefinir-senha.html`
+    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo })
+    return error
+  }
+
   btnEsqueceu.addEventListener('click', (e) => {
     e.preventDefault()
+    mostrarStep(1)
     modalRecuperar.style.display = 'flex'
   })
 
-  btnFecharModal.addEventListener('click', () => {
-    modalRecuperar.style.display = 'none'
-  })
+  btnFecharModal.addEventListener('click', fecharModal)
 
   modalRecuperar.addEventListener('click', (e) => {
-    if (e.target === modalRecuperar) modalRecuperar.style.display = 'none'
+    if (e.target === modalRecuperar) fecharModal()
   })
 
   formRecuperar.addEventListener('submit', async (e) => {
@@ -149,11 +185,7 @@ if (btnEsqueceu && modalRecuperar) {
 
     btnEnviar.disabled = true
     btnEnviar.textContent = 'Enviando...'
-
-    const redirectTo = `${window.location.origin}${window.location.pathname.replace('login.html', '')}redefinir-senha.html`
-
-    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo })
-
+    const error = await enviarLinkRecuperacao(email)
     btnEnviar.disabled = false
     btnEnviar.textContent = 'Enviar link'
 
@@ -162,9 +194,31 @@ if (btnEsqueceu && modalRecuperar) {
       return
     }
 
-    mostrarAviso('Link enviado! Verifique seu e-mail.', 'success')
-    modalRecuperar.style.display = 'none'
+    emailParaRecuperar = email
+    document.getElementById('emailEnviado').textContent = email
+    mostrarStep(2)
+    iniciarCooldown(document.getElementById('btnReenviar'))
+  })
+
+  document.getElementById('btnReenviar').addEventListener('click', async () => {
+    const btn = document.getElementById('btnReenviar')
+    btn.disabled = true
+    btn.textContent = 'Enviando...'
+    const error = await enviarLinkRecuperacao(emailParaRecuperar)
+    if (error) {
+      mostrarAviso('Erro ao reenviar e-mail. Tente novamente.', 'error')
+      btn.disabled = false
+      btn.textContent = 'Reenviar email'
+      return
+    }
+    mostrarAviso('Email reenviado!', 'success')
+    iniciarCooldown(btn)
+  })
+
+  document.getElementById('btnVoltarModal').addEventListener('click', () => {
+    clearInterval(cooldownTimer)
     formRecuperar.reset()
+    mostrarStep(1)
   })
 }
 

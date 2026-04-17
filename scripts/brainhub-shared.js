@@ -7,15 +7,20 @@ const PRO_ACCOUNTS = ['suckowerick@gmail.com'];
 const STORAGE_KEY = 'brainhub_posts';
 
 // ===== STATUS PRO =====
-function sincronizarStatusPro() {
-  const sessao = JSON.parse(localStorage.getItem('brainhub_usuario_logado') || 'null');
-  if (!sessao) return;
-  if (PRO_ACCOUNTS.includes(sessao.email)) {
-    localStorage.setItem('brainhub_pro', 'true');
-    localStorage.setItem(`brainhub_pro_${sessao.email}`, 'true');
-  } else {
-    localStorage.removeItem('brainhub_pro');
-  }
+async function sincronizarStatusPro() {
+  if (!window.supabase) { setTimeout(sincronizarStatusPro, 300); return; }
+  try {
+    const { data: { user } } = await window.supabase.auth.getUser();
+    if (!user) return;
+    const { data: perfil } = await window.supabase
+      .from('profiles').select('is_pro').eq('id', user.id).single();
+    if (perfil?.is_pro) {
+      localStorage.setItem('brainhub_pro', 'true');
+    } else {
+      localStorage.removeItem('brainhub_pro');
+    }
+    if (typeof aplicarPerfilNoSidebar === 'function') aplicarPerfilNoSidebar();
+  } catch (e) { /* silently fail — keeps existing localStorage value */ }
 }
 
 // ===== PERFIL =====
@@ -182,14 +187,14 @@ function salvarPosts(posts) {
 
 function criarComentarioHTML(comentario) {
   if (typeof comentario === 'string') {
-    return `<div class="comment-item"><strong class="comment-author">Usuário</strong><p class="comment-text">${comentario}</p></div>`;
+    return `<div class="comment-item"><strong class="comment-author">Usuário</strong><p class="comment-text">${_escapeHtml(comentario)}</p></div>`;
   }
-  return `<div class="comment-item"><strong class="comment-author">${comentario.autor}</strong><p class="comment-text">${comentario.texto}</p></div>`;
+  return `<div class="comment-item"><strong class="comment-author">${_escapeHtml(comentario.autor)}</strong><p class="comment-text">${_escapeHtml(comentario.texto)}</p></div>`;
 }
 
 function criarPostHTML(post) {
   const iniciais    = gerarIniciais(post.autor);
-  const tagsHTML    = post.tags.map(t => `<span>${t}</span>`).join('');
+  const tagsHTML    = post.tags.map(t => `<span>${_escapeHtml(t)}</span>`).join('');
   const comsHTML    = post.comentarios.map(criarComentarioHTML).join('');
   const isProPost   = post.isProPost === true;
   const proBadge    = isProPost ? `<span class="pro-badge-post"><i data-lucide="crown"></i> PRO</span>` : '';
@@ -205,14 +210,14 @@ function criarPostHTML(post) {
         <div class="post-user">
           <div class="mini-avatar ${avatarClass}">${iniciais}</div>
           <div>
-            <h4>${post.autor}${verified}${proBadge}</h4>
-            <p>${post.curso} • ${post.tempo}</p>
+            <h4>${_escapeHtml(post.autor)}${verified}${proBadge}</h4>
+            <p>${_escapeHtml(post.curso)} • ${_escapeHtml(post.tempo)}</p>
           </div>
         </div>
         <button class="icon-btn small"><i data-lucide="more-vertical"></i></button>
       </div>
-      <h3>${post.titulo}</h3>
-      <p class="post-text">${post.texto}</p>
+      <h3>${_escapeHtml(post.titulo)}</h3>
+      <p class="post-text">${_escapeHtml(post.texto)}</p>
       <div class="tags">${tagsHTML}</div>
       <div class="post-actions">
         <button class="action-btn like-btn ${post.curtido ? 'liked' : ''}">
@@ -307,7 +312,7 @@ function adicionarComentario(postId, texto) {
     const lista = el.querySelector('.comments-list');
     const item = document.createElement('div');
     item.className = 'comment-item';
-    item.innerHTML = `<strong class="comment-author">Você</strong><p class="comment-text">${texto}</p>`;
+    item.innerHTML = `<strong class="comment-author">Você</strong><p class="comment-text">${_escapeHtml(texto)}</p>`;
     lista.appendChild(item);
     el.querySelector('.comment-input').value = '';
     el.querySelector('.comment-toggle-btn span').textContent = post.comentarios.length;

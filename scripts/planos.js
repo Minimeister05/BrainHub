@@ -13,11 +13,20 @@ function mostrarToast(msg, tipo = 'success') {
   setTimeout(() => t.remove(), 4000);
 }
 
+const PRICE_IDS_VALIDOS = [
+  'price_1TMHRX2I5hrAqSRjOAxxXuBZ',
+  'price_1TMHRX2I5hrAqSRjZqlxp4WI',
+];
+
 // ===== ASSINAR (genérico pra qualquer botão) =====
 async function iniciarCheckout(btn) {
   if (btn.disabled) return;
   const priceId = btn.dataset.price;
   const modo    = btn.dataset.modo || 'subscription';
+  if (!PRICE_IDS_VALIDOS.includes(priceId)) {
+    mostrarToast('Plano inválido.', 'error');
+    return;
+  }
   const labelOriginal = btn.innerHTML;
 
   btn.disabled = true;
