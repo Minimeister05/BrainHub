@@ -293,7 +293,7 @@ html { background: #111116; }
 
 /* ===== RESPONSIVO ===== */
 @media (max-width: 900px) {
-  .ex-layout { grid-template-columns: 1fr; overflow-x: hidden; }
+  .ex-layout { grid-template-columns: 1fr; overflow-x: clip; }
   .ex-sidebar { flex-direction: row; flex-wrap: wrap; }
   .ex-sidebar .card { flex: 1; min-width: 0; }
 
@@ -307,6 +307,19 @@ html { background: #111116; }
   }
   .ex-filtros::-webkit-scrollbar { display: none; }
   .ex-filtro { flex-shrink: 0; }
+
+  /* Filtros de dificuldade com scroll horizontal no mobile */
+  .ex-dificuldade-filtros {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+    gap: 8px;
+  }
+  .ex-dificuldade-filtros::-webkit-scrollbar { display: none; }
+  .ex-dif { flex-shrink: 0; }
 
   /* Botão criar: só ícone no mobile */
   .ex-criar-btn .ex-criar-label { display: none; }
