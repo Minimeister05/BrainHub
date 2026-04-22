@@ -907,7 +907,7 @@ async function carregarMateriasPopulares() {
 }
 
 // ===== ALGORITMO DE RECOMENDAÇÃO =====
-const BRAINHUB_OFICIAL_ID = '0dd6f25f-1a3d-4c34-bb97-030f2c2ec663'
+const BRAINHUB_OFICIAL_ID = 'e4e44716-1fa4-4fc3-8d33-c746841c7345'
 
 function scorePost(post) {
   let score = 0
