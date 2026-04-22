@@ -14,8 +14,9 @@ function mostrarToast(msg, tipo = 'success') {
 }
 
 const PRICE_IDS_VALIDOS = [
-  'price_1TMHRX2I5hrAqSRjOAxxXuBZ',
-  'price_1TMHRX2I5hrAqSRjZqlxp4WI',
+  'price_1TMHRX2I5hrAqSRjOAxxXuBZ',  // mensal
+  'price_1TMHRX2I5hrAqSRjZqlxp4WI',  // antigo anual
+  'price_1TOpMg2I5hrAqSRjgu8w067A',  // anual
 ];
 
 // ===== ASSINAR (genérico pra qualquer botão) =====
