@@ -173,7 +173,7 @@ function subscribeGrupoRealtime(groupId) {
         hora:     hora(msg.created_at),
         minha:    false
       });
-      c.preview   = msg.texto;
+      c.preview   = previewTexto(msg.texto);
       c.hora      = tempoRelativo(msg.created_at);
       c._lastTime = msg.created_at;
 
@@ -299,7 +299,7 @@ function subscribeRealtimeGlobal() {
         conversas.unshift(c);
       }
 
-      c.preview   = msg.texto;
+      c.preview   = previewTexto(msg.texto);
       c.hora      = tempoRelativo(msg.created_at);
       c._lastTime = msg.created_at;
 
@@ -339,9 +339,10 @@ function renderizarLista() {
   });
 
   lista.innerHTML = visiveis.map(c => {
-    const preview = c.tipo === 'dm'
+    const rawPreview = c.tipo === 'dm'
       ? (c.preview || 'Sem mensagens')
       : (c.mensagens[c.mensagens.length - 1]?.texto || 'Sem mensagens');
+    const preview = previewTexto(rawPreview);
     const horaStr = c.hora || '';
     return `
       <li class="conv-item ${c.id === conversaAtualId ? 'active' : ''}" data-id="${c.id}">
@@ -459,31 +460,45 @@ async function uploadAndSendArquivo(file) {
   else if (c.tipo === 'group' && c.group_id) await enviarMensagemGrupo(c.group_id, texto);
 }
 
-function renderTextoMensagem(texto) {
+function previewTexto(texto) {
+  if (texto.startsWith('__img__:'))  return '📷 Imagem';
+  if (texto.startsWith('__file__:')) return '📎 Arquivo';
+  if (texto.startsWith('__post__:')) return '📤 Post compartilhado';
+  return texto;
+}
+
+function renderTextoMensagem(texto, msg) {
   if (texto.startsWith('__img__:')) {
     const url = texto.slice(8);
     return `<img src="${url}" class="msg-img" alt="imagem" onclick="window.open('${url}','_blank')" onerror="this.style.display='none'">`;
   }
   if (texto.startsWith('__file__:')) {
-    const rest     = texto.slice(9);
-    const sepIdx   = rest.indexOf('||');
-    const nome     = sepIdx >= 0 ? rest.slice(0, sepIdx) : 'Arquivo';
-    const url      = sepIdx >= 0 ? rest.slice(sepIdx + 2) : rest;
+    const rest   = texto.slice(9);
+    const sepIdx = rest.indexOf('||');
+    const nome   = sepIdx >= 0 ? rest.slice(0, sepIdx) : 'Arquivo';
+    const url    = sepIdx >= 0 ? rest.slice(sepIdx + 2) : rest;
     return `<a href="${url}" target="_blank" rel="noopener" class="msg-file"><span>📎</span> ${nome}</a>`;
   }
   if (texto.startsWith('__post__:')) {
     const parts    = texto.slice(9).split('||');
-    const postId   = parts[0] || '';
     const autor    = parts[1] || 'Usuário';
     const textoP   = parts[2] || '';
     const imgUrl   = parts[3] || '';
-    const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    const esc      = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    const remetente = msg?.minha ? 'Você compartilhou' : `${esc(msg?.autor || 'Alguém')} compartilhou`;
+    const ini      = (autor||'?').split(' ').map(p=>p[0]).filter(Boolean).slice(0,2).join('').toUpperCase();
     const imgHTML  = imgUrl ? `<img src="${esc(imgUrl)}" class="msg-post-img" onerror="this.style.display='none'" />` : '';
     return `<div class="msg-post-card">
-      <div class="msg-post-autor"><i data-lucide="share-2" style="width:12px;height:12px"></i> ${esc(autor)}</div>
-      ${imgHTML}
-      <p class="msg-post-texto">${esc(textoP)}</p>
-      <a href="home.html" class="msg-post-link">Ver no feed</a>
+      <div class="msg-post-shared-by"><i data-lucide="share-2"></i> ${remetente} um post</div>
+      <div class="msg-post-inner">
+        <div class="msg-post-header">
+          <div class="msg-post-av">${ini}</div>
+          <span class="msg-post-autor-nome">${esc(autor)}</span>
+        </div>
+        ${imgHTML}
+        <p class="msg-post-texto">${esc(textoP)}</p>
+        <a href="home.html" class="msg-post-link">Ver no feed →</a>
+      </div>
     </div>`;
   }
   // Escapa HTML básico para texto normal
@@ -512,7 +527,7 @@ function renderizarMensagens(c) {
         </div>` : ''}
       <div class="msg-bubble ${msg.minha ? 'mine' : 'theirs'}">
         ${mostrarAutor ? `<div class="msg-author">${msg.autor}</div>` : ''}
-        ${renderTextoMensagem(msg.texto)}
+        ${renderTextoMensagem(msg.texto, msg)}
         <div class="msg-time">${msg.hora}</div>
       </div>`;
     area.appendChild(row);
@@ -535,7 +550,7 @@ async function enviarMensagem() {
   const novaMsg = { id: Date.now(), autor: ME.nome, iniciais: ME.iniciais, cor: ME.cor, texto, hora: horaStr, minha: true };
 
   c.mensagens.push(novaMsg);
-  c.preview = texto;
+  c.preview = previewTexto(texto);
   c.hora = 'agora';
   c._lastTime = new Date().toISOString();
   input.value = '';

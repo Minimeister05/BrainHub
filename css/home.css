@@ -1931,6 +1931,21 @@ body {
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .compartilhar-item-sub { font-size: 0.78rem; color: var(--muted, #888); }
+
+.compartilhar-enviar-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 14px;
+  background: linear-gradient(135deg, #7c5cff, #4e2edf);
+  color: #fff; border: none; border-radius: 20px;
+  font-size: 0.8rem; font-weight: 600;
+  cursor: pointer; white-space: nowrap;
+  transition: opacity 0.15s, transform 0.1s;
+  flex-shrink: 0;
+}
+.compartilhar-enviar-btn i { width: 13px; height: 13px; }
+.compartilhar-enviar-btn:hover { opacity: 0.88; transform: scale(1.03); }
+.compartilhar-enviar-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
 .compartilhar-footer {
   padding: 12px 16px;
   border-top: 1px solid var(--border, #2e2e45);

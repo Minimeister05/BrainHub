@@ -715,7 +715,7 @@ function ativarMencoes(input, dropdown) {
           <span class="compartilhar-item-nome">${_escapeHtml(c.nome)}</span>
           <span class="compartilhar-item-sub">${c.subtitulo}</span>
         </div>
-        <button class="btn-primary compartilhar-enviar-btn" style="font-size:0.8rem;padding:6px 14px">Enviar</button>
+        <button class="compartilhar-enviar-btn"><i data-lucide="send"></i> Enviar</button>
       </div>`;
     }).join('');
 

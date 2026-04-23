@@ -1088,33 +1088,62 @@
 
 /* ===== POST COMPARTILHADO NO CHAT ===== */
 .msg-post-card {
-  background: var(--panel, #1a1a2e);
-  border: 1px solid var(--border, #2e2e45);
-  border-left: 3px solid var(--purple, #7c5cff);
-  border-radius: 10px;
-  padding: 10px 12px;
-  max-width: 260px;
+  max-width: 290px;
   cursor: default;
 }
-.msg-post-autor {
+
+/* "X compartilhou um post" */
+.msg-post-shared-by {
   display: flex; align-items: center; gap: 5px;
-  font-size: 0.75rem; font-weight: 600;
-  color: var(--purple, #7c5cff);
-  margin-bottom: 6px;
+  font-size: 0.71rem; color: rgba(255,255,255,0.4);
+  margin-bottom: 5px; padding: 0 2px;
 }
+.msg-post-shared-by i { width: 11px; height: 11px; flex-shrink: 0; }
+
+/* Card interno que imita o post */
+.msg-post-inner {
+  background: var(--panel-2, #12121e);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+/* Cabeçalho: avatar + nome do autor */
+.msg-post-header {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 12px 0;
+}
+.msg-post-av {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: linear-gradient(135deg, #7c5cff, #4e2edf);
+  display: grid; place-items: center;
+  font-size: 0.6rem; font-weight: 700; color: #fff;
+  flex-shrink: 0;
+}
+.msg-post-autor-nome {
+  font-size: 0.8rem; font-weight: 700; color: var(--text, #fff);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
 .msg-post-img {
-  width: 100%; max-height: 140px; object-fit: cover;
-  border-radius: 6px; margin-bottom: 6px; display: block;
+  width: 100%; max-height: 130px; object-fit: cover;
+  display: block; margin-top: 8px;
 }
 .msg-post-texto {
-  font-size: 0.85rem; color: var(--text, #fff);
-  line-height: 1.4;
+  font-size: 0.83rem; color: rgba(215,215,222,0.85);
+  line-height: 1.45;
   display: -webkit-box; -webkit-line-clamp: 3;
   -webkit-box-orient: vertical; overflow: hidden;
-  margin-bottom: 8px;
+  padding: 7px 12px 0;
+  margin: 0;
 }
 .msg-post-link {
-  font-size: 0.78rem; color: var(--purple, #7c5cff);
+  display: block;
+  font-size: 0.75rem; color: var(--purple, #7c5cff);
   text-decoration: none; font-weight: 600;
+  padding: 8px 12px 10px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  margin-top: 8px;
+  transition: color 0.15s;
 }
-.msg-post-link:hover { text-decoration: underline; }
+.msg-post-link:hover { color: #bcaeff; }
