@@ -471,6 +471,21 @@ function renderTextoMensagem(texto) {
     const url      = sepIdx >= 0 ? rest.slice(sepIdx + 2) : rest;
     return `<a href="${url}" target="_blank" rel="noopener" class="msg-file"><span>📎</span> ${nome}</a>`;
   }
+  if (texto.startsWith('__post__:')) {
+    const parts    = texto.slice(9).split('||');
+    const postId   = parts[0] || '';
+    const autor    = parts[1] || 'Usuário';
+    const textoP   = parts[2] || '';
+    const imgUrl   = parts[3] || '';
+    const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    const imgHTML  = imgUrl ? `<img src="${esc(imgUrl)}" class="msg-post-img" onerror="this.style.display='none'" />` : '';
+    return `<div class="msg-post-card">
+      <div class="msg-post-autor"><i data-lucide="share-2" style="width:12px;height:12px"></i> ${esc(autor)}</div>
+      ${imgHTML}
+      <p class="msg-post-texto">${esc(textoP)}</p>
+      <a href="home.html" class="msg-post-link">Ver no feed</a>
+    </div>`;
+  }
   // Escapa HTML básico para texto normal
   return texto.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
@@ -503,6 +518,7 @@ function renderizarMensagens(c) {
     area.appendChild(row);
   });
   area.scrollTop = area.scrollHeight;
+  if (area.querySelector('.msg-post-card') && window.lucide) lucide.createIcons({ nodes: [area] });
 }
 
 // ===== ENVIO =====

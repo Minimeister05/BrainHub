@@ -59,6 +59,9 @@ function criarPostHTML(post) {
         <button class="action-btn comment-toggle-btn">
           <i data-lucide="message-square"></i><span>${commentsCount}</span>
         </button>
+        <button class="action-btn share-btn">
+          <i data-lucide="share-2"></i><span>Compartilhar</span>
+        </button>
       </div>
       <div class="comments-section hidden">
         <div class="comments-list"></div>
@@ -134,6 +137,18 @@ async function renderizar() {
         btn.classList.add('liked');
         span.textContent = parseInt(span.textContent) + 1;
       }
+    });
+  });
+
+  // Compartilhar
+  container.querySelectorAll('.share-btn').forEach(btn => {
+    const card   = btn.closest('.post-card');
+    const postId = card.dataset.id;
+    btn.addEventListener('click', () => {
+      const autor  = card.querySelector('.author-link')?.textContent?.trim() || 'Usuário';
+      const texto  = card.querySelector('.post-text')?.textContent?.trim() || '';
+      const imgUrl = card.querySelector('.post-img')?.src || '';
+      abrirModalCompartilhar(postId, texto, autor, imgUrl);
     });
   });
 }

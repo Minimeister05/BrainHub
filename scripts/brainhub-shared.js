@@ -494,7 +494,7 @@ async function uploadParaCloudinary(file, folder) {
   fd.append('file', file);
   fd.append('upload_preset', CLOUDINARY_PRESET);
   fd.append('folder', `brainhub/${folder}`);
-  fd.append('moderation', 'aws_rek');
+  if (file.type.startsWith('image/')) fd.append('moderation', 'aws_rek');
   const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/auto/upload`, {
     method: 'POST', body: fd
   });
@@ -608,3 +608,173 @@ function ativarMencoes(input, dropdown) {
   input.addEventListener('blur',    () => setTimeout(() => { dropdown.style.display = 'none'; }, 150));
   input.addEventListener('keydown', e => { if (e.key === 'Escape') dropdown.style.display = 'none'; });
 }
+
+// ===== COMPARTILHAR POST =====
+(function() {
+  function injetarModalCompartilhar() {
+    if (document.getElementById('compartilharOverlay')) return;
+    const el = document.createElement('div');
+    el.id = 'compartilharOverlay';
+    el.className = 'compartilhar-overlay hidden';
+    el.innerHTML = `
+      <div class="compartilhar-modal">
+        <div class="compartilhar-header">
+          <h3>Compartilhar post</h3>
+          <button class="icon-btn small" id="compartilharFechar"><i data-lucide="x"></i></button>
+        </div>
+        <div class="compartilhar-busca-wrap">
+          <i data-lucide="search"></i>
+          <input type="text" id="compartilharBusca" placeholder="Buscar conversa..." autocomplete="off" />
+        </div>
+        <div id="compartilharLista" class="compartilhar-lista">
+          <p class="compartilhar-vazio">Carregando...</p>
+        </div>
+        <div class="compartilhar-footer">
+          <input type="text" id="compartilharMsg" placeholder="Adicionar mensagem (opcional)" autocomplete="off" />
+        </div>
+      </div>`;
+    document.body.appendChild(el);
+    el.addEventListener('click', e => { if (e.target === el) fecharModalCompartilhar(); });
+    document.getElementById('compartilharFechar').addEventListener('click', fecharModalCompartilhar);
+    document.getElementById('compartilharBusca').addEventListener('input', () => {
+      renderizarListaCompartilhar(document.getElementById('compartilharBusca').value.trim().toLowerCase());
+    });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') fecharModalCompartilhar(); });
+    if (window.lucide) lucide.createIcons({ nodes: [el] });
+  }
+
+  let _conversasCache = [];
+  let _postCompartilhar = null;
+
+  async function carregarConversasCompartilhar() {
+    if (!window.supabase) return [];
+    const { data: { user } } = await window.supabase.auth.getUser();
+    if (!user) return [];
+
+    const [dmResult, grpMembResult] = await Promise.all([
+      window.supabase.from('follows')
+        .select('following_id')
+        .eq('follower_id', user.id),
+      window.supabase.from('chat_group_members')
+        .select('group_id')
+        .eq('user_id', user.id)
+    ]);
+
+    const seguindoIds = (dmResult.data || []).map(f => f.following_id);
+    const groupIds    = (grpMembResult.data || []).map(m => m.group_id);
+
+    const [perfisResult, gruposResult] = await Promise.all([
+      seguindoIds.length
+        ? window.supabase.from('profiles').select('id, nome, cor_avatar').in('id', seguindoIds)
+        : Promise.resolve({ data: [] }),
+      groupIds.length
+        ? window.supabase.from('chat_groups').select('id, name, emoji').in('id', groupIds)
+        : Promise.resolve({ data: [] })
+    ]);
+
+    const dms = (perfisResult.data || []).map(p => ({
+      tipo:    'dm',
+      id:      p.id,
+      nome:    p.nome || 'Usuário',
+      iniciais: _gerarIniciais(p.nome || 'Usuário'),
+      cor:     p.cor_avatar || '',
+      subtitulo: 'Mensagem direta'
+    }));
+
+    const grupos = (gruposResult.data || []).map(g => ({
+      tipo:    'group',
+      id:      g.id,
+      nome:    g.name || 'Grupo',
+      iniciais: g.emoji || '💬',
+      cor:     'group',
+      subtitulo: 'Grupo de chat'
+    }));
+
+    return [...dms, ...grupos];
+  }
+
+  function renderizarListaCompartilhar(filtro = '') {
+    const lista = document.getElementById('compartilharLista');
+    if (!lista) return;
+    const itens = filtro
+      ? _conversasCache.filter(c => c.nome.toLowerCase().includes(filtro))
+      : _conversasCache;
+
+    if (!itens.length) {
+      lista.innerHTML = `<p class="compartilhar-vazio">${filtro ? 'Nenhum resultado.' : 'Nenhuma conversa encontrada.'}</p>`;
+      return;
+    }
+
+    lista.innerHTML = itens.map(c => {
+      const av = c.tipo === 'group'
+        ? `<div class="compartilhar-av group">${c.iniciais}</div>`
+        : `<div class="compartilhar-av ${c.cor}">${c.iniciais}</div>`;
+      return `<div class="compartilhar-item" data-tipo="${c.tipo}" data-id="${c.id}">
+        ${av}
+        <div class="compartilhar-item-info">
+          <span class="compartilhar-item-nome">${_escapeHtml(c.nome)}</span>
+          <span class="compartilhar-item-sub">${c.subtitulo}</span>
+        </div>
+        <button class="btn-primary compartilhar-enviar-btn" style="font-size:0.8rem;padding:6px 14px">Enviar</button>
+      </div>`;
+    }).join('');
+
+    lista.querySelectorAll('.compartilhar-enviar-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const item = btn.closest('.compartilhar-item');
+        const tipo = item.dataset.tipo;
+        const id   = item.dataset.id;
+        btn.disabled = true;
+        btn.textContent = 'Enviando...';
+        await enviarPostParaConversa(tipo, id);
+        btn.textContent = 'Enviado!';
+        btn.style.background = 'var(--success, #26d0a8)';
+        setTimeout(fecharModalCompartilhar, 800);
+      });
+    });
+  }
+
+  async function enviarPostParaConversa(tipo, targetId) {
+    if (!_postCompartilhar || !window.supabase) return;
+    const { data: { user } } = await window.supabase.auth.getUser();
+    if (!user) return;
+
+    const { postId, autor, texto, imgUrl } = _postCompartilhar;
+    const msgExtra = (document.getElementById('compartilharMsg')?.value || '').trim();
+    const textoTrunc = texto.length > 120 ? texto.slice(0, 120) + '…' : texto;
+    const payload = `__post__:${postId}||${autor}||${textoTrunc}||${imgUrl}`;
+
+    if (msgExtra) {
+      if (tipo === 'dm') {
+        await window.supabase.from('messages').insert({ sender_id: user.id, receiver_id: targetId, texto: msgExtra });
+      } else {
+        await window.supabase.from('group_messages').insert({ group_id: targetId, sender_id: user.id, texto: msgExtra });
+      }
+    }
+
+    if (tipo === 'dm') {
+      await window.supabase.from('messages').insert({ sender_id: user.id, receiver_id: targetId, texto: payload });
+    } else {
+      await window.supabase.from('group_messages').insert({ group_id: targetId, sender_id: user.id, texto: payload });
+    }
+  }
+
+  function fecharModalCompartilhar() {
+    const el = document.getElementById('compartilharOverlay');
+    if (el) el.classList.add('hidden');
+    _postCompartilhar = null;
+  }
+
+  window.abrirModalCompartilhar = async function(postId, texto, autor, imgUrl) {
+    injetarModalCompartilhar();
+    _postCompartilhar = { postId, texto, autor, imgUrl };
+    const overlay = document.getElementById('compartilharOverlay');
+    overlay.classList.remove('hidden');
+    document.getElementById('compartilharBusca').value = '';
+    document.getElementById('compartilharMsg').value = '';
+    document.getElementById('compartilharLista').innerHTML = '<p class="compartilhar-vazio">Carregando...</p>';
+    if (window.lucide) lucide.createIcons({ nodes: [overlay] });
+    _conversasCache = await carregarConversasCompartilhar();
+    renderizarListaCompartilhar('');
+  };
+})();

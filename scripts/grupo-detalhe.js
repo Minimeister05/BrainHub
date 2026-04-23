@@ -422,6 +422,9 @@ function criarPostHTML(post) {
         <button class="action-btn comment-toggle-btn">
           <i data-lucide="message-square"></i><span>${commentsCount}</span>
         </button>
+        <button class="action-btn share-btn">
+          <i data-lucide="share-2"></i><span>Compartilhar</span>
+        </button>
       </div>
       <div class="comments-section hidden">
         <div class="comments-list"></div>
@@ -595,6 +598,14 @@ function ativarEventosPosts(container) {
     // Denunciar
     card.querySelector('.report-post-btn')?.addEventListener('click', () => {
       denunciarConteudo('post', postId);
+    });
+
+    // Compartilhar
+    card.querySelector('.share-btn')?.addEventListener('click', () => {
+      const autor  = card.querySelector('.author-link')?.textContent?.trim() || 'Usuário';
+      const texto  = card.querySelector('.post-text')?.textContent?.trim() || '';
+      const imgUrl = card.querySelector('.post-img')?.src || '';
+      abrirModalCompartilhar(postId, texto, autor, imgUrl);
     });
   });
 }

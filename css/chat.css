@@ -1085,3 +1085,36 @@
 .call-ctrl-btn.end { background: #ef4444; border-color: #ef4444; color: #fff; }
 .call-ctrl-btn.end:hover { background: #dc2626; }
 .call-ctrl-btn svg { width: 22px; height: 22px; }
+
+/* ===== POST COMPARTILHADO NO CHAT ===== */
+.msg-post-card {
+  background: var(--panel, #1a1a2e);
+  border: 1px solid var(--border, #2e2e45);
+  border-left: 3px solid var(--purple, #7c5cff);
+  border-radius: 10px;
+  padding: 10px 12px;
+  max-width: 260px;
+  cursor: default;
+}
+.msg-post-autor {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 0.75rem; font-weight: 600;
+  color: var(--purple, #7c5cff);
+  margin-bottom: 6px;
+}
+.msg-post-img {
+  width: 100%; max-height: 140px; object-fit: cover;
+  border-radius: 6px; margin-bottom: 6px; display: block;
+}
+.msg-post-texto {
+  font-size: 0.85rem; color: var(--text, #fff);
+  line-height: 1.4;
+  display: -webkit-box; -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical; overflow: hidden;
+  margin-bottom: 8px;
+}
+.msg-post-link {
+  font-size: 0.78rem; color: var(--purple, #7c5cff);
+  text-decoration: none; font-weight: 600;
+}
+.msg-post-link:hover { text-decoration: underline; }
