@@ -145,10 +145,13 @@ async function renderizar() {
     const card   = btn.closest('.post-card');
     const postId = card.dataset.id;
     btn.addEventListener('click', () => {
-      const autor  = card.querySelector('.author-link')?.textContent?.trim() || 'Usuário';
-      const texto  = card.querySelector('.post-text')?.textContent?.trim() || '';
-      const imgUrl = card.querySelector('.post-img')?.src || '';
-      abrirModalCompartilhar(postId, texto, autor, imgUrl);
+      const autor       = card.querySelector('.author-link')?.textContent?.trim() || 'Usuário';
+      const texto       = card.querySelector('.post-text')?.textContent?.trim() || '';
+      const imgUrl      = card.querySelector('.post-img')?.src || '';
+      const arquivoLink = card.querySelector('.post-file-link');
+      const arquivoUrl  = arquivoLink?.href || '';
+      const arquivoNome = arquivoLink?.getAttribute('download') || '';
+      abrirModalCompartilhar(postId, texto, autor, imgUrl, arquivoUrl, arquivoNome);
     });
   });
 }

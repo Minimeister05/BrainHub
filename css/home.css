@@ -1867,8 +1867,23 @@ body {
   background: rgba(0,0,0,0.65);
   display: flex; align-items: center; justify-content: center;
   padding: 16px;
+  animation: compartilharFadeIn 0.22s ease;
+}
+.compartilhar-overlay.hiding {
+  animation: compartilharFadeOut 0.28s ease forwards;
+  pointer-events: none;
 }
 .compartilhar-overlay.hidden { display: none; }
+
+@keyframes compartilharFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes compartilharFadeOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
 .compartilhar-modal {
   background: var(--panel, #1a1a2e);
   border: 1px solid var(--border, #2e2e45);
@@ -1878,6 +1893,19 @@ body {
   display: flex; flex-direction: column;
   overflow: hidden;
   box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+  animation: compartilharSlideIn 0.28s cubic-bezier(0.34,1.4,0.64,1);
+}
+.compartilhar-overlay.hiding .compartilhar-modal {
+  animation: compartilharSlideOut 0.28s ease forwards;
+}
+
+@keyframes compartilharSlideIn {
+  from { opacity: 0; transform: translateY(24px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+@keyframes compartilharSlideOut {
+  from { opacity: 1; transform: translateY(0)    scale(1);    }
+  to   { opacity: 0; transform: translateY(16px) scale(0.97); }
 }
 .compartilhar-header {
   display: flex; align-items: center; justify-content: space-between;
@@ -1923,6 +1951,10 @@ body {
   background: linear-gradient(135deg,#7c5cff,#a78bff);
   font-size: 1.1rem;
 }
+.compartilhar-av.comunidade {
+  background: linear-gradient(135deg,#26d0a8,#119f7f);
+  font-size: 1.1rem;
+}
 .compartilhar-item-info {
   flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0;
 }
@@ -1957,3 +1989,5 @@ body {
   padding: 10px 14px; outline: none;
 }
 .compartilhar-footer input::placeholder { color: var(--muted, #888); }
+
+@keyframes spin { to { transform: rotate(360deg); } }

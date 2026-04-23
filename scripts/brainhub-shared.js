@@ -631,6 +631,7 @@ function ativarMencoes(input, dropdown) {
         </div>
         <div class="compartilhar-footer">
           <input type="text" id="compartilharMsg" placeholder="Adicionar mensagem (opcional)" autocomplete="off" />
+          <div id="compartilharStatus" style="display:none;font-size:0.82rem;font-weight:600;padding:6px 2px 0;text-align:center"></div>
         </div>
       </div>`;
     document.body.appendChild(el);
@@ -651,46 +652,56 @@ function ativarMencoes(input, dropdown) {
     const { data: { user } } = await window.supabase.auth.getUser();
     if (!user) return [];
 
-    const [dmResult, grpMembResult] = await Promise.all([
-      window.supabase.from('follows')
-        .select('following_id')
-        .eq('follower_id', user.id),
-      window.supabase.from('chat_group_members')
-        .select('group_id')
-        .eq('user_id', user.id)
+    const [dmResult, chatGrpResult, comunGrpResult] = await Promise.all([
+      window.supabase.from('follows').select('following_id').eq('follower_id', user.id),
+      window.supabase.from('chat_group_members').select('group_id').eq('user_id', user.id),
+      window.supabase.from('group_members').select('group_id').eq('user_id', user.id)
     ]);
 
-    const seguindoIds = (dmResult.data || []).map(f => f.following_id);
-    const groupIds    = (grpMembResult.data || []).map(m => m.group_id);
+    const seguindoIds   = (dmResult.data || []).map(f => f.following_id);
+    const chatGroupIds  = (chatGrpResult.data || []).map(m => m.group_id);
+    const comunGroupIds = (comunGrpResult.data || []).map(m => m.group_id);
 
-    const [perfisResult, gruposResult] = await Promise.all([
+    const [perfisResult, chatGruposResult, comunGruposResult] = await Promise.all([
       seguindoIds.length
         ? window.supabase.from('profiles').select('id, nome, cor_avatar').in('id', seguindoIds)
         : Promise.resolve({ data: [] }),
-      groupIds.length
-        ? window.supabase.from('chat_groups').select('id, name, emoji').in('id', groupIds)
+      chatGroupIds.length
+        ? window.supabase.from('chat_groups').select('id, name, emoji').in('id', chatGroupIds)
+        : Promise.resolve({ data: [] }),
+      comunGroupIds.length
+        ? window.supabase.from('grupos').select('id, nome, emoji').in('id', comunGroupIds)
         : Promise.resolve({ data: [] })
     ]);
 
     const dms = (perfisResult.data || []).map(p => ({
-      tipo:    'dm',
-      id:      p.id,
-      nome:    p.nome || 'Usuário',
-      iniciais: _gerarIniciais(p.nome || 'Usuário'),
-      cor:     p.cor_avatar || '',
+      tipo:      'dm',
+      id:        p.id,
+      nome:      p.nome || 'Usuário',
+      iniciais:  _gerarIniciais(p.nome || 'Usuário'),
+      cor:       p.cor_avatar || '',
       subtitulo: 'Mensagem direta'
     }));
 
-    const grupos = (gruposResult.data || []).map(g => ({
-      tipo:    'group',
-      id:      g.id,
-      nome:    g.name || 'Grupo',
-      iniciais: g.emoji || '💬',
-      cor:     'group',
+    const chatGrupos = (chatGruposResult.data || []).map(g => ({
+      tipo:      'group',
+      id:        g.id,
+      nome:      g.name || 'Grupo',
+      iniciais:  g.emoji || '💬',
+      cor:       'group',
       subtitulo: 'Grupo de chat'
     }));
 
-    return [...dms, ...grupos];
+    const comunGrupos = (comunGruposResult.data || []).map(g => ({
+      tipo:      'comunidade',
+      id:        g.id,
+      nome:      g.nome || 'Grupo',
+      iniciais:  g.emoji || '👥',
+      cor:       'comunidade',
+      subtitulo: 'Grupo da comunidade'
+    }));
+
+    return [...dms, ...chatGrupos, ...comunGrupos];
   }
 
   function renderizarListaCompartilhar(filtro = '') {
@@ -706,8 +717,8 @@ function ativarMencoes(input, dropdown) {
     }
 
     lista.innerHTML = itens.map(c => {
-      const av = c.tipo === 'group'
-        ? `<div class="compartilhar-av group">${c.iniciais}</div>`
+      const av = (c.tipo === 'group' || c.tipo === 'comunidade')
+        ? `<div class="compartilhar-av ${c.cor}">${c.iniciais}</div>`
         : `<div class="compartilhar-av ${c.cor}">${c.iniciais}</div>`;
       return `<div class="compartilhar-item" data-tipo="${c.tipo}" data-id="${c.id}">
         ${av}
@@ -725,11 +736,21 @@ function ativarMencoes(input, dropdown) {
         const tipo = item.dataset.tipo;
         const id   = item.dataset.id;
         btn.disabled = true;
-        btn.textContent = 'Enviando...';
-        await enviarPostParaConversa(tipo, id);
-        btn.textContent = 'Enviado!';
-        btn.style.background = 'var(--success, #26d0a8)';
-        setTimeout(fecharModalCompartilhar, 800);
+        btn.innerHTML = '<i data-lucide="loader-2" style="width:13px;height:13px;animation:spin 1s linear infinite"></i> Enviando...';
+        if (window.lucide) lucide.createIcons({ nodes: [btn] });
+        _mostrarStatusCompartilhar('');
+        try {
+          await enviarPostParaConversa(tipo, id);
+          const label = tipo === 'comunidade' ? 'Post publicado no grupo! ✓' : 'Mensagem enviada! ✓';
+          _mostrarStatusCompartilhar(label, false);
+          setTimeout(fecharModalCompartilhar, 2000);
+        } catch(e) {
+          btn.disabled = false;
+          btn.innerHTML = '<i data-lucide="send"></i> Enviar';
+          if (window.lucide) lucide.createIcons({ nodes: [btn] });
+          const motivo = e?.message || 'Erro desconhecido';
+          _mostrarStatusCompartilhar(`Erro ao enviar: ${motivo}`, true);
+        }
       });
     });
   }
@@ -737,42 +758,75 @@ function ativarMencoes(input, dropdown) {
   async function enviarPostParaConversa(tipo, targetId) {
     if (!_postCompartilhar || !window.supabase) return;
     const { data: { user } } = await window.supabase.auth.getUser();
-    if (!user) return;
+    if (!user) throw new Error('Usuário não autenticado.');
 
-    const { postId, autor, texto, imgUrl } = _postCompartilhar;
-    const msgExtra = (document.getElementById('compartilharMsg')?.value || '').trim();
+    const { postId, autor, texto, imgUrl, arquivoUrl, arquivoNome } = _postCompartilhar;
+    const msgExtra   = (document.getElementById('compartilharMsg')?.value || '').trim();
     const textoTrunc = texto.length > 120 ? texto.slice(0, 120) + '…' : texto;
+
+    if (tipo === 'comunidade') {
+      const textoPost = msgExtra
+        ? `${msgExtra}\n\n📤 Compartilhado de ${autor}:\n${textoTrunc}`
+        : `📤 Compartilhado de ${autor}:\n${textoTrunc}`;
+      const { error } = await window.supabase.from('posts').insert({
+        user_id:      user.id,
+        group_id:     targetId,
+        texto:        textoPost,
+        imagem_url:   imgUrl   || null,
+        arquivo_url:  arquivoUrl  || null,
+        arquivo_nome: arquivoNome || null
+      });
+      if (error) throw new Error(error.message);
+      return;
+    }
+
+    // DM ou grupo de chat — envia como mensagem
     const payload = `__post__:${postId}||${autor}||${textoTrunc}||${imgUrl}`;
 
     if (msgExtra) {
-      if (tipo === 'dm') {
-        await window.supabase.from('messages').insert({ sender_id: user.id, receiver_id: targetId, texto: msgExtra });
-      } else {
-        await window.supabase.from('group_messages').insert({ group_id: targetId, sender_id: user.id, texto: msgExtra });
-      }
+      const extra = tipo === 'dm'
+        ? window.supabase.from('messages').insert({ sender_id: user.id, receiver_id: targetId, texto: msgExtra })
+        : window.supabase.from('group_messages').insert({ group_id: targetId, sender_id: user.id, texto: msgExtra });
+      const { error: e1 } = await extra;
+      if (e1) throw new Error(e1.message);
     }
 
-    if (tipo === 'dm') {
-      await window.supabase.from('messages').insert({ sender_id: user.id, receiver_id: targetId, texto: payload });
-    } else {
-      await window.supabase.from('group_messages').insert({ group_id: targetId, sender_id: user.id, texto: payload });
-    }
+    const main = tipo === 'dm'
+      ? window.supabase.from('messages').insert({ sender_id: user.id, receiver_id: targetId, texto: payload })
+      : window.supabase.from('group_messages').insert({ group_id: targetId, sender_id: user.id, texto: payload });
+    const { error: e2 } = await main;
+    if (e2) throw new Error(e2.message);
+  }
+
+  function _mostrarStatusCompartilhar(msg, isErro = false) {
+    let el = document.getElementById('compartilharStatus');
+    if (!el) return;
+    if (!msg) { el.style.display = 'none'; return; }
+    el.textContent = msg;
+    el.style.display = 'block';
+    el.style.color   = isErro ? '#ff4b6e' : '#26d0a8';
   }
 
   function fecharModalCompartilhar() {
     const el = document.getElementById('compartilharOverlay');
-    if (el) el.classList.add('hidden');
-    _postCompartilhar = null;
+    if (!el || el.classList.contains('hidden') || el.classList.contains('hiding')) return;
+    el.classList.add('hiding');
+    setTimeout(() => {
+      el.classList.remove('hiding');
+      el.classList.add('hidden');
+      _postCompartilhar = null;
+    }, 280);
   }
 
-  window.abrirModalCompartilhar = async function(postId, texto, autor, imgUrl) {
+  window.abrirModalCompartilhar = async function(postId, texto, autor, imgUrl, arquivoUrl, arquivoNome) {
     injetarModalCompartilhar();
-    _postCompartilhar = { postId, texto, autor, imgUrl };
+    _postCompartilhar = { postId, texto, autor, imgUrl, arquivoUrl: arquivoUrl || '', arquivoNome: arquivoNome || '' };
     const overlay = document.getElementById('compartilharOverlay');
     overlay.classList.remove('hidden');
     document.getElementById('compartilharBusca').value = '';
-    document.getElementById('compartilharMsg').value = '';
+    document.getElementById('compartilharMsg').value   = '';
     document.getElementById('compartilharLista').innerHTML = '<p class="compartilhar-vazio">Carregando...</p>';
+    _mostrarStatusCompartilhar('');
     if (window.lucide) lucide.createIcons({ nodes: [overlay] });
     _conversasCache = await carregarConversasCompartilhar();
     renderizarListaCompartilhar('');
