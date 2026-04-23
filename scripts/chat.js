@@ -215,7 +215,7 @@ async function carregarConversasDM() {
 
   const { data: perfis } = await window.supabase
     .from('profiles')
-    .select('id, nome, cor_avatar, curso')
+    .select('id, nome, cor_avatar, curso, foto_url')
     .in('id', [...parceirosSet]);
 
   return (perfis || []).map(p => {
@@ -227,11 +227,12 @@ async function carregarConversasDM() {
       nome,
       iniciais:    gerarIniciais(nome),
       cor:         p.cor_avatar || '',
+      foto_url:    p.foto_url || null,
       parceiro_id: p.id,
       online:      false,
       subtitulo:   p.curso || '',
       naoLidas:    unreadMap.get(p.id) || 0,
-      preview:     last?.texto || '',
+      preview:     previewTexto(last?.texto || ''),
       hora:        last ? tempoRelativo(last.created_at) : '',
       _lastTime:   last?.created_at || '',
       mensagens:   []
@@ -344,11 +345,12 @@ function renderizarLista() {
       : (c.mensagens[c.mensagens.length - 1]?.texto || 'Sem mensagens');
     const preview = previewTexto(rawPreview);
     const horaStr = c.hora || '';
+    const avatarHTML = c.foto_url
+      ? `<div class="conv-avatar av-foto"><img src="${c.foto_url}" alt="${c.nome}" /></div>`
+      : `<div class="conv-avatar ${c.cor} ${c.tipo === 'group' ? 'group' : ''}">${c.iniciais}</div>`;
     return `
       <li class="conv-item ${c.id === conversaAtualId ? 'active' : ''}" data-id="${c.id}">
-        <div class="conv-avatar ${c.cor} ${c.tipo === 'group' ? 'group' : ''}">
-          ${c.iniciais}
-        </div>
+        ${avatarHTML}
         <div class="conv-info">
           <div class="conv-top">
             <span class="conv-name">${c.nome}</span>
