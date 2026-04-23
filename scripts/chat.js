@@ -497,7 +497,9 @@ function renderTextoMensagem(texto, msg) {
         </div>
         ${imgHTML}
         <p class="msg-post-texto">${esc(textoP)}</p>
-        <a href="home.html" class="msg-post-link">Ver no feed →</a>
+        <div class="msg-post-footer">
+          <a href="home.html" class="msg-post-link">Ver no feed</a>
+        </div>
       </div>
     </div>`;
   }
@@ -525,7 +527,7 @@ function renderizarMensagens(c) {
              style="width:28px;height:28px;border-radius:50%;font-size:0.62rem;font-weight:700;display:grid;place-items:center;flex-shrink:0;">
           ${msg.iniciais || c.iniciais}
         </div>` : ''}
-      <div class="msg-bubble ${msg.minha ? 'mine' : 'theirs'}">
+      <div class="msg-bubble ${msg.minha ? 'mine' : 'theirs'}${msg.texto.startsWith('__post__:') ? ' has-post' : ''}">
         ${mostrarAutor ? `<div class="msg-author">${msg.autor}</div>` : ''}
         ${renderTextoMensagem(msg.texto, msg)}
         <div class="msg-time">${msg.hora}</div>

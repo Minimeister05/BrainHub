@@ -1086,64 +1086,88 @@
 .call-ctrl-btn.end:hover { background: #dc2626; }
 .call-ctrl-btn svg { width: 22px; height: 22px; }
 
-/* ===== POST COMPARTILHADO NO CHAT ===== */
-.msg-post-card {
-  max-width: 290px;
-  cursor: default;
+/* ===== BOLHA SEM FUNDO QUANDO CONTÉM POST ===== */
+.msg-bubble.has-post {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+.msg-bubble.has-post .msg-time {
+  color: var(--muted) !important;
+  padding-right: 2px;
 }
 
-/* "X compartilhou um post" */
+/* ===== POST COMPARTILHADO NO CHAT ===== */
+.msg-post-card { max-width: 300px; cursor: default; }
+
+/* "X compartilhou um post" — label discreta acima */
 .msg-post-shared-by {
   display: flex; align-items: center; gap: 5px;
-  font-size: 0.71rem; color: rgba(255,255,255,0.4);
-  margin-bottom: 5px; padding: 0 2px;
+  font-size: 0.7rem; color: var(--muted, #888);
+  margin-bottom: 6px; padding: 0 4px;
 }
 .msg-post-shared-by i { width: 11px; height: 11px; flex-shrink: 0; }
 
-/* Card interno que imita o post */
+/* Card principal com borda e fundo escuro */
 .msg-post-inner {
-  background: var(--panel-2, #12121e);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 14px;
+  background: var(--panel, #1a1a2e);
+  border: 1px solid var(--border, #2e2e45);
+  border-radius: 16px;
   overflow: hidden;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.3);
+  transition: border-color 0.2s;
 }
+.msg-post-inner:hover { border-color: rgba(124,92,255,0.4); }
 
 /* Cabeçalho: avatar + nome do autor */
 .msg-post-header {
-  display: flex; align-items: center; gap: 8px;
-  padding: 10px 12px 0;
+  display: flex; align-items: center; gap: 9px;
+  padding: 12px 14px 8px;
+  border-bottom: 1px solid var(--border, #2e2e45);
 }
 .msg-post-av {
-  width: 28px; height: 28px; border-radius: 50%;
+  width: 32px; height: 32px; border-radius: 50%;
   background: linear-gradient(135deg, #7c5cff, #4e2edf);
   display: grid; place-items: center;
-  font-size: 0.6rem; font-weight: 700; color: #fff;
+  font-size: 0.65rem; font-weight: 700; color: #fff;
   flex-shrink: 0;
 }
 .msg-post-autor-nome {
-  font-size: 0.8rem; font-weight: 700; color: var(--text, #fff);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  font-size: 0.85rem; font-weight: 700;
+  color: var(--text, #d7d7de);
 }
 
+/* Imagem do post */
 .msg-post-img {
-  width: 100%; max-height: 130px; object-fit: cover;
-  display: block; margin-top: 8px;
+  width: 100%; max-height: 140px; object-fit: cover;
+  display: block;
 }
+
+/* Texto do post */
 .msg-post-texto {
-  font-size: 0.83rem; color: rgba(215,215,222,0.85);
-  line-height: 1.45;
+  font-size: 0.85rem; color: var(--muted, #aaa);
+  line-height: 1.5;
   display: -webkit-box; -webkit-line-clamp: 3;
   -webkit-box-orient: vertical; overflow: hidden;
-  padding: 7px 12px 0;
+  padding: 10px 14px;
   margin: 0;
 }
-.msg-post-link {
-  display: block;
-  font-size: 0.75rem; color: var(--purple, #7c5cff);
-  text-decoration: none; font-weight: 600;
-  padding: 8px 12px 10px;
-  border-top: 1px solid rgba(255,255,255,0.06);
-  margin-top: 8px;
-  transition: color 0.15s;
+
+/* Rodapé com link */
+.msg-post-footer {
+  display: flex; align-items: center; justify-content: center;
+  padding: 0;
+  border-top: 1px solid var(--border, #2e2e45);
 }
-.msg-post-link:hover { color: #bcaeff; }
+.msg-post-link {
+  display: block; width: 100%; text-align: center;
+  font-size: 0.8rem; color: var(--purple, #7c5cff);
+  text-decoration: none; font-weight: 600;
+  padding: 9px 14px;
+  transition: background 0.15s, color 0.15s;
+}
+.msg-post-link:hover {
+  background: rgba(124,92,255,0.08);
+  color: #bcaeff;
+}
