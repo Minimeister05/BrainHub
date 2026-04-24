@@ -412,9 +412,20 @@ async function carregarEstatisticasSidebar() {
 }
 
 // Sempre consulta Supabase para ter o número real (não usa cache do localStorage)
+let _notifPollingAtivo = false;
 function _waitAndUpdateBadge() {
-  if (window.supabase) { atualizarBadgeNotifSupabase(); }
-  else { setTimeout(_waitAndUpdateBadge, 300); }
+  if (window.location.pathname.includes('notificacoes.html')) {
+    // Usuário está na página de notificações: badge deve ser 0
+    localStorage.setItem('brainhub_notif_count', '0');
+    aplicarBadgeNotif();
+    return;
+  }
+  if (!window.supabase) { setTimeout(_waitAndUpdateBadge, 300); return; }
+  atualizarBadgeNotifSupabase();
+  if (!_notifPollingAtivo) {
+    _notifPollingAtivo = true;
+    setInterval(atualizarBadgeNotifSupabase, 30000);
+  }
 }
 _waitAndUpdateBadge();
 
@@ -611,6 +622,219 @@ async function uploadParaCloudinary(file, folder) {
     throw new Error('Conteúdo impróprio detectado. Upload não permitido.');
   }
   return json.secure_url;
+}
+
+// ===== GRUPOS SUGERIDOS =====
+async function carregarGruposSugeridos() {
+  const container = document.getElementById('gruposSugeridosContainer');
+  if (!container) return;
+
+  container.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;padding:8px 0">Carregando…</p>';
+
+  const { data: { user } } = await window.supabase.auth.getUser();
+  if (!user) return;
+
+  // Perfil + grupos já participando em paralelo
+  const [perfilRes, membrosRes] = await Promise.all([
+    window.supabase.from('profiles').select('curso, faculdade').eq('id', user.id).single(),
+    window.supabase.from('group_members').select('group_id').eq('user_id', user.id),
+  ]);
+
+  const curso     = perfilRes.data?.curso     || '';
+  const faculdade = perfilRes.data?.faculdade || '';
+  const jaEntrou  = new Set((membrosRes.data || []).map(m => m.group_id));
+
+  // Busca grupos candidatos que o usuário ainda não entrou
+  let query = window.supabase
+    .from('grupos')
+    .select('id, nome, emoji, categoria')
+    .limit(40);
+  if (jaEntrou.size > 0) {
+    query = query.not('id', 'in', `(${[...jaEntrou].join(',')})`);
+  }
+  const { data: candidatos } = await query;
+
+  if (!candidatos || candidatos.length === 0) {
+    container.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;padding:8px 0">Nenhum grupo sugerido no momento.</p>';
+    return;
+  }
+
+  // Conta membros de cada candidato para medir popularidade
+  const { data: membersData } = await window.supabase
+    .from('group_members')
+    .select('group_id')
+    .in('group_id', candidatos.map(g => g.id));
+
+  const memberCount = {};
+  (membersData || []).forEach(m => {
+    memberCount[m.group_id] = (memberCount[m.group_id] || 0) + 1;
+  });
+
+  // Tokens do perfil para match (ignora palavras curtas como "de", "da")
+  const tokens = t => (t || '').toLowerCase().split(/\s+/).filter(w => w.length > 2);
+  const cursoTokens  = tokens(curso);
+  const faculdTokens = tokens(faculdade);
+
+  const rankeados = candidatos
+    .map(g => {
+      const campo = `${g.nome} ${g.categoria || ''}`.toLowerCase();
+      let score = Math.min((memberCount[g.id] || 0) * 0.5, 20); // popularidade (max 20 pts)
+      cursoTokens .forEach(t => { if (campo.includes(t)) score += 10; }); // match curso
+      faculdTokens.forEach(t => { if (campo.includes(t)) score +=  8; }); // match faculdade
+      return { ...g, score, membros: memberCount[g.id] || 0 };
+    })
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 4);
+
+  container.innerHTML = rankeados.map(g => `
+    <div class="group-item">
+      <div class="group-icon purple-bg" style="font-size:1.1rem">${g.emoji || '🧠'}</div>
+      <div class="group-info">
+        <strong>${_escapeHtml(g.nome)}</strong>
+        <small>${_escapeHtml(g.categoria || 'Grupo')}${g.membros > 0 ? ` · ${g.membros} membro${g.membros !== 1 ? 's' : ''}` : ''}</small>
+      </div>
+      <button onclick="window.location.href='grupo-detalhe.html?id=${g.id}'">Ver</button>
+    </div>`).join('');
+}
+
+function _initGruposSugeridos() {
+  if (!document.getElementById('gruposSugeridosContainer')) return;
+  if (!window.supabase) { setTimeout(_initGruposSugeridos, 300); return; }
+  carregarGruposSugeridos();
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', _initGruposSugeridos);
+} else {
+  setTimeout(_initGruposSugeridos, 0);
+}
+
+// ===== MATÉRIAS POPULARES =====
+async function carregarMateriasPopulares() {
+  const container = document.getElementById('materiasPopularesChips');
+  if (!container) return;
+
+  container.innerHTML = '<span style="color:var(--muted);font-size:0.82rem">Carregando…</span>';
+
+  const semanaAtras = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+  const [postsRes, exercRes] = await Promise.all([
+    // Posts com área definida na última semana (+ curtidas e comentários para peso de engajamento)
+    window.supabase.from('posts')
+      .select('area, likes(id), comments(id)')
+      .not('area', 'is', null)
+      .gte('created_at', semanaAtras)
+      .limit(500),
+    // Exercícios respondidos na última semana
+    window.supabase.from('respostas_usuario')
+      .select('exercicios(materia)')
+      .gte('created_at', semanaAtras)
+      .limit(500),
+  ]);
+
+  const pontos = {};
+
+  // Posts: 2 pts base + 0.4 por curtida + 0.6 por comentário
+  (postsRes.data || []).forEach(p => {
+    if (!p.area) return;
+    pontos[p.area] = (pontos[p.area] || 0)
+      + 2
+      + (p.likes?.length    || 0) * 0.4
+      + (p.comments?.length || 0) * 0.6;
+  });
+
+  // Exercícios respondidos: 1 pt por resposta (sinal de estudo ativo)
+  (exercRes.data || []).forEach(r => {
+    const m = r.exercicios?.materia;
+    if (!m) return;
+    pontos[m] = (pontos[m] || 0) + 1;
+  });
+
+  const top = Object.entries(pontos)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 9)
+    .map(([m]) => m);
+
+  if (top.length === 0) {
+    container.innerHTML = '<span style="color:var(--muted);font-size:0.82rem">Sem dados ainda.</span>';
+    return;
+  }
+
+  container.innerHTML = top
+    .map(m => `<span style="cursor:pointer" onclick="window.location.href='exercicios.html'">${_escapeHtml(m)}</span>`)
+    .join('');
+}
+
+function _initMateriasPopulares() {
+  if (!document.getElementById('materiasPopularesChips')) return;
+  if (!window.supabase) { setTimeout(_initMateriasPopulares, 300); return; }
+  carregarMateriasPopulares();
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', _initMateriasPopulares);
+} else {
+  setTimeout(_initMateriasPopulares, 0);
+}
+
+// ===== EM ALTA =====
+async function carregarEmAlta() {
+  const ul = document.getElementById('emAltaList');
+  if (!ul) return;
+
+  ul.innerHTML = '<li style="color:var(--muted);font-size:0.82rem;padding:4px 0">Carregando…</li>';
+
+  const h48 = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+  const { data: posts } = await window.supabase
+    .from('posts')
+    .select('id, texto, profiles!posts_user_id_fkey(nome), likes(id), comments(id)')
+    .is('group_id', null)
+    .gte('created_at', h48)
+    .limit(80);
+
+  if (!posts || posts.length === 0) {
+    ul.innerHTML = '<li style="color:var(--muted);font-size:0.82rem">Nenhum post em destaque ainda.</li>';
+    return;
+  }
+
+  const MENTION_RE = /@\[([^\]|]+)\|[a-f0-9-]{36}\]/g;
+
+  const comEngajamento = posts
+    .map(p => {
+      const textoLimpo = (p.texto || '').replace(MENTION_RE, '@$1');
+      return {
+        id:       p.id,
+        texto:    textoLimpo.length > 60 ? textoLimpo.slice(0, 60).trimEnd() + '…' : textoLimpo,
+        autor:    p.profiles?.nome?.split(' ')[0] || 'Alguém',
+        score:    (p.likes?.length || 0) * 2 + (p.comments?.length || 0) * 3,
+        likes:    p.likes?.length || 0,
+        comments: p.comments?.length || 0,
+      };
+    })
+    .filter(p => p.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 5);
+
+  if (comEngajamento.length === 0) {
+    ul.innerHTML = '<li style="color:var(--muted);font-size:0.82rem">Seja o primeiro a engajar!</li>';
+    return;
+  }
+
+  ul.innerHTML = comEngajamento.map(p => `
+    <li style="cursor:pointer" onclick="window.location.href='home.html?postId=${p.id}'">
+      <span style="font-size:0.7rem;color:var(--muted)">${_escapeHtml(p.autor)}</span>
+      <small style="display:block;margin-top:2px">${_escapeHtml(p.texto)}</small>
+      <small style="color:var(--muted);font-size:0.7rem">❤️ ${p.likes} &nbsp;💬 ${p.comments}</small>
+    </li>`).join('');
+}
+
+function _initEmAlta() {
+  if (!document.getElementById('emAltaList')) return;
+  if (!window.supabase) { setTimeout(_initEmAlta, 300); return; }
+  carregarEmAlta();
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', _initEmAlta);
+} else {
+  setTimeout(_initEmAlta, 0);
 }
 
 // ===== DENÚNCIA =====

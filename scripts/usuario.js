@@ -205,7 +205,14 @@ async function init() {
         <p style="margin-top:6px;font-size:0.85rem">O usuário optou por manter o perfil privado.</p>
       </div>`;
     document.getElementById('btnFollow').style.display = 'none';
-    document.getElementById('btnMsg').style.display = 'none';
+    // Exibe botão de "Enviar pedido" para perfis privados (se logado)
+    if (usuarioAtual) {
+      const btnMsg = document.getElementById('btnMsg');
+      btnMsg.innerHTML = '<i data-lucide="send"></i> Enviar pedido';
+      btnMsg.href = `chat.html?userId=${targetUserId}&pedido=1`;
+    } else {
+      document.getElementById('btnMsg').style.display = 'none';
+    }
     lucide.createIcons();
     return;
   }

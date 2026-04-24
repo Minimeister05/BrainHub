@@ -63,11 +63,16 @@
 
       <section class="trending-card card">
         <h3><i data-lucide="trending-up"></i> Em Alta</h3>
-        <ul>
-          <li><span>#</span> Inteligência Artificial<small>1.2k posts</small></li>
-          <li><span>#</span> Cálculo III<small>856 posts</small></li>
-          <li><span>#</span> Estágio 2026<small>634 posts</small></li>
+        <ul id="emAltaList">
+          <li style="color:var(--muted);font-size:0.82rem;padding:4px 0">Carregando…</li>
         </ul>
+      </section>
+
+      <section class="groups-card card">
+        <h3><i data-lucide="users-round"></i> Grupos Sugeridos</h3>
+        <div id="gruposSugeridosContainer">
+          <p style="color:var(--muted);font-size:0.85rem;padding:8px 0">Carregando…</p>
+        </div>
       </section>
     </aside>
 
@@ -78,18 +83,16 @@
     <aside class="right-column">
       <section class="subjects-card card">
         <h3><i data-lucide="book-open"></i> Matérias Populares</h3>
-        <div class="chips">
-          <span>Cálculo</span><span>Física</span><span>Algoritmos</span>
-          <span>Estatística</span><span>Redes</span><span>IA</span>
-          <span>Química</span><span>Biologia</span><span>Filosofia</span>
+        <div class="chips" id="materiasPopularesChips">
+          <span style="color:var(--muted);font-size:0.82rem">Carregando…</span>
         </div>
       </section>
     </aside>
   </main>
 
-  <script src="./scripts/brainhub-shared.js"></script>
+  <script src="./scripts/brainhub-shared.js?v=3"></script>
   <script type="module" src="./scripts/supabaseClient.js"></script>
-  <script defer src="./scripts/salvos.js"></script>
+  <script defer src="./scripts/salvos.js?v=2"></script>
 
   <div class="search-overlay hidden" id="searchOverlay">
     <div class="search-modal">

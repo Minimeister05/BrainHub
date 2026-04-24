@@ -803,124 +803,8 @@ async function carregarSugestoes(userId) {
   });
 }
 
-async function carregarEmAlta() {
-  const ul = document.getElementById('emAltaList');
-  if (!ul) return;
 
-  const h48 = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
-  const { data: posts } = await window.supabase
-    .from('posts')
-    .select('id, texto, profiles!posts_user_id_fkey(nome), likes(id), comments(id)')
-    .is('group_id', null)
-    .gte('created_at', h48)
-    .limit(60);
 
-  if (!posts || posts.length === 0) {
-    ul.innerHTML = '<li style="color:var(--muted);font-size:0.82rem">Nenhum post em destaque ainda.</li>';
-    return;
-  }
-
-  const rankeados = posts
-    .map(p => ({
-      id: p.id,
-      texto: (p.texto || '').slice(0, 55) + ((p.texto || '').length > 55 ? '…' : ''),
-      autor: p.profiles?.nome?.split(' ')[0] || 'Alguém',
-      score: (p.likes?.length || 0) * 2 + (p.comments?.length || 0) * 3,
-      likes: p.likes?.length || 0,
-      comments: p.comments?.length || 0,
-    }))
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 3);
-
-  if (rankeados.every(p => p.score === 0)) {
-    ul.innerHTML = '<li style="color:var(--muted);font-size:0.82rem">Seja o primeiro a engajar!</li>';
-    return;
-  }
-
-  ul.innerHTML = rankeados.map(p => `
-    <li style="cursor:pointer" onclick="window.location.href='home.html?postId=${p.id}'">
-      <span style="font-size:0.7rem;color:var(--muted)">${p.autor}</span>
-      <small style="display:block;margin-top:2px">${p.texto}</small>
-      <small style="color:var(--muted);font-size:0.7rem">❤️ ${p.likes} &nbsp;💬 ${p.comments}</small>
-    </li>`).join('');
-}
-
-async function carregarGruposSugeridos(userId, curso, faculdade) {
-  const container = document.getElementById('gruposSugeridosContainer');
-  if (!container) return;
-
-  // Grupos que o usuário já está
-  const { data: membros } = await window.supabase
-    .from('group_members').select('group_id').eq('user_id', userId);
-  const jaEntrou = new Set((membros || []).map(m => m.group_id));
-
-  // Busca grupos por curso e faculdade
-  let grupos = [];
-  const termos = [curso, faculdade].filter(Boolean);
-  if (termos.length > 0) {
-    const filtro = termos.map(t => `categoria.ilike.%${t}%,nome.ilike.%${t}%`).join(',');
-    const { data } = await window.supabase
-      .from('grupos')
-      .select('id, nome, emoji, categoria')
-      .or(filtro)
-      .limit(10);
-    grupos = (data || []).filter(g => !jaEntrou.has(g.id));
-  }
-
-  // Fallback: grupos populares se não encontrou suficiente
-  if (grupos.length < 3) {
-    const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    const jaIds = [...jaEntrou, ...grupos.map(g => g.id)].filter(id => uuidRe.test(id));
-    let q = window.supabase.from('grupos').select('id, nome, emoji, categoria').limit(6);
-    if (jaIds.length > 0) q = q.not('id', 'in', `(${jaIds.join(',')})`)
-    const { data: populares } = await q;
-    grupos = [...grupos, ...(populares || [])].slice(0, 4);
-  }
-
-  if (grupos.length === 0) {
-    container.innerHTML = '<p style="color:var(--muted);font-size:0.82rem;padding:8px 0">Nenhum grupo sugerido no momento.</p>';
-    return;
-  }
-
-  container.innerHTML = grupos.map(g => `
-    <div class="group-item">
-      <div class="group-icon purple-bg" style="font-size:1.1rem">${g.emoji || '🧠'}</div>
-      <div class="group-info"><strong>${g.nome}</strong><small>${g.categoria || 'Grupo'}</small></div>
-      <button onclick="window.location.href='grupo-detalhe.html?id=${g.id}'">Ver</button>
-    </div>`).join('');
-}
-
-async function carregarMateriasPopulares() {
-  const container = document.getElementById('materiasPopularesChips');
-  if (!container) return;
-
-  const semanaAtras = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-  const { data } = await window.supabase
-    .from('respostas_usuario')
-    .select('exercicios(materia)')
-    .gte('created_at', semanaAtras)
-    .limit(500);
-
-  if (!data || data.length === 0) {
-    container.innerHTML = '<span style="color:var(--muted);font-size:0.82rem">Sem dados ainda.</span>';
-    return;
-  }
-
-  const contagem = {};
-  data.forEach(r => {
-    const m = r.exercicios?.materia;
-    if (m) contagem[m] = (contagem[m] || 0) + 1;
-  });
-
-  const top = Object.entries(contagem)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 8)
-    .map(([m]) => m);
-
-  container.innerHTML = top
-    .map(m => `<span style="cursor:pointer" onclick="window.location.href='exercicios.html'">${m}</span>`)
-    .join('');
-}
 
 // ===== ALGORITMO DE RECOMENDAÇÃO =====
 const BRAINHUB_OFICIAL_ID = 'e4e44716-1fa4-4fc3-8d33-c746841c7345'
@@ -1016,10 +900,7 @@ async function init() {
     ])
     seguindoIds = new Set((follows.data || []).map(f => f.following_id));
 
-    carregarGruposSugeridos(usuarioAtual.id, meuCurso, minhaFaculdade);
   }
-  carregarMateriasPopulares();
-  carregarEmAlta();
   await renderizarPosts();
   rolarParaPost();
   iniciarPolling();

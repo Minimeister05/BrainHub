@@ -1176,3 +1176,81 @@
   background: rgba(124,92,255,0.08);
   color: #bcaeff;
 }
+
+/* ===== PEDIDOS DE MENSAGEM ===== */
+.pedidos-msg-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 8px 6px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #a98fff;
+  background: rgba(124,92,255,0.1);
+  border: 1px solid rgba(124,92,255,0.22);
+  transition: background 0.15s;
+}
+.pedidos-msg-btn:hover,
+.pedidos-msg-btn.active {
+  background: rgba(124,92,255,0.2);
+  border-color: rgba(124,92,255,0.4);
+}
+.pedidos-msg-btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+.pedidos-count {
+  margin-left: auto;
+  background: var(--purple);
+  color: white;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  min-width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  padding: 0 5px;
+}
+
+.pedidos-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 14px 10px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.pedidos-header .icon-btn { color: var(--muted); }
+.pedidos-header .icon-btn:hover { color: var(--text); }
+
+.conv-item.pedido-item { align-items: flex-start; cursor: default; }
+
+.pedido-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+.pedido-aceitar,
+.pedido-recusar {
+  padding: 5px 14px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid;
+  transition: 0.15s;
+}
+.pedido-aceitar {
+  background: rgba(124,92,255,0.15);
+  border-color: rgba(124,92,255,0.35);
+  color: #c4b7ff;
+}
+.pedido-aceitar:hover { background: rgba(124,92,255,0.28); }
+.pedido-recusar {
+  background: rgba(239,68,68,0.08);
+  border-color: rgba(239,68,68,0.28);
+  color: #f87171;
+}
+.pedido-recusar:hover { background: rgba(239,68,68,0.18); }

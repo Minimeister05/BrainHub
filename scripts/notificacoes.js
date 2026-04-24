@@ -27,8 +27,13 @@ function eNova(dataStr) {
   return new Date(dataStr) > new Date(ultimaLeitura);
 }
 
+function stripMencoes(texto) {
+  return (texto || '').replace(/@\[([^\]|]+)\|[a-f0-9-]{36}\]/g, '@$1');
+}
+
 function criarNotifHTML(notif) {
   const nova = eNova(notif.created_at);
+  const nomeSafe = _escapeHtml(notif.nome);
   const iniciais = gerarIniciais(notif.nome);
   const emojiMap = { curtida: '👍', comentario: '💬', seguidor: '👥' };
   const tipoClassMap = { curtida: 'tipo-like', comentario: 'tipo-comment', seguidor: 'tipo-follow' };
@@ -38,26 +43,31 @@ function criarNotifHTML(notif) {
   let acoesHTML = '';
 
   if (notif.tipo === 'curtida') {
-    textoHTML = `<strong>${notif.nome}</strong> curtiu seu post`;
-    if (notif.postPreview) previewHTML = `<span class="notif-preview-text">"${notif.postPreview}"</span>`;
+    textoHTML = `<strong>${nomeSafe}</strong> curtiu seu post`;
+    if (notif.postPreview) previewHTML = `<span class="notif-preview-text">"${_escapeHtml(stripMencoes(notif.postPreview))}"</span>`;
     acoesHTML = `<a href="home.html?postId=${notif.postId}" class="notif-btn">Ver post</a>`;
   } else if (notif.tipo === 'comentario') {
-    textoHTML = `<strong>${notif.nome}</strong> comentou no seu post`;
-    if (notif.comentarioTexto) previewHTML = `<span class="notif-preview-text">"${notif.comentarioTexto}"</span>`;
+    textoHTML = `<strong>${nomeSafe}</strong> comentou no seu post`;
+    if (notif.comentarioTexto) previewHTML = `<span class="notif-preview-text">"${_escapeHtml(stripMencoes(notif.comentarioTexto))}"</span>`;
     acoesHTML = `<a href="home.html?postId=${notif.postId}&openComments=1" class="notif-btn primary">Ver comentário</a>`;
   } else if (notif.tipo === 'seguidor') {
-    textoHTML = `<strong>${notif.nome}</strong> começou a te seguir`;
+    textoHTML = `<strong>${nomeSafe}</strong> começou a te seguir`;
     const followBtn = notif.jaSeguindo
       ? `<button class="notif-btn" disabled>Seguindo ✓</button>`
       : `<button class="notif-btn primary btn-follow-back" data-uid="${notif.userId}">Seguir de volta</button>`;
     acoesHTML = `${followBtn} <a href="usuario.html?id=${notif.userId}" class="notif-btn">Ver perfil</a>`;
   }
 
+  const avatarInner = notif.fotoUrl
+    ? `<img src="${notif.fotoUrl}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%" />`
+    : iniciais;
+  const avatarClass = notif.fotoUrl ? 'av-foto' : (notif.cor || '');
+
   return `
     <div class="notif-card ${nova ? 'nao-lida' : ''}" data-tipo="${notif.tipo}" data-id="${notif.id}">
       <div class="notif-avatar-wrap">
         <a href="usuario.html?id=${notif.userId}" style="text-decoration:none">
-          <div class="mini-avatar ${notif.cor}" style="width:44px;height:44px;font-size:0.9rem">${iniciais}</div>
+          <div class="mini-avatar ${avatarClass}" style="width:44px;height:44px;font-size:0.9rem">${avatarInner}</div>
         </a>
         <div class="notif-tipo-icon ${tipoClassMap[notif.tipo]}">${emojiMap[notif.tipo]}</div>
       </div>
@@ -123,18 +133,13 @@ function atualizarContagens() {
   set('countComents', comentarios);
   set('countSeguidores', seguidores);
 
-  const badge = document.getElementById('notifBadge');
-  if (badge) { badge.textContent = total; badge.style.display = total > 0 ? '' : 'none'; }
-
   const subtitleEl = document.getElementById('notifSubtitle');
   if (subtitleEl) {
     subtitleEl.textContent = total === 0
       ? 'Tudo em dia por enquanto!'
       : `${total} nova${total > 1 ? 's' : ''} desde sua última visita`;
   }
-
-  // Salva contagem no localStorage para o badge nas outras páginas
-  localStorage.setItem('brainhub_notif_count', total);
+  // Badge e localStorage são gerenciados pelo brainhub-shared.js
 }
 
 function getNotifPrefs(userId) {
@@ -169,38 +174,58 @@ async function init() {
     if (!user) { window.location.href = 'login.html'; return; }
     usuarioAtual = user;
 
+    // Limpa o badge nas outras páginas imediatamente, mas mantém ultimaLeitura
+    // com o valor antigo para que eNova() mostre corretamente as notifs novas
+    const novaUltimaLeitura = new Date().toISOString();
+    localStorage.setItem(LAST_READ_KEY, novaUltimaLeitura);
+    localStorage.setItem('brainhub_notif_count', '0');
+
     // Busca meus posts
     const { data: myPosts } = await window.supabase
       .from('posts').select('id, texto').eq('user_id', user.id);
     const myPostIds   = (myPosts || []).map(p => p.id);
-    const postTextoMap = Object.fromEntries((myPosts || []).map(p => [p.id, p.texto?.slice(0, 80) || '']));
+    const postTextoMap = Object.fromEntries((myPosts || []).map(p => [p.id, stripMencoes(p.texto || '').slice(0, 80)]));
 
     const notifs = [];
 
     if (myPostIds.length > 0) {
-      const [likesRes, commentsRes] = await Promise.all([
+      // Fetch without profile join to avoid FK resolution issues
+      const [{ data: rawLikes }, { data: rawComments }] = await Promise.all([
         window.supabase.from('likes')
-          .select('post_id, created_at, user_id, profiles(nome, cor_avatar)')
+          .select('post_id, created_at, user_id')
           .in('post_id', myPostIds)
           .neq('user_id', user.id)
           .order('created_at', { ascending: false })
           .limit(60),
         window.supabase.from('comments')
-          .select('id, post_id, texto, created_at, user_id, profiles(nome, cor_avatar)')
+          .select('id, post_id, texto, created_at, user_id')
           .in('post_id', myPostIds)
           .neq('user_id', user.id)
           .order('created_at', { ascending: false })
           .limit(60),
       ]);
 
-      const likes = likesRes.data || [];
-      const comments = commentsRes.data || [];
+      // Batch-fetch profiles for all interaction authors
+      const interactionUids = [...new Set([
+        ...(rawLikes  || []).map(l => l.user_id),
+        ...(rawComments || []).map(c => c.user_id),
+      ])];
+      let interactionProfileMap = {};
+      if (interactionUids.length > 0) {
+        const { data: intProfiles } = await window.supabase
+          .from('profiles').select('id, nome, cor_avatar, foto_url').in('id', interactionUids);
+        interactionProfileMap = Object.fromEntries((intProfiles || []).map(p => [p.id, p]));
+      }
+
+      const likes    = (rawLikes    || []).map(l => ({ ...l, profiles: interactionProfileMap[l.user_id]    || null }));
+      const comments = (rawComments || []).map(c => ({ ...c, profiles: interactionProfileMap[c.user_id] || null }));
 
       likes.forEach(l => notifs.push({
         id:          `like_${l.post_id}_${l.user_id}`,
         tipo:        'curtida',
         nome:        l.profiles?.nome || 'Usuário',
         cor:         l.profiles?.cor_avatar || '',
+        fotoUrl:     l.profiles?.foto_url   || null,
         userId:      l.user_id,
         postId:      l.post_id,
         postPreview: postTextoMap[l.post_id] || '',
@@ -212,6 +237,7 @@ async function init() {
         tipo:            'comentario',
         nome:            c.profiles?.nome || 'Usuário',
         cor:             c.profiles?.cor_avatar || '',
+        fotoUrl:         c.profiles?.foto_url   || null,
         userId:          c.user_id,
         postId:          c.post_id,
         comentarioTexto: (c.texto || '').slice(0, 80),
@@ -223,7 +249,7 @@ async function init() {
     let followsData = null;
     const followsRes = await window.supabase
       .from('follows')
-      .select('follower_id, created_at, profiles!follows_follower_id_fkey(nome, cor_avatar)')
+      .select('follower_id, created_at, profiles!follows_follower_id_fkey(nome, cor_avatar, foto_url)')
       .eq('following_id', user.id)
       .order('created_at', { ascending: false })
       .limit(60);
@@ -244,7 +270,7 @@ async function init() {
         const followerIds = followsData.map(f => f.follower_id);
         const { data: followerProfiles } = await window.supabase
           .from('profiles')
-          .select('id, nome, cor_avatar')
+          .select('id, nome, cor_avatar, foto_url')
           .in('id', followerIds);
         const profileMap = Object.fromEntries((followerProfiles || []).map(p => [p.id, p]));
         followsData = followsData.map(f => ({
@@ -262,13 +288,14 @@ async function init() {
     const euSigoSet = new Set((euSigo || []).map(f => f.following_id));
 
     followsData.forEach(f => notifs.push({
-      id:           `follow_${f.follower_id}`,
-      tipo:         'seguidor',
-      nome:         f.profiles?.nome || 'Usuário',
-      cor:          f.profiles?.cor_avatar || '',
-      userId:       f.follower_id,
-      jaSeguindo:   euSigoSet.has(f.follower_id),
-      created_at:   f.created_at,
+      id:         `follow_${f.follower_id}`,
+      tipo:       'seguidor',
+      nome:       f.profiles?.nome || 'Usuário',
+      cor:        f.profiles?.cor_avatar || '',
+      fotoUrl:    f.profiles?.foto_url   || null,
+      userId:     f.follower_id,
+      jaSeguindo: euSigoSet.has(f.follower_id),
+      created_at: f.created_at,
     }));
 
     // Filtra por prefs do usuário
@@ -291,11 +318,7 @@ async function init() {
 
     atualizarContagens();
     renderizarNotifs('todas');
-
-    // Marca automaticamente como lidas ao abrir a página
-    ultimaLeitura = new Date().toISOString();
-    localStorage.setItem(LAST_READ_KEY, ultimaLeitura);
-    localStorage.setItem('brainhub_notif_count', '0');
+    ultimaLeitura = novaUltimaLeitura; // Agora atualiza — eNova() retorna false daqui pra frente
 
   } catch (err) {
     console.error('Erro ao carregar notificações:', err);

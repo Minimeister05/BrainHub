@@ -71,6 +71,19 @@
         <button class="chat-tab" data-tab="group">Grupos </button>
       </div>
 
+      <!-- Pedidos de Mensagem -->
+      <div class="pedidos-msg-btn" id="pedidosMsgBtn" style="display:none">
+        <i data-lucide="inbox"></i>
+        Pedidos de mensagem
+        <span class="pedidos-count">0</span>
+      </div>
+      <div class="pedidos-header" id="pedidosHeader" style="display:none">
+        <button class="icon-btn pedidos-voltar" id="pedidosVoltar" title="Voltar">
+          <i data-lucide="arrow-left"></i>
+        </button>
+        <span>Pedidos de mensagem</span>
+      </div>
+
       <ul class="conversation-list" id="conversationList"></ul>
     </aside>
 
@@ -179,10 +192,10 @@
     </div>
   </div>
 
-  <script src="./scripts/brainhub-shared.js"></script>
+  <script src="./scripts/brainhub-shared.js?v=3"></script>
   <script src="./scripts/webrtc-call.js"></script>
   <script type="module" src="./scripts/supabaseClient.js"></script>
-  <script defer src="./scripts/chat.js"></script>
+  <script defer src="./scripts/chat.js?v=2"></script>
 
   <div class="search-overlay hidden" id="searchOverlay">
     <div class="search-modal">

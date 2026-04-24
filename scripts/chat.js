@@ -14,6 +14,8 @@ let parceiroDMAtual = null; // UUID do parceiro atual
 let filtroAtual   = 'all';
 let realtimeChannel = null;
 let grupoRealtimeChannels = {}; // group_id → channel
+let pedidos = [];           // pedidos de mensagem recebidos
+let mostrandoPedidos = false;
 
 // ===== HELPERS =====
 function gerarIniciais(nome) {
@@ -197,8 +199,8 @@ async function carregarConversasDM() {
 
   const { data: msgs } = await window.supabase
     .from('messages')
-    .select('sender_id, receiver_id, texto, created_at, lida')
-    .or(`sender_id.eq.${usuarioAtual.id},receiver_id.eq.${usuarioAtual.id}`)
+    .select('sender_id, receiver_id, texto, created_at, lida, pedido')
+    .or(`sender_id.eq.${usuarioAtual.id},and(receiver_id.eq.${usuarioAtual.id},pedido.eq.false)`)
     .order('created_at', { ascending: false });
 
   if (!msgs?.length) return [];
@@ -266,11 +268,12 @@ async function carregarMensagensDM(parceiroId) {
   }));
 }
 
-async function enviarMensagemDM(parceiroId, texto) {
+async function enviarMensagemDM(parceiroId, texto, pedido = false) {
   await window.supabase.from('messages').insert({
     sender_id:   usuarioAtual.id,
     receiver_id: parceiroId,
-    texto
+    texto,
+    pedido: pedido === true
   });
 }
 
@@ -286,6 +289,28 @@ function subscribeRealtimeGlobal() {
       // Ignora mensagens que não são para mim ou que eu mesmo enviei
       if (msg.receiver_id !== usuarioAtual.id) return;
       const senderId = msg.sender_id;
+
+      // Pedido de mensagem — vai para a fila de pedidos, não para a inbox normal
+      if (msg.pedido === true) {
+        const existePedido = pedidos.find(p => p.senderId === senderId);
+        if (!existePedido) {
+          const { data: perfil } = await window.supabase
+            .from('profiles').select('nome, cor_avatar, foto_url').eq('id', senderId).single();
+          const nome = perfil?.nome || 'Usuário';
+          pedidos.unshift({
+            senderId, nome, iniciais: gerarIniciais(nome),
+            cor: perfil?.cor_avatar || '', foto_url: perfil?.foto_url || null,
+            preview: previewTexto(msg.texto), hora: tempoRelativo(msg.created_at), count: 1
+          });
+        } else {
+          existePedido.count++;
+          existePedido.preview = previewTexto(msg.texto);
+          existePedido.hora = tempoRelativo(msg.created_at);
+        }
+        atualizarBotaoPedidos();
+        if (mostrandoPedidos) renderizarPedidos();
+        return;
+      }
 
       // Acha ou cria a conversa com o remetente
       let c = conversas.find(x => x.parceiro_id === senderId);
@@ -330,6 +355,138 @@ function subscribeRealtimeGlobal() {
 
 // Substituído por subscribeRealtimeGlobal
 function subscribeRealtime(_parceiroId) { /* no-op */ }
+
+// ===== PEDIDOS DE MENSAGEM =====
+async function carregarPedidos() {
+  if (!usuarioAtual || !window.supabase) return [];
+
+  const { data: msgs } = await window.supabase
+    .from('messages')
+    .select('sender_id, texto, created_at')
+    .eq('receiver_id', usuarioAtual.id)
+    .eq('pedido', true)
+    .order('created_at', { ascending: false });
+
+  if (!msgs?.length) return [];
+
+  const senderIds = [...new Set(msgs.map(m => m.sender_id))];
+  const { data: perfis } = await window.supabase
+    .from('profiles').select('id, nome, cor_avatar, foto_url').in('id', senderIds);
+
+  const perfilMap = {};
+  (perfis || []).forEach(p => perfilMap[p.id] = p);
+
+  const byS = {};
+  for (const m of msgs) {
+    if (!byS[m.sender_id]) byS[m.sender_id] = { first: m, count: 0 };
+    byS[m.sender_id].count++;
+  }
+
+  return Object.entries(byS).map(([senderId, { first, count }]) => {
+    const p = perfilMap[senderId] || {};
+    const nome = p.nome || 'Usuário';
+    return {
+      senderId, nome, iniciais: gerarIniciais(nome),
+      cor: p.cor_avatar || '', foto_url: p.foto_url || null,
+      preview: previewTexto(first.texto || ''),
+      hora: tempoRelativo(first.created_at), count
+    };
+  });
+}
+
+async function aceitarPedido(senderId) {
+  await window.supabase.from('messages')
+    .update({ pedido: false })
+    .eq('sender_id', senderId)
+    .eq('receiver_id', usuarioAtual.id)
+    .eq('pedido', true);
+
+  const [dmsReais, gruposReais] = await Promise.all([carregarConversasDM(), carregarGruposChat()]);
+  conversas = [...dmsReais, ...gruposReais]
+    .sort((a, b) => new Date(b._lastTime || 0) - new Date(a._lastTime || 0));
+
+  pedidos = pedidos.filter(p => p.senderId !== senderId);
+  atualizarBotaoPedidos();
+
+  if (!pedidos.length) fecharPedidos();
+  else renderizarPedidos();
+
+  renderizarLista();
+  abrirConversa(`dm_${senderId}`);
+}
+
+async function recusarPedido(senderId) {
+  await window.supabase.from('messages')
+    .delete()
+    .eq('sender_id', senderId)
+    .eq('receiver_id', usuarioAtual.id)
+    .eq('pedido', true);
+
+  pedidos = pedidos.filter(p => p.senderId !== senderId);
+  atualizarBotaoPedidos();
+
+  if (!pedidos.length) fecharPedidos();
+  else renderizarPedidos();
+}
+
+function atualizarBotaoPedidos() {
+  const btn = document.getElementById('pedidosMsgBtn');
+  if (!btn) return;
+  if (pedidos.length > 0) {
+    btn.style.display = '';
+    const countEl = btn.querySelector('.pedidos-count');
+    if (countEl) countEl.textContent = pedidos.length;
+  } else {
+    btn.style.display = 'none';
+  }
+}
+
+function renderizarPedidos() {
+  const lista = document.getElementById('conversationList');
+  const header = document.getElementById('pedidosHeader');
+  if (header) header.style.display = '';
+  mostrandoPedidos = true;
+  document.getElementById('pedidosMsgBtn')?.classList.add('active');
+
+  lista.innerHTML = pedidos.map(p => {
+    const avatarHTML = p.foto_url
+      ? `<div class="conv-avatar av-foto"><img src="${p.foto_url}" alt="${_escapeHtml(p.nome)}" /></div>`
+      : `<div class="conv-avatar ${p.cor}">${p.iniciais}</div>`;
+    return `
+      <li class="conv-item pedido-item">
+        ${avatarHTML}
+        <div class="conv-info">
+          <div class="conv-top">
+            <span class="conv-name">${_escapeHtml(p.nome)}</span>
+            <span class="conv-time">${p.hora}</span>
+          </div>
+          <div class="conv-bottom">
+            <span class="conv-preview">${_escapeHtml(p.preview)}</span>
+            ${p.count > 1 ? `<span class="unread-badge">${p.count}</span>` : ''}
+          </div>
+          <div class="pedido-actions">
+            <button class="pedido-aceitar" data-sender="${p.senderId}">Aceitar</button>
+            <button class="pedido-recusar" data-sender="${p.senderId}">Recusar</button>
+          </div>
+        </div>
+      </li>`;
+  }).join('') || `<li style="padding:24px;text-align:center;color:var(--muted);font-size:0.9rem">Nenhum pedido de mensagem.</li>`;
+
+  lista.querySelectorAll('.pedido-aceitar').forEach(btn => {
+    btn.addEventListener('click', e => { e.stopPropagation(); aceitarPedido(btn.dataset.sender); });
+  });
+  lista.querySelectorAll('.pedido-recusar').forEach(btn => {
+    btn.addEventListener('click', e => { e.stopPropagation(); recusarPedido(btn.dataset.sender); });
+  });
+}
+
+function fecharPedidos() {
+  mostrandoPedidos = false;
+  const header = document.getElementById('pedidosHeader');
+  if (header) header.style.display = 'none';
+  document.getElementById('pedidosMsgBtn')?.classList.remove('active');
+  renderizarLista();
+}
 
 // ===== LISTA =====
 function renderizarLista() {
@@ -567,7 +724,7 @@ async function enviarMensagem() {
   renderizarLista();
 
   if (c.tipo === 'dm' && c.parceiro_id) {
-    await enviarMensagemDM(c.parceiro_id, texto);
+    await enviarMensagemDM(c.parceiro_id, texto, c.isPedidoContext || false);
   } else if (c.tipo === 'group' && c.group_id) {
     await enviarMensagemGrupo(c.group_id, texto);
   }
@@ -890,7 +1047,7 @@ function fecharModalNova() {
   if (novaConversaResult) novaConversaResult.innerHTML = '';
 }
 
-async function iniciarConversaComUsuario(uid, nome, iniciais, cor, sub) {
+async function iniciarConversaComUsuario(uid, nome, iniciais, cor, sub, isPedidoContext = false) {
   fecharModalNova();
 
   // Verifica se já existe essa conversa na lista
@@ -901,7 +1058,8 @@ async function iniciarConversaComUsuario(uid, nome, iniciais, cor, sub) {
   const novaConv = {
     id: `dm_${uid}`, tipo: 'dm', nome, iniciais, cor,
     parceiro_id: uid, online: uid === BRAINHUB_BOT_ID, subtitulo: sub,
-    naoLidas: 0, preview: '', hora: '', mensagens: []
+    naoLidas: 0, preview: '', hora: '', mensagens: [],
+    isPedidoContext
   };
   conversas.unshift(novaConv);
   renderizarLista();
@@ -915,12 +1073,16 @@ async function verificarUrlUsuario() {
   if (!uid || !window.supabase) return;
 
   const { data: perfil } = await window.supabase
-    .from('profiles').select('nome, cor_avatar, curso').eq('id', uid).single();
+    .from('profiles').select('nome, cor_avatar, curso, foto_url, perfil_publico').eq('id', uid).single();
 
   if (!perfil) return;
 
   const nome = perfil.nome || 'Usuário';
-  await iniciarConversaComUsuario(uid, nome, gerarIniciais(nome), perfil.cor_avatar || '', perfil.curso || '');
+  const pedidoParam = params.get('pedido') === '1';
+  const jaTemConversa = conversas.some(c => c.parceiro_id === uid);
+  const isPedidoContext = (pedidoParam || perfil.perfil_publico === false) && !jaTemConversa;
+
+  await iniciarConversaComUsuario(uid, nome, gerarIniciais(nome), perfil.cor_avatar || '', perfil.curso || '', isPedidoContext);
   window.history.replaceState({}, '', 'chat.html');
 }
 
@@ -939,6 +1101,12 @@ document.querySelectorAll('.chat-tab').forEach(tab => {
   });
 });
 document.getElementById('searchInput').addEventListener('input', renderizarLista);
+
+document.getElementById('pedidosMsgBtn')?.addEventListener('click', () => {
+  if (mostrandoPedidos) { fecharPedidos(); return; }
+  renderizarPedidos();
+});
+document.getElementById('pedidosVoltar')?.addEventListener('click', fecharPedidos);
 
 // ===== BACK BUTTON (mobile) =====
 document.getElementById('chatBackBtn')?.addEventListener('click', () => {
@@ -975,6 +1143,8 @@ async function init() {
   conversas = [...dmsReais, ...gruposReais]
     .sort((a, b) => new Date(b._lastTime || 0) - new Date(a._lastTime || 0));
   renderizarLista();
+  pedidos = await carregarPedidos();
+  atualizarBotaoPedidos();
   gruposReais.forEach(g => subscribeGrupoRealtime(g.group_id));
   subscribeRealtimeGlobal();
   if (user) CallManager.init(user.id, ME.nome);
