@@ -473,20 +473,20 @@ async function atualizarBadgeChat() {
 }
 
 function _iniciarRealtimeBadgeChat(userId) {
+  // Sem filter: o Supabase exige configuração extra no dashboard para row filters.
+  // Filtramos client-side no callback.
   window.supabase
     .channel(`nav_badge_chat_${userId}`)
-    .on('postgres_changes', {
-      event: 'INSERT', schema: 'public', table: 'messages',
-      filter: `receiver_id=eq.${userId}`
-    }, () => atualizarBadgeChat())
-    .on('postgres_changes', {
-      event: 'UPDATE', schema: 'public', table: 'messages',
-      filter: `receiver_id=eq.${userId}`
-    }, () => atualizarBadgeChat())
-    .on('postgres_changes', {
-      event: 'INSERT', schema: 'public', table: 'group_messages'
-    }, () => atualizarBadgeChat())
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' },
+      (payload) => { if (payload.new?.receiver_id === userId) atualizarBadgeChat(); })
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'messages' },
+      (payload) => { if (payload.new?.receiver_id === userId) atualizarBadgeChat(); })
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'group_messages' },
+      () => atualizarBadgeChat())
     .subscribe();
+
+  // Polling fallback: garante que o badge fica correto mesmo se o realtime falhar
+  setInterval(atualizarBadgeChat, 30000);
 }
 
 function _initChatBadge() {
