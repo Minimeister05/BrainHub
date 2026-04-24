@@ -2,6 +2,9 @@
 lucide.createIcons();
 sincronizarStatusPro();
 
+// Conta oficial BrainHUB — sempre aparece online
+const BRAINHUB_BOT_ID = 'e4e44716-1fa4-4fc3-8d33-c746841c7345';
+
 // ===== ESTADO =====
 let usuarioAtual  = null;
 let ME            = {};
@@ -229,7 +232,7 @@ async function carregarConversasDM() {
       cor:         p.cor_avatar || '',
       foto_url:    p.foto_url || null,
       parceiro_id: p.id,
-      online:      false,
+      online:      p.id === BRAINHUB_BOT_ID,
       subtitulo:   p.curso || '',
       naoLidas:    unreadMap.get(p.id) || 0,
       preview:     previewTexto(last?.texto || ''),
@@ -294,7 +297,7 @@ function subscribeRealtimeGlobal() {
         c = {
           id: `dm_${senderId}`, tipo: 'dm', nome,
           iniciais: gerarIniciais(nome), cor: perfil?.cor_avatar || '',
-          parceiro_id: senderId, online: false, subtitulo: perfil?.curso || '',
+          parceiro_id: senderId, online: senderId === BRAINHUB_BOT_ID, subtitulo: perfil?.curso || '',
           naoLidas: 0, preview: '', hora: '', _lastTime: '', mensagens: []
         };
         conversas.unshift(c);
@@ -346,8 +349,8 @@ function renderizarLista() {
     const preview = previewTexto(rawPreview);
     const horaStr = c.hora || '';
     const avatarHTML = c.foto_url
-      ? `<div class="conv-avatar av-foto"><img src="${c.foto_url}" alt="${c.nome}" /></div>`
-      : `<div class="conv-avatar ${c.cor} ${c.tipo === 'group' ? 'group' : ''}">${c.iniciais}</div>`;
+      ? `<div class="conv-avatar av-foto" style="position:relative"><img src="${c.foto_url}" alt="${c.nome}" />${c.online ? '<span class="online-dot"></span>' : ''}</div>`
+      : `<div class="conv-avatar ${c.cor} ${c.tipo === 'group' ? 'group' : ''}" style="position:relative">${c.iniciais}${c.online ? '<span class="online-dot"></span>' : ''}</div>`;
     return `
       <li class="conv-item ${c.id === conversaAtualId ? 'active' : ''}" data-id="${c.id}">
         ${avatarHTML}
@@ -395,7 +398,7 @@ async function abrirConversa(id) {
         ? `<a href="${perfilLink}" class="chat-header-name" style="color:var(--text);text-decoration:none;">${c.nome}</a>`
         : `<div class="chat-header-name">${c.nome}</div>`
       }
-      <div class="chat-header-sub">${c.tipo === 'dm' ? '⚫ Offline' : `👥 ${c.subtitulo}`}</div>
+      <div class="chat-header-sub">${c.tipo === 'dm' ? (c.online ? '<span style="color:#20d3ae">● Online</span>' : '⚫ Offline') : `👥 ${c.subtitulo}`}</div>
     </div>
     <div class="chat-header-actions">
       ${c.tipo === 'dm' && c.parceiro_id ? `
@@ -897,7 +900,7 @@ async function iniciarConversaComUsuario(uid, nome, iniciais, cor, sub) {
   // Cria entrada local e abre
   const novaConv = {
     id: `dm_${uid}`, tipo: 'dm', nome, iniciais, cor,
-    parceiro_id: uid, online: false, subtitulo: sub,
+    parceiro_id: uid, online: uid === BRAINHUB_BOT_ID, subtitulo: sub,
     naoLidas: 0, preview: '', hora: '', mensagens: []
   };
   conversas.unshift(novaConv);
