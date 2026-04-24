@@ -358,10 +358,9 @@ async function confirmarExclusaoAdm() {
 
   if (criadorId) {
     const mensagem = `⚠️ Seu grupo "${nomeGrupo}" foi removido pela administração do BrainHUB.\n\nMotivo: ${motivo}\n\nSe tiver dúvidas, entre em contato com a equipe.`;
-    await window.supabase.from('messages').insert({
-      sender_id: usuarioAtual.id,
-      receiver_id: criadorId,
-      texto: mensagem
+    await window.supabase.rpc('enviar_mensagem_adm', {
+      p_receiver_id: criadorId,
+      p_texto: mensagem
     });
   }
 
