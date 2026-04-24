@@ -583,13 +583,26 @@ function _gerarIniciais(nome) {
 const CLOUDINARY_CLOUD = 'ds2fhtsmv';
 const CLOUDINARY_PRESET = 'brainhub_unsigned';
 
+// Corrige URLs de PDFs que foram salvos incorretamente com /image/upload/
+function corrigirUrlArquivo(url, nome) {
+  if (!url || !nome) return url;
+  if (url.includes('/image/upload/') && nome.toLowerCase().endsWith('.pdf')) {
+    return url.replace('/image/upload/', '/raw/upload/');
+  }
+  return url;
+}
+
 async function uploadParaCloudinary(file, folder) {
+  const isPdf = file.type === 'application/pdf';
+  // PDFs precisam de /raw/upload — /auto/upload pode retornar /image/upload/ incorretamente
+  const resourceType = isPdf ? 'raw' : 'auto';
+
   const fd = new FormData();
   fd.append('file', file);
   fd.append('upload_preset', CLOUDINARY_PRESET);
   fd.append('folder', `brainhub/${folder}`);
   if (file.type.startsWith('image/')) fd.append('moderation', 'aws_rek');
-  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/auto/upload`, {
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/${resourceType}/upload`, {
     method: 'POST', body: fd
   });
   if (!res.ok) throw new Error('Erro ao enviar para Cloudinary');

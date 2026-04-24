@@ -412,9 +412,9 @@ function criarPostHTML(post) {
         </div>
       </div>
       ${post.humor ? `<div class="post-humor">${post.humor}</div>` : ''}
-      <p class="post-text">${escapeHtml(post.texto)}</p>
+      <p class="post-text">${renderMencoes(escapeHtml(post.texto))}</p>
       ${post.imagem_url ? `<img src="${post.imagem_url}" class="post-img" loading="lazy" />` : ''}
-      ${post.arquivo_url ? `<a href="${post.arquivo_url}" target="_blank" class="post-file-link" download="${post.arquivo_nome || 'arquivo'}">📎 ${escapeHtml(post.arquivo_nome || 'Baixar arquivo')}</a>` : ''}
+      ${post.arquivo_url ? `<a href="${corrigirUrlArquivo(post.arquivo_url, post.arquivo_nome)}" target="_blank" class="post-file-link" download="${post.arquivo_nome || 'arquivo'}">📎 ${escapeHtml(post.arquivo_nome || 'Baixar arquivo')}</a>` : ''}
       <div class="post-actions">
         <button class="action-btn like-btn ${curtido ? 'liked' : ''}">
           <i data-lucide="thumbs-up"></i><span>${likesCount}</span>

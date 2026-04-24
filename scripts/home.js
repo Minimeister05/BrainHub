@@ -36,6 +36,7 @@ const composerPreview  = document.getElementById('composerPreview');
 const composerImgPrev  = document.getElementById('composerImgPreview');
 const composerFilePrev = document.getElementById('composerFilePreview');
 const composerRemove   = document.getElementById('composerRemoveMedia');
+const composerHumorPrev = document.getElementById('composerHumorPreview');
 const humorDropdown    = document.getElementById('humorDropdown');
 
 function mostrarPreview() {
@@ -91,16 +92,19 @@ humorDropdown?.querySelectorAll('.humor-opt').forEach(btn => {
   btn.addEventListener('click', () => {
     const humor = btn.dataset.humor;
     if (humorSelecionado === humor) {
-      // deseleciona
       humorSelecionado = null;
       humorDropdown.querySelectorAll('.humor-opt').forEach(b => b.classList.remove('active'));
       btnHumor.classList.remove('active');
+      composerHumorPrev.style.display = 'none';
+      composerHumorPrev.textContent = '';
       composerPreview.style.display = mediaArquivo ? 'flex' : 'none';
     } else {
       humorSelecionado = humor;
       humorDropdown.querySelectorAll('.humor-opt').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       btnHumor.classList.add('active');
+      composerHumorPrev.textContent = humor;
+      composerHumorPrev.style.display = '';
       mostrarPreview();
     }
     humorDropdown.style.display = 'none';
@@ -267,9 +271,9 @@ function criarPostHTML(post) {
         </div>
       </div>
       ${post.humor ? `<div class="post-humor">${post.humor}</div>` : ''}
-      <p class="post-text">${post.texto}</p>
+      <p class="post-text">${renderMencoes(escapeHtml(post.texto))}</p>
       ${post.imagem_url ? `<img src="${post.imagem_url}" class="post-img" loading="lazy" />` : ''}
-      ${post.arquivo_url ? `<a href="${post.arquivo_url}" target="_blank" class="post-file-link" download="${post.arquivo_nome || 'arquivo'}">📎 ${post.arquivo_nome || 'Baixar arquivo'}</a>` : ''}
+      ${post.arquivo_url ? `<a href="${corrigirUrlArquivo(post.arquivo_url, post.arquivo_nome)}" target="_blank" class="post-file-link" download="${post.arquivo_nome || 'arquivo'}">📎 ${post.arquivo_nome || 'Baixar arquivo'}</a>` : ''}
       <div class="post-actions">
         <button class="action-btn like-btn ${curtido ? 'liked' : ''}">
           <i data-lucide="thumbs-up"></i><span>${likesCount}</span>
@@ -683,6 +687,7 @@ async function publicarNovoPost() {
   humorSelecionado = null;
   btnHumor?.classList.remove('active');
   humorDropdown.style.display = 'none';
+  if (composerHumorPrev) { composerHumorPrev.textContent = ''; composerHumorPrev.style.display = 'none'; }
   fecharCompositor();
   await renderizarPosts();
 }
