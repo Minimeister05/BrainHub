@@ -144,6 +144,35 @@
     </div>
   </div>
 
+  <!-- MODAL EXCLUIR GRUPO (ADMIN) -->
+  <div class="modal-overlay hidden" id="modalExcluirAdm">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Excluir grupo (Admin)</h3>
+        <button class="modal-close" onclick="fecharModalExcluirAdm()"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:0.85rem;color:var(--muted);line-height:1.55;margin-bottom:4px">
+          Você está prestes a excluir o grupo <strong id="admDeleteNomeGrupo" style="color:var(--text)"></strong>.<br>
+          Uma mensagem privada será enviada automaticamente ao criador informando o motivo.
+        </p>
+        <label class="modal-label">Motivo da exclusão *</label>
+        <textarea
+          class="modal-input modal-textarea"
+          id="admDeleteMotivo"
+          maxlength="500"
+          placeholder="Ex: Conteúdo inapropriado, violação das regras da comunidade..."
+        ></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-modal-cancel" onclick="fecharModalExcluirAdm()">Cancelar</button>
+        <button class="btn-modal-excluir" id="btnConfirmarExcluirAdm" onclick="confirmarExclusaoAdm()">
+          Excluir grupo
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script src="./scripts/brainhub-shared.js"></script>
   <script type="module" src="./scripts/supabaseClient.js"></script>
   <script defer src="./scripts/grupos.js"></script>

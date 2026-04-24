@@ -855,6 +855,61 @@
 .btn-modal-salvar:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(124,92,255,0.4); }
 .btn-modal-salvar:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
 
+.btn-modal-excluir {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 22px;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(135deg, #ff4b4b, #c0392b);
+  color: white;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.18s;
+}
+
+.btn-modal-excluir:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(255,75,75,0.4); }
+.btn-modal-excluir:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* Botão excluir nos cards */
+.btn-excluir-card {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,75,75,0.3);
+  background: transparent;
+  color: rgba(255,75,75,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: 0.18s;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.btn-excluir-card svg { width: 13px; height: 13px; }
+
+.btn-excluir-card:hover {
+  background: rgba(255,75,75,0.12);
+  border-color: rgba(255,75,75,0.6);
+  color: #ff4b4b;
+}
+
+.btn-excluir-card.admin {
+  border-color: rgba(255,165,0,0.3);
+  color: rgba(255,165,0,0.55);
+}
+
+.btn-excluir-card.admin:hover {
+  background: rgba(255,165,0,0.12);
+  border-color: rgba(255,165,0,0.6);
+  color: #ffa500;
+}
+
 /* ===== TOAST ===== */
 #toast-container {
   position: fixed;

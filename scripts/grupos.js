@@ -5,9 +5,11 @@
 lucide.createIcons();
 
 let usuarioAtual = null;
+let isAdmin = false;
 let meuGrupos = new Set();
 let todosGrupos = [];
 let categoriaAtiva = 'Todos';
+let grupoParaExcluirAdm = null;
 
 // ===== TOAST =====
 function mostrarAviso(msg, tipo = 'info') {
@@ -25,6 +27,9 @@ async function init() {
   const { data: { user } } = await window.supabase.auth.getUser();
   usuarioAtual = user;
   if (!user) { window.location.href = 'index.html'; return; }
+
+  const { data: perfil } = await window.supabase.from('profiles').select('is_admin').eq('id', user.id).single();
+  isAdmin = perfil?.is_admin === true;
 
   // meuGrupos precisa estar pronto antes de renderGrupos
   await carregarMeusGrupos();
@@ -123,6 +128,14 @@ function renderGrupos(grupos) {
     const participando = meuGrupos.has(g.id);
     const membros = g.membroCount ?? 0;
     const bg = GRADIENTES[i % GRADIENTES.length];
+    const eCriador = usuarioAtual && g.criador_id === usuarioAtual.id;
+
+    let botaoExcluir = '';
+    if (eCriador) {
+      botaoExcluir = `<button class="btn-excluir-card" onclick="event.stopPropagation(); excluirGrupo('${g.id}', '${escapeHtml(g.nome).replace(/'/g, "\\'")}')" title="Excluir grupo"><i data-lucide="trash-2"></i></button>`;
+    } else if (isAdmin) {
+      botaoExcluir = `<button class="btn-excluir-card admin" onclick="event.stopPropagation(); abrirModalExclusaoAdm('${g.id}', '${g.criador_id || ''}', '${escapeHtml(g.nome).replace(/'/g, "\\'")}')" title="Excluir grupo (Admin)"><i data-lucide="shield-x"></i></button>`;
+    }
 
     return `
       <div class="grupo-card" onclick="abrirGrupo('${g.id}')" style="cursor:pointer">
@@ -137,11 +150,14 @@ function renderGrupos(grupos) {
             <div class="grupo-membros">
               <span class="grupo-membros-count">${membros} membro${membros !== 1 ? 's' : ''}</span>
             </div>
-            <button
-              class="btn-entrar-card ${participando ? 'participando' : ''}"
-              data-group-id="${g.id}"
-              onclick="event.stopPropagation(); toggleGrupo(this, '${g.id}')"
-            >${participando ? 'Participando' : 'Participar'}</button>
+            <div style="display:flex;align-items:center;gap:6px">
+              ${botaoExcluir}
+              <button
+                class="btn-entrar-card ${participando ? 'participando' : ''}"
+                data-group-id="${g.id}"
+                onclick="event.stopPropagation(); toggleGrupo(this, '${g.id}')"
+              >${participando ? 'Participando' : 'Participar'}</button>
+            </div>
           </div>
         </div>
       </div>
@@ -300,6 +316,73 @@ async function criarGrupo() {
 // Fecha modal ao clicar fora
 document.getElementById('modalCriarGrupo')?.addEventListener('click', function(e) {
   if (e.target === this) fecharModal();
+});
+
+// ===== EXCLUIR GRUPO (CRIADOR) =====
+async function excluirGrupo(grupoId, nomeGrupo) {
+  if (!confirm(`Tem certeza que deseja excluir o grupo "${nomeGrupo}"?\nEsta ação não pode ser desfeita e todos os membros serão removidos.`)) return;
+
+  const { error } = await window.supabase.from('grupos').delete().eq('id', grupoId);
+  if (error) {
+    mostrarAviso('Erro ao excluir grupo: ' + error.message, 'error');
+  } else {
+    mostrarAviso('Grupo excluído.', 'success');
+    todosGrupos = todosGrupos.filter(g => g.id !== grupoId);
+    renderGrupos(categoriaAtiva === 'Todos' ? todosGrupos : todosGrupos.filter(g => g.categoria === categoriaAtiva));
+    await carregarMeusGrupos();
+  }
+}
+
+// ===== EXCLUIR GRUPO (ADMIN) =====
+function abrirModalExclusaoAdm(grupoId, criadorId, nomeGrupo) {
+  grupoParaExcluirAdm = { grupoId, criadorId, nomeGrupo };
+  document.getElementById('admDeleteNomeGrupo').textContent = nomeGrupo;
+  document.getElementById('admDeleteMotivo').value = '';
+  document.getElementById('modalExcluirAdm').classList.remove('hidden');
+}
+
+function fecharModalExcluirAdm() {
+  document.getElementById('modalExcluirAdm').classList.add('hidden');
+  grupoParaExcluirAdm = null;
+}
+
+async function confirmarExclusaoAdm() {
+  const motivo = document.getElementById('admDeleteMotivo').value.trim();
+  if (!motivo) { mostrarAviso('Informe o motivo da exclusão.', 'error'); return; }
+  if (!grupoParaExcluirAdm) return;
+
+  const { grupoId, criadorId, nomeGrupo } = grupoParaExcluirAdm;
+  const btn = document.getElementById('btnConfirmarExcluirAdm');
+  btn.disabled = true;
+  btn.textContent = 'Excluindo...';
+
+  if (criadorId) {
+    const mensagem = `⚠️ Seu grupo "${nomeGrupo}" foi removido pela administração do BrainHUB.\n\nMotivo: ${motivo}\n\nSe tiver dúvidas, entre em contato com a equipe.`;
+    await window.supabase.from('messages').insert({
+      sender_id: usuarioAtual.id,
+      receiver_id: criadorId,
+      texto: mensagem
+    });
+  }
+
+  const { error } = await window.supabase.from('grupos').delete().eq('id', grupoId);
+
+  if (error) {
+    mostrarAviso('Erro ao excluir grupo: ' + error.message, 'error');
+  } else {
+    mostrarAviso('Grupo excluído e criador notificado via mensagem.', 'success');
+    fecharModalExcluirAdm();
+    todosGrupos = todosGrupos.filter(g => g.id !== grupoId);
+    renderGrupos(categoriaAtiva === 'Todos' ? todosGrupos : todosGrupos.filter(g => g.categoria === categoriaAtiva));
+    await carregarMeusGrupos();
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Excluir grupo';
+}
+
+document.getElementById('modalExcluirAdm')?.addEventListener('click', function(e) {
+  if (e.target === this) fecharModalExcluirAdm();
 });
 
 init();

@@ -38,9 +38,13 @@ create policy "grupos_select" on grupos
 create policy "grupos_insert" on grupos
   for insert with check (auth.uid() = criador_id);
 
--- Grupos: só o criador pode deletar
+-- Grupos: criador pode deletar o próprio grupo; admins podem deletar qualquer grupo
+-- ATENÇÃO: se já existe essa policy, rode antes: drop policy "grupos_delete" on grupos;
 create policy "grupos_delete" on grupos
-  for delete using (auth.uid() = criador_id);
+  for delete using (
+    auth.uid() = criador_id
+    OR exists (select 1 from profiles where id = auth.uid() and is_admin = true)
+  );
 
 -- Membros: qualquer um pode ver
 create policy "members_select" on group_members
