@@ -1,0 +1,18 @@
+User-agent: *
+Allow: /
+Disallow: /home.html
+Disallow: /chat.html
+Disallow: /grupos.html
+Disallow: /grupo-detalhe.html
+Disallow: /perfil.html
+Disallow: /usuario.html
+Disallow: /notificacoes.html
+Disallow: /configuracoes.html
+Disallow: /meus-posts.html
+Disallow: /salvos.html
+Disallow: /exercicios.html
+Disallow: /onboarding.html
+Disallow: /offline.html
+Disallow: /redefinir-senha.html
+
+Sitemap: https://brainhubbr.com.br/sitemap.xml

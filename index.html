@@ -1,18 +1,513 @@
-﻿<!DOCTYPE html>
-  <html>
-    <head>
-      <meta charset="UTF-8">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>BrainHUB | Rede social para universitários</title>
+  <meta name="description" content="BrainHUB é a rede social feita para universitários. Compartilhe conhecimento, entre em grupos da sua área, resolva exercícios e conecte-se com quem estuda como você." />
+  <meta name="keywords" content="rede social universitários, estudantes universitários, grupos de estudo, exercícios, BrainHUB" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://brainhubbr.com.br/" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://brainhubbr.com.br/" />
+  <meta property="og:title" content="BrainHUB | Rede social para universitários" />
+  <meta property="og:description" content="Compartilhe conhecimento, entre em grupos da sua área, resolva exercícios e conecte-se com outros universitários." />
+  <meta property="og:image" content="https://brainhubbr.com.br/imagens/icon-512.svg" />
+
+  <!-- PWA -->
   <link rel="manifest" href="./manifest.json" />
   <meta name="theme-color" content="#7c5cff" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="BrainHUB" />
   <link rel="apple-touch-icon" href="./imagens/icon-192.svg" />
-      <meta http-equiv="refresh" content="0; url=login.html">
-      <title>BrainHub</title>
-    </head>
-    <body>
-      <p>Redirecionando para o login...</p>
-      <script src="./scripts/pwa.js"></script>
+
+  <script src="https://unpkg.com/lucide@0.511.0"></script>
+
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0d0d14;
+      --panel: #1a1a22;
+      --panel-2: #22222d;
+      --border: rgba(255,255,255,0.07);
+      --purple: #7c5cff;
+      --purple-light: #bcaeff;
+      --muted: #8888a0;
+      --text: #e8e8f0;
+    }
+
+    html { background: var(--bg); color: var(--text); font-family: Arial, Helvetica, sans-serif; scroll-behavior: smooth; }
+    body { overflow-x: hidden; }
+    a { color: inherit; text-decoration: none; }
+
+    /* ===== NAV ===== */
+    .lp-nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px; height: 60px;
+      background: rgba(13,13,20,0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+    .lp-brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.15rem; }
+    .lp-brand-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: linear-gradient(135deg, #7c5cff, #4e2edf);
+      display: grid; place-items: center;
+      font-weight: 800; font-size: 1rem; color: #fff;
+    }
+    .lp-brand span { color: var(--purple-light); }
+    .lp-nav-btns { display: flex; align-items: center; gap: 10px; }
+    .btn-outline {
+      padding: 8px 18px; border-radius: 10px;
+      border: 1px solid var(--border);
+      background: transparent; color: var(--text);
+      font-size: 0.88rem; font-weight: 600; cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .btn-outline:hover { border-color: var(--purple); background: rgba(124,92,255,0.08); }
+    .btn-primary {
+      padding: 8px 18px; border-radius: 10px;
+      background: linear-gradient(135deg, #7c5cff, #4e2edf);
+      color: #fff; border: none;
+      font-size: 0.88rem; font-weight: 600; cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .btn-primary:hover { opacity: 0.85; }
+
+    /* ===== HERO ===== */
+    .lp-hero {
+      position: relative;
+      text-align: center;
+      padding: 80px 24px 64px;
+      overflow: hidden;
+    }
+    .hero-glow {
+      position: absolute; top: -80px; left: 50%; transform: translateX(-50%);
+      width: 600px; height: 600px; border-radius: 50%;
+      background: radial-gradient(ellipse, rgba(124,92,255,0.18), transparent 70%);
+      pointer-events: none;
+    }
+    .lp-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 14px; border-radius: 999px;
+      background: rgba(124,92,255,0.12);
+      border: 1px solid rgba(124,92,255,0.25);
+      color: var(--purple-light); font-size: 0.8rem; font-weight: 600;
+      margin-bottom: 24px;
+    }
+    .lp-badge i { width: 14px; height: 14px; }
+    .lp-hero h1 {
+      font-size: clamp(2rem, 6vw, 3.4rem);
+      font-weight: 800; line-height: 1.15;
+      margin-bottom: 20px;
+    }
+    .lp-hero h1 .grad {
+      background: linear-gradient(135deg, #7c5cff, #bcaeff);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .lp-hero p {
+      font-size: clamp(1rem, 2.5vw, 1.15rem);
+      color: var(--muted); max-width: 540px; margin: 0 auto 36px;
+      line-height: 1.7;
+    }
+    .hero-btns { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+    .btn-hero {
+      padding: 14px 28px; border-radius: 12px;
+      font-size: 1rem; font-weight: 700; cursor: pointer;
+      transition: opacity 0.15s, transform 0.15s;
+    }
+    .btn-hero:hover { opacity: 0.88; transform: translateY(-1px); }
+    .btn-hero-primary {
+      background: linear-gradient(135deg, #7c5cff, #4e2edf);
+      color: #fff; border: none;
+    }
+    .btn-hero-outline {
+      background: transparent;
+      border: 1px solid rgba(124,92,255,0.4);
+      color: var(--purple-light);
+    }
+
+    /* ===== MOCKUP ===== */
+    .lp-mockup {
+      display: flex; justify-content: center;
+      padding: 0 24px 80px;
+      gap: 16px; flex-wrap: wrap;
+    }
+    .mockup-phone {
+      width: 200px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      overflow: hidden;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.5), 0 0 0 1px rgba(124,92,255,0.1);
+    }
+    .mockup-phone.main { width: 230px; transform: translateY(-20px); }
+    .mockup-topbar {
+      background: #16161e; padding: 12px 14px;
+      display: flex; align-items: center; gap: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .mockup-dot { width: 8px; height: 8px; border-radius: 50%; background: linear-gradient(135deg,#7c5cff,#4e2edf); }
+    .mockup-title { font-size: 0.72rem; font-weight: 700; color: var(--purple-light); }
+    .mockup-body { padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+    .mockup-post {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 10px;
+    }
+    .mockup-post-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .mockup-avatar {
+      width: 26px; height: 26px; border-radius: 50%;
+      display: grid; place-items: center;
+      font-size: 0.65rem; font-weight: 700; color: #fff;
+      flex-shrink: 0;
+    }
+    .mockup-name { font-size: 0.7rem; font-weight: 600; }
+    .mockup-line { height: 6px; border-radius: 4px; background: rgba(255,255,255,0.06); margin-bottom: 4px; }
+    .mockup-actions { display: flex; gap: 8px; margin-top: 6px; }
+    .mockup-btn { height: 18px; width: 40px; border-radius: 4px; background: rgba(124,92,255,0.12); }
+
+    /* ===== STATS ===== */
+    .lp-stats {
+      display: flex; justify-content: center; gap: 32px; flex-wrap: wrap;
+      padding: 0 24px 80px;
+    }
+    .stat-item { text-align: center; }
+    .stat-num { font-size: 2rem; font-weight: 800; color: var(--purple-light); }
+    .stat-label { font-size: 0.82rem; color: var(--muted); margin-top: 4px; }
+
+    /* ===== FEATURES ===== */
+    .lp-features {
+      padding: 0 24px 80px;
+      max-width: 1100px; margin: 0 auto;
+    }
+    .section-title {
+      text-align: center;
+      font-size: clamp(1.5rem, 4vw, 2.2rem);
+      font-weight: 800; margin-bottom: 12px;
+    }
+    .section-sub {
+      text-align: center; color: var(--muted);
+      font-size: 1rem; margin-bottom: 48px;
+    }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+    }
+    .feat-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 18px; padding: 28px 24px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .feat-card:hover { border-color: rgba(124,92,255,0.3); transform: translateY(-3px); }
+    .feat-icon {
+      width: 48px; height: 48px; border-radius: 14px;
+      display: grid; place-items: center;
+      margin-bottom: 16px;
+    }
+    .feat-icon i { width: 22px; height: 22px; color: #fff; }
+    .feat-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
+    .feat-card p { font-size: 0.88rem; color: var(--muted); line-height: 1.6; }
+
+    /* ===== PRO BANNER ===== */
+    .lp-pro {
+      margin: 0 24px 80px;
+      max-width: 860px; margin-left: auto; margin-right: auto;
+      background: var(--panel);
+      border: 1px solid rgba(124,92,255,0.25);
+      border-radius: 22px; padding: 40px 36px;
+      display: flex; align-items: center; gap: 32px;
+      position: relative; overflow: hidden;
+    }
+    .pro-glow-bg {
+      position: absolute; right: -60px; top: -60px;
+      width: 300px; height: 300px; border-radius: 50%;
+      background: radial-gradient(ellipse, rgba(124,92,255,0.15), transparent 70%);
+      pointer-events: none;
+    }
+    .pro-info { flex: 1; }
+    .pro-info h2 { font-size: 1.5rem; font-weight: 800; margin-bottom: 10px; }
+    .pro-info h2 span { color: var(--purple-light); }
+    .pro-info p { color: var(--muted); font-size: 0.92rem; line-height: 1.6; margin-bottom: 20px; }
+    .pro-price { font-size: 2rem; font-weight: 800; color: var(--purple-light); }
+    .pro-price small { font-size: 0.9rem; font-weight: 400; color: var(--muted); }
+
+    /* ===== CTA FINAL ===== */
+    .lp-cta {
+      text-align: center; padding: 80px 24px;
+      background: linear-gradient(180deg, transparent, rgba(124,92,255,0.05));
+    }
+    .lp-cta h2 { font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 800; margin-bottom: 16px; }
+    .lp-cta p { color: var(--muted); margin-bottom: 32px; font-size: 1rem; }
+
+    /* ===== FOOTER ===== */
+    .lp-footer {
+      border-top: 1px solid var(--border);
+      padding: 28px 24px;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+      font-size: 0.82rem; color: var(--muted);
+    }
+    .footer-links { display: flex; gap: 20px; }
+    .footer-links a:hover { color: var(--text); }
+
+    /* ===== MOBILE ===== */
+    @media (max-width: 640px) {
+      .lp-pro { flex-direction: column; padding: 28px 22px; }
+      .mockup-phone:not(.main) { display: none; }
+      .lp-nav-btns .btn-outline { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="lp-nav">
+    <div class="lp-brand">
+      <div class="lp-brand-icon">B</div>
+      Brain<span>HUB</span>
+    </div>
+    <div class="lp-nav-btns">
+      <a href="login.html"><button class="btn-outline">Entrar</button></a>
+      <a href="cadastro.html"><button class="btn-primary">Criar conta</button></a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="lp-hero">
+    <div class="hero-glow"></div>
+
+    <div class="lp-badge">
+      <i data-lucide="graduation-cap"></i>
+      Feito para universitários
+    </div>
+
+    <h1>
+      A rede social que<br/>
+      <span class="grad">impulsiona seus estudos</span>
+    </h1>
+
+    <p>
+      Compartilhe conhecimento, entre em grupos da sua área, resolva exercícios
+      e conecte-se com quem estuda como você.
+    </p>
+
+    <div class="hero-btns">
+      <a href="cadastro.html">
+        <button class="btn-hero btn-hero-primary">
+          Criar conta grátis
+        </button>
+      </a>
+      <a href="login.html">
+        <button class="btn-hero btn-hero-outline">
+          Já tenho conta
+        </button>
+      </a>
+    </div>
+  </section>
+
+  <!-- MOCKUP -->
+  <div class="lp-mockup">
+    <div class="mockup-phone">
+      <div class="mockup-topbar">
+        <div class="mockup-dot"></div>
+        <span class="mockup-title">Grupos</span>
+      </div>
+      <div class="mockup-body">
+        <div class="mockup-post">
+          <div class="mockup-post-header">
+            <div class="mockup-avatar" style="background:linear-gradient(135deg,#20d3ae,#10a47f)">CC</div>
+            <span class="mockup-name">Ciência da Computação</span>
+          </div>
+          <div class="mockup-line" style="width:90%"></div>
+          <div class="mockup-line" style="width:70%"></div>
+          <div class="mockup-actions"><div class="mockup-btn"></div><div class="mockup-btn"></div></div>
+        </div>
+        <div class="mockup-post">
+          <div class="mockup-post-header">
+            <div class="mockup-avatar" style="background:linear-gradient(135deg,#ff6ec7,#b63cff)">DIR</div>
+            <span class="mockup-name">Direito</span>
+          </div>
+          <div class="mockup-line" style="width:80%"></div>
+          <div class="mockup-line" style="width:55%"></div>
+          <div class="mockup-actions"><div class="mockup-btn"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mockup-phone main">
+      <div class="mockup-topbar">
+        <div class="mockup-dot"></div>
+        <span class="mockup-title">BrainHUB — Feed</span>
+      </div>
+      <div class="mockup-body">
+        <div class="mockup-post">
+          <div class="mockup-post-header">
+            <div class="mockup-avatar" style="background:linear-gradient(135deg,#7c5cff,#4e2edf)">BH</div>
+            <span class="mockup-name" style="color:#bcaeff">BrainHUB Oficial</span>
+          </div>
+          <div class="mockup-line" style="width:95%"></div>
+          <div class="mockup-line" style="width:80%"></div>
+          <div class="mockup-line" style="width:60%"></div>
+          <div class="mockup-actions"><div class="mockup-btn"></div><div class="mockup-btn"></div><div class="mockup-btn"></div></div>
+        </div>
+        <div class="mockup-post">
+          <div class="mockup-post-header">
+            <div class="mockup-avatar" style="background:linear-gradient(135deg,#ffb144,#ff6a33)">ES</div>
+            <span class="mockup-name">erick suckow</span>
+          </div>
+          <div class="mockup-line" style="width:85%"></div>
+          <div class="mockup-line" style="width:65%"></div>
+          <div class="mockup-actions"><div class="mockup-btn"></div><div class="mockup-btn"></div></div>
+        </div>
+        <div class="mockup-post">
+          <div class="mockup-post-header">
+            <div class="mockup-avatar" style="background:linear-gradient(135deg,#38bdf8,#0ea5e9)">RD</div>
+            <span class="mockup-name">rafael.dev</span>
+          </div>
+          <div class="mockup-line" style="width:75%"></div>
+          <div class="mockup-line" style="width:50%"></div>
+          <div class="mockup-actions"><div class="mockup-btn"></div><div class="mockup-btn"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mockup-phone">
+      <div class="mockup-topbar">
+        <div class="mockup-dot"></div>
+        <span class="mockup-title">Exercícios</span>
+      </div>
+      <div class="mockup-body">
+        <div class="mockup-post">
+          <div style="display:flex;gap:4px;margin-bottom:8px">
+            <div style="height:16px;width:60px;border-radius:4px;background:rgba(124,92,255,0.18)"></div>
+            <div style="height:16px;width:44px;border-radius:4px;background:rgba(38,208,168,0.14)"></div>
+          </div>
+          <div class="mockup-line" style="width:90%"></div>
+          <div class="mockup-line" style="width:70%"></div>
+          <div style="display:flex;flex-direction:column;gap:5px;margin-top:8px">
+            <div style="height:22px;border-radius:6px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.06)"></div>
+            <div style="height:22px;border-radius:6px;background:rgba(38,208,168,0.1);border:1px solid #26d0a8"></div>
+            <div style="height:22px;border-radius:6px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.06)"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FEATURES -->
+  <section class="lp-features">
+    <h2 class="section-title">Tudo que você precisa pra se destacar</h2>
+    <p class="section-sub">Recursos pensados para a vida universitária real</p>
+
+    <div class="features-grid">
+
+      <div class="feat-card">
+        <div class="feat-icon" style="background:linear-gradient(135deg,#7c5cff,#4e2edf)">
+          <i data-lucide="house"></i>
+        </div>
+        <h3>Feed inteligente</h3>
+        <p>Acompanhe posts de colegas e áreas de interesse. Compartilhe resumos, dúvidas e conquistas.</p>
+      </div>
+
+      <div class="feat-card">
+        <div class="feat-icon" style="background:linear-gradient(135deg,#20d3ae,#10a47f)">
+          <i data-lucide="users"></i>
+        </div>
+        <h3>Grupos por área</h3>
+        <p>Computação, Medicina, Direito, Engenharia e muito mais. Entre no grupo da sua faculdade ou crie o seu.</p>
+      </div>
+
+      <div class="feat-card">
+        <div class="feat-icon" style="background:linear-gradient(135deg,#38bdf8,#0ea5e9)">
+          <i data-lucide="message-circle"></i>
+        </div>
+        <h3>Chat em tempo real</h3>
+        <p>Converse diretamente com colegas. Troca de mensagens rápida e leve, sem distrações.</p>
+      </div>
+
+      <div class="feat-card">
+        <div class="feat-icon" style="background:linear-gradient(135deg,#f5c542,#ff9900)">
+          <i data-lucide="zap"></i>
+        </div>
+        <h3>Exercícios e ranking</h3>
+        <p>Resolva questões por matéria e dificuldade. Ganhe pontos, suba no ranking e mostre seu domínio.</p>
+      </div>
+
+      <div class="feat-card">
+        <div class="feat-icon" style="background:linear-gradient(135deg,#ff6ec7,#b63cff)">
+          <i data-lucide="user"></i>
+        </div>
+        <h3>Perfil acadêmico</h3>
+        <p>Mostre sua faculdade, curso e conquistas. Seu perfil é seu cartão de visitas na comunidade.</p>
+      </div>
+
+      <div class="feat-card">
+        <div class="feat-icon" style="background:linear-gradient(135deg,#ffb144,#ff6a33)">
+          <i data-lucide="bell"></i>
+        </div>
+        <h3>Notificações</h3>
+        <p>Fique por dentro de curtidas, comentários e mensagens. Não perca nenhuma interação importante.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- PRO BANNER -->
+  <div class="lp-pro" style="margin-bottom:80px">
+    <div class="pro-glow-bg"></div>
+    <div class="pro-info">
+      <h2>BrainHUB <span>Pro</span></h2>
+      <p>
+        Selo dourado no seu perfil, destaque extra nos posts, cores exclusivas de avatar,
+        fixar posts no perfil, grupos exclusivos, estatísticas de desempenho e suporte prioritário.
+      </p>
+      <a href="cadastro.html">
+        <button class="btn-primary" style="padding:12px 24px;font-size:0.95rem;border-radius:12px">
+          Criar conta e assinar Pro
+        </button>
+      </a>
+    </div>
+    <div>
+      <div class="pro-price">R$ 14,90 <small>/ mês</small></div>
+      <div style="color:var(--muted);font-size:0.8rem;margin-top:4px">ou R$ 60,00/ano — economize 66%</div>
+    </div>
+  </div>
+
+  <!-- CTA FINAL -->
+  <section class="lp-cta">
+    <h2>Pronto para fazer parte?</h2>
+    <p>Junte-se a universitários que já usam o BrainHUB pra estudar, colaborar e se destacar.</p>
+    <a href="cadastro.html">
+      <button class="btn-hero btn-hero-primary">
+        Criar conta grátis — é rápido
+      </button>
+    </a>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="lp-footer">
+    <div class="lp-brand" style="font-size:0.95rem">
+      <div class="lp-brand-icon" style="width:28px;height:28px;font-size:0.85rem">B</div>
+      Brain<span style="color:var(--purple-light)">HUB</span>
+    </div>
+    <div class="footer-links">
+      <a href="sobre.html">Sobre</a>
+      <a href="suporte.html">Suporte</a>
+      <a href="planos.html">Planos</a>
+      <a href="login.html">Entrar</a>
+    </div>
+    <span>© 2025 BrainHUB. Todos os direitos reservados.</span>
+  </footer>
+
+  <script>lucide.createIcons();</script>
+  <script src="./scripts/pwa.js"></script>
 </body>
-  </html>
+</html>
