@@ -948,6 +948,9 @@ document.getElementById('chatBackBtn')?.addEventListener('click', () => {
 // ===== INIT =====
 async function init() {
   if (!window.supabase) return;
+  // Registra visita para zerar badge de mensagens não lidas
+  localStorage.setItem('brainhub_chat_lastvisit', new Date().toISOString());
+
   const { data: { user } } = await window.supabase.auth.getUser();
   usuarioAtual = user;
 

@@ -130,17 +130,28 @@ function renderGrupos(grupos) {
     const bg = GRADIENTES[i % GRADIENTES.length];
     const eCriador = usuarioAtual && g.criador_id === usuarioAtual.id;
 
-    let botaoExcluir = '';
+    let overlayAcao = '';
     if (eCriador) {
-      botaoExcluir = `<button class="btn-excluir-card" onclick="event.stopPropagation(); excluirGrupo('${g.id}', '${escapeHtml(g.nome).replace(/'/g, "\\'")}')" title="Excluir grupo"><i data-lucide="trash-2"></i></button>`;
+      overlayAcao = `
+        <div class="grupo-card-acoes">
+          <button class="btn-card-acao" onclick="event.stopPropagation(); excluirGrupo('${g.id}', '${escapeHtml(g.nome).replace(/'/g, "\\'")}')" title="Excluir grupo">
+            <i data-lucide="trash-2"></i>
+          </button>
+        </div>`;
     } else if (isAdmin) {
-      botaoExcluir = `<button class="btn-excluir-card admin" onclick="event.stopPropagation(); abrirModalExclusaoAdm('${g.id}', '${g.criador_id || ''}', '${escapeHtml(g.nome).replace(/'/g, "\\'")}')" title="Excluir grupo (Admin)"><i data-lucide="shield-x"></i></button>`;
+      overlayAcao = `
+        <div class="grupo-card-acoes">
+          <button class="btn-card-acao admin" onclick="event.stopPropagation(); abrirModalExclusaoAdm('${g.id}', '${g.criador_id || ''}', '${escapeHtml(g.nome).replace(/'/g, "\\'")}')" title="Remover grupo">
+            <i data-lucide="shield-x"></i>
+          </button>
+        </div>`;
     }
 
     return `
       <div class="grupo-card" onclick="abrirGrupo('${g.id}')" style="cursor:pointer">
         <div class="grupo-card-banner" style="background:${bg}">
           <span style="position:relative;z-index:1;font-size:2rem">${g.emoji || '🧠'}</span>
+          ${overlayAcao}
         </div>
         <div class="grupo-card-body">
           <div class="grupo-card-nome">${escapeHtml(g.nome)}</div>
@@ -150,19 +161,18 @@ function renderGrupos(grupos) {
             <div class="grupo-membros">
               <span class="grupo-membros-count">${membros} membro${membros !== 1 ? 's' : ''}</span>
             </div>
-            <div style="display:flex;align-items:center;gap:6px">
-              ${botaoExcluir}
-              <button
-                class="btn-entrar-card ${participando ? 'participando' : ''}"
-                data-group-id="${g.id}"
-                onclick="event.stopPropagation(); toggleGrupo(this, '${g.id}')"
-              >${participando ? 'Participando' : 'Participar'}</button>
-            </div>
+            <button
+              class="btn-entrar-card ${participando ? 'participando' : ''}"
+              data-group-id="${g.id}"
+              onclick="event.stopPropagation(); toggleGrupo(this, '${g.id}')"
+            >${participando ? 'Participando' : 'Participar'}</button>
           </div>
         </div>
       </div>
     `;
   }).join('');
+
+  lucide.createIcons();
 }
 
 function abrirGrupo(id) {

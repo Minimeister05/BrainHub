@@ -874,40 +874,64 @@
 .btn-modal-excluir:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(255,75,75,0.4); }
 .btn-modal-excluir:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
 
-/* Botão excluir nos cards */
-.btn-excluir-card {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  border: 1px solid rgba(255,75,75,0.3);
-  background: transparent;
-  color: rgba(255,75,75,0.55);
+/* ===== OVERLAY DE AÇÕES NO CARD ===== */
+.grupo-card-acoes {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.grupo-card:hover .grupo-card-acoes {
+  opacity: 1;
+}
+
+.btn-card-acao {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(10, 10, 18, 0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: rgba(255,255,255,0.75);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: 0.18s;
-  flex-shrink: 0;
+  transition: background 0.18s, border-color 0.18s, transform 0.18s, color 0.18s;
   padding: 0;
 }
 
-.btn-excluir-card svg { width: 13px; height: 13px; }
+.btn-card-acao svg { width: 14px; height: 14px; stroke-width: 2; }
 
-.btn-excluir-card:hover {
-  background: rgba(255,75,75,0.12);
-  border-color: rgba(255,75,75,0.6);
-  color: #ff4b4b;
+.btn-card-acao:hover {
+  background: rgba(220, 38, 38, 0.75);
+  border-color: rgba(255, 75, 75, 0.6);
+  color: #fff;
+  transform: scale(1.1);
 }
 
-.btn-excluir-card.admin {
-  border-color: rgba(255,165,0,0.3);
-  color: rgba(255,165,0,0.55);
+.btn-card-acao.admin:hover {
+  background: rgba(217, 119, 6, 0.75);
+  border-color: rgba(255, 165, 0, 0.6);
+  color: #fff;
+  transform: scale(1.1);
 }
 
-.btn-excluir-card.admin:hover {
-  background: rgba(255,165,0,0.12);
-  border-color: rgba(255,165,0,0.6);
-  color: #ffa500;
+/* Mobile: sempre visível (sem hover) */
+@media (hover: none), (max-width: 660px) {
+  .grupo-card-acoes {
+    opacity: 1;
+  }
+
+  .btn-card-acao {
+    width: 28px;
+    height: 28px;
+    background: rgba(10, 10, 18, 0.65);
+  }
 }
 
 /* ===== TOAST ===== */

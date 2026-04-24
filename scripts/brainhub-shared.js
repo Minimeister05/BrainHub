@@ -418,6 +418,100 @@ function _waitAndUpdateBadge() {
 }
 _waitAndUpdateBadge();
 
+// ===== BADGE DE MENSAGENS NO NAV (Chat) =====
+
+function _injetarBadgesChat() {
+  document.querySelectorAll('a[href*="chat.html"]').forEach(link => {
+    if (link.querySelector('.nav-chat-badge')) return;
+    const badge = document.createElement('span');
+    badge.className = 'nav-chat-badge';
+    link.appendChild(badge);
+  });
+}
+
+function aplicarBadgeChat(count) {
+  document.querySelectorAll('.nav-chat-badge').forEach(b => {
+    b.textContent = count > 99 ? '99+' : count;
+    b.style.display = count > 0 ? 'flex' : 'none';
+  });
+}
+
+async function atualizarBadgeChat() {
+  if (!window.supabase) return;
+  try {
+    const { data: { user } } = await window.supabase.auth.getUser();
+    if (!user) return;
+
+    // DMs não lidas
+    const { count: dmCount } = await window.supabase
+      .from('messages')
+      .select('id', { count: 'exact', head: true })
+      .eq('receiver_id', user.id)
+      .eq('lida', false);
+
+    // Mensagens de grupo não lidas desde última visita ao chat
+    const lastVisit = localStorage.getItem('brainhub_chat_lastvisit') || '1970-01-01T00:00:00Z';
+    const { data: membership } = await window.supabase
+      .from('chat_members')
+      .select('group_id')
+      .eq('user_id', user.id);
+
+    let groupCount = 0;
+    if (membership?.length > 0) {
+      const groupIds = membership.map(m => m.group_id);
+      const { count } = await window.supabase
+        .from('group_messages')
+        .select('id', { count: 'exact', head: true })
+        .in('group_id', groupIds)
+        .neq('sender_id', user.id)
+        .gt('created_at', lastVisit);
+      groupCount = count || 0;
+    }
+
+    aplicarBadgeChat((dmCount || 0) + groupCount);
+  } catch (e) {}
+}
+
+function _iniciarRealtimeBadgeChat(userId) {
+  window.supabase
+    .channel(`nav_badge_chat_${userId}`)
+    .on('postgres_changes', {
+      event: 'INSERT', schema: 'public', table: 'messages',
+      filter: `receiver_id=eq.${userId}`
+    }, () => atualizarBadgeChat())
+    .on('postgres_changes', {
+      event: 'UPDATE', schema: 'public', table: 'messages',
+      filter: `receiver_id=eq.${userId}`
+    }, () => atualizarBadgeChat())
+    .on('postgres_changes', {
+      event: 'INSERT', schema: 'public', table: 'group_messages'
+    }, () => atualizarBadgeChat())
+    .subscribe();
+}
+
+function _initChatBadge() {
+  if (!window.supabase) { setTimeout(_initChatBadge, 300); return; }
+
+  if (window.location.pathname.includes('chat.html')) {
+    // Usuário está no chat: registra visita para zerar badge de grupos
+    localStorage.setItem('brainhub_chat_lastvisit', new Date().toISOString());
+    return;
+  }
+
+  _injetarBadgesChat();
+  window.supabase.auth.getUser().then(({ data: { user } }) => {
+    if (!user) return;
+    atualizarBadgeChat();
+    _iniciarRealtimeBadgeChat(user.id);
+  });
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', _initChatBadge);
+} else {
+  setTimeout(_initChatBadge, 0);
+}
+
 // ===== MODAL DE CONFIRMAÇÃO =====
 function confirmar({ icone = '⚠️', titulo = 'Confirmar', mensagem = 'Tem certeza?', btnConfirmar = 'Confirmar', btnCancelar = 'Cancelar', danger = false } = {}) {
   return new Promise((resolve) => {

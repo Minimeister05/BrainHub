@@ -904,6 +904,46 @@ body {
 }
 .mob-notif-dot.visible { display: block; }
 
+/* ===== BADGE DE MENSAGENS NO NAV ===== */
+.main-nav a { position: relative; }
+.mob-nav-item { position: relative; }
+
+.nav-chat-badge {
+  position: absolute;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: var(--purple);
+  color: #fff;
+  font-size: 0.58rem;
+  font-weight: 800;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  line-height: 1;
+  border: 2px solid #12121a;
+  pointer-events: none;
+  animation: badgePop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+
+/* Desktop: canto superior direito do botão do nav */
+.main-nav a .nav-chat-badge {
+  top: 7px;
+  right: 7px;
+}
+
+/* Mobile: posicionado sobre o ícone */
+.mob-nav-item .nav-chat-badge {
+  top: 1px;
+  right: calc(50% - 18px);
+}
+
+@keyframes badgePop {
+  from { transform: scale(0); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
 @media (max-width: 1200px) {
   .layout {
     grid-template-columns: 250px 1fr;
