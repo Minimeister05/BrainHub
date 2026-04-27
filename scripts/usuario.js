@@ -325,6 +325,9 @@ async function init() {
   document.getElementById('statSeguidores').textContent = seguidores || 0;
   document.getElementById('statSeguindo').textContent = seguindoCount || 0;
 
+  document.getElementById('statDivSeguidores').onclick = () => _segAbrirModal(targetUserId, 'seguidores');
+  document.getElementById('statDivSeguindo').onclick   = () => _segAbrirModal(targetUserId, 'seguindo');
+
   // Verifica se já segue
   if (usuarioAtual) {
     const { data: followData } = await window.supabase
@@ -389,5 +392,95 @@ async function init() {
   lucide.createIcons();
   ativarEventosPosts(container);
 }
+
+// ===== MODAL SEGUIDORES / SEGUINDO =====
+let _segUserId = null;
+let _segCache  = [];
+
+function _segEscape(str) {
+  return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function _segItemHTML(perfil) {
+  const nome = perfil.nome || 'Usuário';
+  const cor  = perfil.cor_avatar || '';
+  const foto = perfil.foto_url || null;
+  const sub  = [perfil.curso, perfil.faculdade].filter(Boolean).join(' • ');
+  const ini  = nome.split(' ').map(p => p[0]).filter(Boolean).slice(0, 2).join('').toUpperCase() || '?';
+  const av   = foto
+    ? `<div class="mini-avatar av-foto"><img src="${foto}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block"/></div>`
+    : `<div class="mini-avatar ${cor}">${ini}</div>`;
+  return `
+    <a class="seg-user-item" href="usuario.html?id=${perfil.id}">
+      ${av}
+      <div class="seg-user-info">
+        <div class="seg-user-nome">${_segEscape(nome)}</div>
+        ${sub ? `<div class="seg-user-sub">${_segEscape(sub)}</div>` : ''}
+      </div>
+      <i data-lucide="chevron-right" style="opacity:0.3;flex-shrink:0"></i>
+    </a>`;
+}
+
+function _segRenderLista(perfis, tipoVazio) {
+  const body = document.getElementById('segModalBody');
+  if (!perfis.length) {
+    body.innerHTML = `<div class="seg-empty">${tipoVazio}</div>`;
+    return;
+  }
+  body.innerHTML = perfis.map(_segItemHTML).join('');
+  lucide.createIcons();
+}
+
+async function _segCarregar(tipo) {
+  const body = document.getElementById('segModalBody');
+  body.innerHTML = '<div class="seg-loading">Carregando...</div>';
+  document.getElementById('segSearchInput').value = '';
+  let perfis = [];
+  if (tipo === 'seguidores') {
+    const { data } = await window.supabase.from('follows')
+      .select('profiles!follows_follower_id_fkey(id, nome, cor_avatar, foto_url, curso, faculdade)')
+      .eq('following_id', _segUserId);
+    perfis = (data || []).map(r => r.profiles).filter(Boolean);
+  } else {
+    const { data } = await window.supabase.from('follows')
+      .select('profiles!follows_following_id_fkey(id, nome, cor_avatar, foto_url, curso, faculdade)')
+      .eq('follower_id', _segUserId);
+    perfis = (data || []).map(r => r.profiles).filter(Boolean);
+  }
+  _segCache = perfis;
+  const msgVazio = tipo === 'seguidores' ? 'Nenhum seguidor ainda.' : 'Não está seguindo ninguém.';
+  _segRenderLista(perfis, msgVazio);
+}
+
+function _segAbrirModal(userId, tabInicial) {
+  _segUserId = userId;
+  document.getElementById('segModalOverlay').classList.remove('hidden');
+  document.querySelectorAll('.seg-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tabInicial));
+  _segCarregar(tabInicial);
+}
+
+document.getElementById('segModalOverlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) e.currentTarget.classList.add('hidden');
+});
+document.getElementById('segModalClose').addEventListener('click', () => {
+  document.getElementById('segModalOverlay').classList.add('hidden');
+});
+document.querySelectorAll('.seg-tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.seg-tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    if (_segUserId) _segCarregar(btn.dataset.tab);
+  });
+});
+document.getElementById('segSearchInput').addEventListener('input', function () {
+  const q = this.value.trim().toLowerCase();
+  if (!q) { _segRenderLista(_segCache, 'Nenhum resultado.'); return; }
+  const filtrado = _segCache.filter(p =>
+    (p.nome || '').toLowerCase().includes(q) ||
+    (p.curso || '').toLowerCase().includes(q) ||
+    (p.faculdade || '').toLowerCase().includes(q)
+  );
+  _segRenderLista(filtrado, 'Nenhum resultado encontrado.');
+});
 
 init();

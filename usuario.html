@@ -58,8 +58,8 @@
 
         <div class="usuario-profile-stats">
           <div><strong id="statPosts">—</strong><span>POSTS</span></div>
-          <div><strong id="statSeguidores">—</strong><span>SEGUIDORES</span></div>
-          <div><strong id="statSeguindo">—</strong><span>SEGUINDO</span></div>
+          <div class="stat-clickable" id="statDivSeguidores"><strong id="statSeguidores">—</strong><span>SEGUIDORES</span></div>
+          <div class="stat-clickable" id="statDivSeguindo"><strong id="statSeguindo">—</strong><span>SEGUINDO</span></div>
         </div>
 
         <div class="usuario-profile-acoes">
@@ -97,6 +97,23 @@
   </main>
 
   <div id="toast-container"></div>
+
+  <!-- Modal Seguidores / Seguindo -->
+  <div class="seg-modal-overlay hidden" id="segModalOverlay">
+    <div class="seg-modal-box">
+      <div class="seg-modal-header">
+        <div class="seg-tabs">
+          <button class="seg-tab-btn active" data-tab="seguidores">Seguidores</button>
+          <button class="seg-tab-btn" data-tab="seguindo">Seguindo</button>
+        </div>
+        <button class="seg-modal-close" id="segModalClose"><i data-lucide="x"></i></button>
+      </div>
+      <div class="seg-search-wrap">
+        <input type="text" class="seg-search-input" id="segSearchInput" placeholder="Pesquisar..." autocomplete="off" />
+      </div>
+      <div class="seg-modal-body" id="segModalBody"></div>
+    </div>
+  </div>
 
   <script src="./scripts/brainhub-shared.js?v=3"></script>
   <script type="module" src="./scripts/supabaseClient.js"></script>

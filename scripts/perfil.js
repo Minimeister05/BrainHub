@@ -241,6 +241,9 @@ async function carregarDados() {
   if (el('perfilStatSeguidores')) el('perfilStatSeguidores').textContent = seguidoresData?.length ?? 0
   if (el('perfilStatSeguindo'))   el('perfilStatSeguindo').textContent   = seguindoData?.length   ?? 0
 
+  el('statDivSeguidores').onclick = () => _segAbrirModal(user.id, 'seguidores')
+  el('statDivSeguindo').onclick   = () => _segAbrirModal(user.id, 'seguindo')
+
   atualizarPreview({ nome, curso, faculdade, periodo, bio, corAvatar })
   lucide.createIcons()
 }
@@ -983,5 +986,131 @@ document.getElementById('btnCancelarPro')?.addEventListener('click', async () =>
     lucide.createIcons();
   }
 });
+
+// ===== MODAL SEGUIDORES / SEGUINDO =====
+let _segUserId = null
+let _segCache  = []
+let _segTipo   = 'seguidores'
+
+function _segEscape(str) {
+  return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+}
+
+function _segItemHTML(perfil) {
+  const nome = perfil.nome || 'Usuário'
+  const cor  = perfil.cor_avatar || ''
+  const foto = perfil.foto_url || null
+  const sub  = [perfil.curso, perfil.faculdade].filter(Boolean).join(' • ')
+  const ini  = nome.split(' ').map(p => p[0]).filter(Boolean).slice(0, 2).join('').toUpperCase() || '?'
+  const av   = foto
+    ? `<div class="mini-avatar av-foto"><img src="${foto}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block"/></div>`
+    : `<div class="mini-avatar ${cor}">${ini}</div>`
+  const btnLabel = _segTipo === 'seguindo' ? 'Deixar de seguir' : 'Remover'
+  return `
+    <a class="seg-user-item" href="usuario.html?id=${perfil.id}">
+      ${av}
+      <div class="seg-user-info">
+        <div class="seg-user-nome">${_segEscape(nome)}</div>
+        ${sub ? `<div class="seg-user-sub">${_segEscape(sub)}</div>` : ''}
+      </div>
+      <button class="seg-action-btn" data-id="${perfil.id}">${btnLabel}</button>
+    </a>`
+}
+
+function _segRenderLista(perfis, tipoVazio) {
+  const body = document.getElementById('segModalBody')
+  if (!perfis.length) {
+    body.innerHTML = `<div class="seg-empty">${tipoVazio}</div>`
+    return
+  }
+  body.innerHTML = perfis.map(_segItemHTML).join('')
+  lucide.createIcons()
+}
+
+async function _segCarregar(tipo) {
+  _segTipo = tipo
+  const body = document.getElementById('segModalBody')
+  body.innerHTML = '<div class="seg-loading">Carregando...</div>'
+  document.getElementById('segSearchInput').value = ''
+  let perfis = []
+  if (tipo === 'seguidores') {
+    const { data } = await window.supabase.from('follows')
+      .select('profiles!follows_follower_id_fkey(id, nome, cor_avatar, foto_url, curso, faculdade)')
+      .eq('following_id', _segUserId)
+    perfis = (data || []).map(r => r.profiles).filter(Boolean)
+  } else {
+    const { data } = await window.supabase.from('follows')
+      .select('profiles!follows_following_id_fkey(id, nome, cor_avatar, foto_url, curso, faculdade)')
+      .eq('follower_id', _segUserId)
+    perfis = (data || []).map(r => r.profiles).filter(Boolean)
+  }
+  _segCache = perfis
+  const msgVazio = tipo === 'seguidores' ? 'Nenhum seguidor ainda.' : 'Não está seguindo ninguém.'
+  _segRenderLista(perfis, msgVazio)
+}
+
+function _segAbrirModal(userId, tabInicial) {
+  _segUserId = userId
+  document.getElementById('segModalOverlay').classList.remove('hidden')
+  document.querySelectorAll('.seg-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tabInicial))
+  _segCarregar(tabInicial)
+}
+
+document.getElementById('segModalOverlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) e.currentTarget.classList.add('hidden')
+})
+document.getElementById('segModalClose').addEventListener('click', () => {
+  document.getElementById('segModalOverlay').classList.add('hidden')
+})
+document.querySelectorAll('.seg-tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.seg-tab-btn').forEach(b => b.classList.remove('active'))
+    btn.classList.add('active')
+    if (_segUserId) _segCarregar(btn.dataset.tab)
+  })
+})
+document.getElementById('segSearchInput').addEventListener('input', function () {
+  const q = this.value.trim().toLowerCase()
+  if (!q) { _segRenderLista(_segCache, 'Nenhum resultado.'); return }
+  const filtrado = _segCache.filter(p =>
+    (p.nome || '').toLowerCase().includes(q) ||
+    (p.curso || '').toLowerCase().includes(q) ||
+    (p.faculdade || '').toLowerCase().includes(q)
+  )
+  _segRenderLista(filtrado, 'Nenhum resultado encontrado.')
+})
+
+document.getElementById('segModalBody').addEventListener('click', async e => {
+  const btn = e.target.closest('.seg-action-btn')
+  if (!btn) return
+  e.preventDefault()
+  e.stopPropagation()
+  const personId = btn.dataset.id
+  btn.disabled = true
+  btn.textContent = '...'
+
+  if (_segTipo === 'seguindo') {
+    await window.supabase.from('follows').delete()
+      .eq('follower_id', _segUserId).eq('following_id', personId)
+    const el = document.getElementById('perfilStatSeguindo')
+    if (el) el.textContent = Math.max(0, parseInt(el.textContent || '0') - 1)
+  } else {
+    await window.supabase.from('follows').delete()
+      .eq('follower_id', personId).eq('following_id', _segUserId)
+    const el = document.getElementById('perfilStatSeguidores')
+    if (el) el.textContent = Math.max(0, parseInt(el.textContent || '0') - 1)
+  }
+
+  _segCache = _segCache.filter(p => p.id !== personId)
+  const q = document.getElementById('segSearchInput').value.trim().toLowerCase()
+  const lista = q
+    ? _segCache.filter(p =>
+        (p.nome || '').toLowerCase().includes(q) ||
+        (p.curso || '').toLowerCase().includes(q) ||
+        (p.faculdade || '').toLowerCase().includes(q))
+    : _segCache
+  const msgVazio = _segTipo === 'seguidores' ? 'Nenhum seguidor ainda.' : 'Não está seguindo ninguém.'
+  _segRenderLista(lista, msgVazio)
+})
 
 carregarDados()
